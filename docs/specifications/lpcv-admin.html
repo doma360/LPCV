@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LPCV Admin — Espace Administrateur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white-cold:#F8FAFC; --white:#FFFFFF; --black:#111827;
+  --orange:#F97316; --orange-dark:#EA580C;
+  --green:#16A34A; --green-light:#DCFCE7;
+  --blue:#2563EB; --blue-dark:#1D4ED8; --blue-light:#DBEAFE;
+  --gray:#9CA3AF; --gray-light:#E5E7EB; --gray-bg:#F1F5F9;
+  --radius-sm:8px; --radius-md:14px; --radius-lg:20px; --radius-pill:999px;
+  --shadow-card: 0 1px 2px rgba(17,24,39,.04), 0 8px 24px -12px rgba(17,24,39,.12);
+}
+*{box-sizing:border-box;}
+body{margin:0; font-family:'Inter',sans-serif; background:var(--white-cold); color:var(--black); font-size:15px; line-height:1.5;}
+h1,h2,h3{margin:0; font-weight:800; letter-spacing:-0.02em;}
+h1{font-size:clamp(28px,4vw,40px);}
+h2{font-size:22px; font-weight:800;}
+h3{font-size:16px; font-weight:700;}
+p{margin:0;}
+a{text-decoration:none; color:inherit;}
+button{font-family:inherit; cursor:pointer;}
+:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:11px 18px; border-radius:10px; font-weight:700; font-size:13.5px; border:none; transition:all .12s ease;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--blue); color:#fff;}
+.btn-primary:hover{background:var(--blue-dark);}
+.btn-dark{background:var(--black); color:#fff;}
+.btn-outline{background:transparent; border:1.5px solid var(--gray-light); color:var(--black);}
+.btn-outline:hover{border-color:var(--black);}
+.btn-green{background:var(--green); color:#fff;}
+.btn-muted{background:var(--gray-bg); color:#374151;}
+.btn-sm{padding:7px 13px; font-size:12.5px;}
+.btn-block{width:100%;}
+.btn-ghost{background:transparent;opacity:.65;}
+.btn-ghost:hover{opacity:1;}
+
+.card{background:#fff; border-radius:var(--radius-lg); box-shadow:var(--shadow-card); border:1px solid var(--gray-light);}
+.badge{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:var(--radius-pill);}
+.badge-verified{background:var(--green-light); color:var(--green);}
+.badge-pending{background:#FFF7ED; color:var(--orange-dark);}
+.badge-info{background:var(--blue-light); color:var(--blue);}
+.badge-muted{background:var(--gray-bg); color:#64748B;}
+.badge-danger{background:#F1F5F9; color:#475569;}
+
+.input{width:100%; padding:11px 13px; border:1.5px solid var(--gray-light); border-radius:10px; font-size:14px; font-family:inherit;}
+.input:focus{border-color:var(--blue);}
+.label{display:block; font-size:12.5px; font-weight:600; margin-bottom:6px; color:#374151;}
+.field{margin-bottom:15px;}
+
+/* Layout admin : sidebar fixe + contenu */
+.admin-shell{display:flex; min-height:100vh;}
+.sidebar{width:236px; background:var(--black); color:#fff; flex-shrink:0; display:flex; flex-direction:column; padding:20px 14px;}
+.sidebar .logo{display:flex; align-items:center; gap:10px; font-weight:800; padding:8px 10px 22px;}
+.sidebar .logo-mark{width:32px;height:32px;border-radius:9px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.side-link{display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:10px; font-size:13.5px; font-weight:600; color:#fff; opacity:.65; margin-bottom:2px;}
+.side-link.active{background:rgba(255,255,255,.08); opacity:1;}
+.side-link:hover{opacity:1;}
+.side-section{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; opacity:.4; padding:16px 12px 6px; font-weight:700;}
+.admin-main{flex:1; min-width:0;}
+.topbar{background:#fff; border-bottom:1px solid var(--gray-light); padding:16px 32px; display:flex; align-items:center; justify-content:space-between;}
+.content{padding:28px 32px;}
+
+@media (max-width:900px){
+  .sidebar{position:fixed; z-index:100; height:100vh; transform:translateX(-100%); transition:transform .2s;}
+  .sidebar.open{transform:translateX(0);}
+  .content{padding:20px;}
+  .topbar{padding:14px 18px;}
+}
+
+.grid{display:grid; gap:20px;}
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{text-align:left; padding:12px 16px; background:var(--gray-bg); font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:#64748B; font-weight:700;}
+td{padding:13px 16px; border-top:1px solid var(--gray-light);}
+tr:hover td{background:#FAFBFC;}
+
+#toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--black); color:#fff; padding:12px 20px; border-radius:999px; font-size:13.5px; font-weight:600; opacity:0; pointer-events:none; transition:all .25s ease; z-index:300;}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+.modal-overlay{position:fixed; inset:0; background:rgba(17,24,39,.5); display:flex; align-items:center; justify-content:center; z-index:200; padding:20px;}
+.modal{background:#fff; border-radius:18px; max-width:520px; width:100%; max-height:85vh; overflow-y:auto; padding:28px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"></div>
+
+<script>
+/* ===================================================================
+   LPCV ADMIN — Back-office (application indépendante)
+   Conforme au Volume 5 §11 (Administration) et Volume 10 (Exploitation)
+   =================================================================== */
+
+let ADMIN = {
+  loggedIn:false,
+  view:'dashboard',
+  modal:null,
+  usersTab:'clients',
+};
+
+const KPI = [
+  {label:'Utilisateurs actifs', valeur:'8 412', delta:'+4,2%', icon:'👥'},
+  {label:'Professionnels vérifiés', valeur:'1 204', delta:'+2,8%', icon:'✅'},
+  {label:'Demandes ce mois', valeur:'3 087', delta:'+11%', icon:'📋'},
+  {label:'Revenus commission', valeur:'2 340 000 FCFA', delta:'+6,5%', icon:'💰'},
+];
+
+const VERIFS = [
+  {id:1, nom:'N\'Guessan Roland', metier:'Menuisier', quartier:'Abobo', date:'18 juil. 2026', docs:['CNI recto/verso','Justificatif de domicile']},
+  {id:2, nom:'Konan Affoué Sylvie', metier:'Coiffeuse', quartier:'Yopougon', date:'18 juil. 2026', docs:['CNI recto/verso']},
+  {id:3, nom:'Diabaté Souleymane', metier:'Électricien', quartier:'Koumassi', date:'17 juil. 2026', docs:['CNI recto/verso','Certificat professionnel']},
+];
+
+const AVIS_SIGNALES = [
+  {id:1, auteur:'Client #4021', pro:'Kouadio Serge', note:1, texte:'Ne correspond pas du tout à mon expérience, contenu suspect.', motif:'Contenu inapproprié signalé par le professionnel'},
+  {id:2, auteur:'Client #3877', pro:'Fatou Diarra', note:2, texte:'Retard important non justifié selon moi.', motif:'Signalé comme potentiellement diffamatoire'},
+];
+
+const TRANSACTIONS = [
+  {id:'TX-88231', client:'Marie A.', pro:'Kouassi Yao Bertin', montant:'12 500 FCFA', moyen:'Wave', statut:'Confirmé', date:'19/07 09:14'},
+  {id:'TX-88230', client:'Jean K.', pro:'Traoré Ibrahim', montant:'9 000 FCFA', moyen:'Orange Money', statut:'Confirmé', date:'19/07 08:52'},
+  {id:'TX-88229', client:'Awa D.', pro:'Aya Konan', montant:'3 000 FCFA', moyen:'MTN Money', statut:'En attente', date:'19/07 08:40'},
+  {id:'TX-88228', client:'Serge B.', pro:'Mariam Ouattara', montant:'8 500 FCFA', moyen:'Espèces', statut:'Litige', date:'18/07 17:05'},
+];
+
+const USERS = {
+  clients:[
+    {id:'C-1042', nom:'Marie Aka', tel:'+225 07 01 22 33', inscrit:'12 juin 2026', statut:'Actif'},
+    {id:'C-1041', nom:'Jean Kouamé', tel:'+225 05 44 11 09', inscrit:'10 juin 2026', statut:'Actif'},
+    {id:'C-1039', nom:'Awa Diabaté', tel:'+225 01 88 76 54', inscrit:'02 juin 2026', statut:'Suspendu'},
+  ],
+  professionnels:[
+    {id:'P-0512', nom:'Kouassi Yao Bertin', tel:'+225 07 12 34 56', inscrit:'02 mai 2026', statut:'Vérifié'},
+    {id:'P-0498', nom:'Fatou Diarra', tel:'+225 05 98 76 21', inscrit:'28 avr. 2026', statut:'Vérifié'},
+    {id:'P-0605', nom:'N\'Guessan Roland', tel:'+225 01 22 44 88', inscrit:'15 juil. 2026', statut:'En attente'},
+  ],
+};
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._t); window._t = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function stars(n){ return '★'.repeat(n)+'☆'.repeat(5-n); }
+function nav(view){ ADMIN.view = view; ADMIN.modal = null; render(); window.scrollTo(0,0); }
+function openModal(id){ ADMIN.modal = id; render(); }
+function closeModal(){ ADMIN.modal = null; render(); }
+
+/* ===================== LOGIN ===================== */
+function renderLogin(){
+  return `
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div class="card" style="max-width:400px; width:100%; padding:36px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:26px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;">LP</div>
+        <div>
+          <div style="font-weight:800;">LPCV Admin</div>
+          <div style="font-size:12px;color:#6B7280;">Espace administrateur</div>
+        </div>
+      </div>
+      <h2>Connexion</h2>
+      <p style="color:#6B7280; font-size:13.5px; margin-top:6px;">Accès réservé à l'équipe interne LPCV.</p>
+      <div style="margin-top:20px;">
+        <div class="field"><label class="label">Identifiant</label><input class="input" placeholder="admin@lpcv.ci"></div>
+        <div class="field"><label class="label">Mot de passe</label><input class="input" type="password" placeholder="••••••••"></div>
+        <button class="btn btn-primary btn-block" onclick="ADMIN.loggedIn=true; nav('dashboard');">Se connecter</button>
+      </div>
+      <div style="margin-top:18px; padding:12px; background:var(--gray-bg); border-radius:10px; font-size:12px; color:#64748B;">🔒 Authentification protégée par contrôle d'accès basé sur les rôles (RBAC) — Volume 4 §9.</div>
+    </div>
+  </div>`;
+}
+
+/* ===================== LAYOUT ===================== */
+const NAV_ITEMS = [
+  {section:'Vue d\'ensemble', items:[['dashboard','📊','Tableau de bord']]},
+  {section:'Modération', items:[['verifications','🪪','Vérifications pro.'],['moderation','🚩','Avis signalés']]},
+  {section:'Exploitation', items:[['utilisateurs','👥','Utilisateurs'],['transactions','💳','Transactions']]},
+  {section:'Configuration', items:[['parametrage','⚙️','Paramétrage']]},
+];
+function renderSidebar(){
+  return `
+  <div class="sidebar" id="sidebar">
+    <div class="logo"><span class="logo-mark">LP</span> LPCV Admin</div>
+    ${NAV_ITEMS.map(g=>`
+      <div class="side-section">${g.section}</div>
+      ${g.items.map(([id,icon,label])=>`
+        <a class="side-link ${ADMIN.view===id?'active':''}" href="#" onclick="nav('${id}');return false;">
+          <span>${icon}</span> ${label}
+        </a>`).join('')}
+    `).join('')}
+    <div style="flex:1;"></div>
+    <a class="side-link" href="#" onclick="ADMIN.loggedIn=false; nav('dashboard'); return false;">
+      <span>↩️</span> Déconnexion
+    </a>
+  </div>`;
+}
+function renderTopbar(){
+  const titles = {dashboard:'Tableau de bord', verifications:'Vérifications des professionnels', moderation:'Modération des avis', utilisateurs:'Gestion des utilisateurs', transactions:'Supervision des transactions', parametrage:'Paramétrage de la plateforme'};
+  return `
+  <div class="topbar">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <button class="btn btn-ghost btn-sm" style="display:none;" id="burger" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <h2>${titles[ADMIN.view]||''}</h2>
+    </div>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <span class="badge badge-info">🟢 Système opérationnel</span>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--black);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">AD</div>
+    </div>
+  </div>`;
+}
+
+/* ===================== DASHBOARD ===================== */
+function renderDashboard(){
+  return `
+  <div class="content">
+    <div class="grid" style="grid-template-columns:repeat(4,1fr);">
+      ${KPI.map(k=>`
+        <div class="card" style="padding:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <span style="font-size:20px;">${k.icon}</span>
+            <span style="font-size:12px; font-weight:700; color:var(--green);">${k.delta}</span>
+          </div>
+          <div style="font-size:24px; font-weight:800; margin-top:14px;">${k.valeur}</div>
+          <div style="font-size:12.5px; color:#6B7280; margin-top:2px;">${k.label}</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="grid" style="grid-template-columns:2fr 1fr; margin-top:20px;">
+      <div class="card" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>Demandes par jour — 7 derniers jours</h3>
+          <span class="badge badge-muted">Zone : toutes</span>
+        </div>
+        <div style="display:flex; align-items:flex-end; gap:12px; height:160px; margin-top:24px;">
+          ${[62,74,58,81,69,90,77].map((v,i)=>`
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <div style="width:100%; height:${v}%; background:linear-gradient(180deg,var(--blue),var(--blue-dark)); border-radius:6px 6px 2px 2px;"></div>
+              <span style="font-size:11px; color:#9CA3AF;">${['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][i]}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h3>Activité récente</h3>
+        <div style="display:flex; flex-direction:column; gap:14px; margin-top:16px;">
+          ${[
+            ['🪪','Nouvelle demande de vérification','N\'Guessan Roland · il y a 12 min'],
+            ['🚩','Avis signalé par un professionnel','Kouadio Serge · il y a 34 min'],
+            ['💳','Paiement en litige','TX-88228 · il y a 2h'],
+            ['✅','Professionnel vérifié','Fatou Diarra · il y a 3h'],
+          ].map(([icon,titre,meta])=>`
+            <div style="display:flex; gap:10px; align-items:flex-start;">
+              <span>${icon}</span>
+              <div>
+                <div style="font-size:13.5px; font-weight:600;">${titre}</div>
+                <div style="font-size:12px; color:#9CA3AF;">${meta}</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr; margin-top:20px;">
+      <div class="card" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>Vérifications en attente</h3>
+          <button class="btn btn-outline btn-sm" onclick="nav('verifications')">Tout voir</button>
+        </div>
+        <div style="margin-top:14px; font-size:13.5px; color:#6B7280;">${VERIFS.length} professionnels en attente de validation documentaire.</div>
+      </div>
+      <div class="card" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>Avis signalés</h3>
+          <button class="btn btn-outline btn-sm" onclick="nav('moderation')">Tout voir</button>
+        </div>
+        <div style="margin-top:14px; font-size:13.5px; color:#6B7280;">${AVIS_SIGNALES.length} avis masqués en attente de décision.</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ===================== VÉRIFICATIONS PROFESSIONNELS ===================== */
+function renderVerifications(){
+  return `
+  <div class="content">
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table>
+        <thead><tr><th>Professionnel</th><th>Métier</th><th>Zone</th><th>Demandé le</th><th>Documents</th><th></th></tr></thead>
+        <tbody>
+          ${VERIFS.map(v=>`
+            <tr>
+              <td style="font-weight:700;">${v.nom}</td>
+              <td>${v.metier}</td>
+              <td>${v.quartier}</td>
+              <td>${v.date}</td>
+              <td><span class="badge badge-info">${v.docs.length} document${v.docs.length>1?'s':''}</span></td>
+              <td style="text-align:right;"><button class="btn btn-primary btn-sm" onclick="openModal('verif-${v.id}')">Examiner</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${VERIFS.length===0? `<p style="color:#9CA3AF;margin-top:20px;">Aucune vérification en attente.</p>` : ''}
+  </div>
+  ${VERIFS.map(v=>renderVerifModal(v)).join('')}
+  `;
+}
+function renderVerifModal(v){
+  if(ADMIN.modal!=='verif-'+v.id) return '';
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
+          <h3 style="font-size:18px;">${v.nom}</h3>
+          <p style="color:#6B7280; font-size:13.5px; margin-top:2px;">${v.metier} · ${v.quartier} · demande du ${v.date}</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+      </div>
+      <h3 style="margin-top:22px; font-size:14px;">Documents fournis</h3>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+        ${v.docs.map(d=>`
+          <div style="display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--gray-light); border-radius:12px;">
+            <div style="width:56px;height:40px;border-radius:8px;background:var(--gray-bg);display:flex;align-items:center;justify-content:center;">📄</div>
+            <div style="flex:1;">
+              <div style="font-size:13.5px; font-weight:600;">${d}</div>
+              <div style="font-size:11.5px; color:#9CA3AF;">Fichier fictif — aperçu prototype</div>
+            </div>
+            <button class="btn btn-outline btn-sm">Voir</button>
+          </div>`).join('')}
+      </div>
+      <div class="field" style="margin-top:18px;">
+        <label class="label">Motif (obligatoire en cas de refus)</label>
+        <textarea class="input" rows="2" placeholder="Ex. Document illisible, à renvoyer"></textarea>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button class="btn btn-muted" style="flex:1;" onclick="refuserVerif(${v.id})">Refuser</button>
+        <button class="btn btn-green" style="flex:1;" onclick="approuverVerif(${v.id})">✓ Approuver</button>
+      </div>
+    </div>
+  </div>`;
+}
+function approuverVerif(id){
+  const i = VERIFS.findIndex(v=>v.id===id);
+  if(i>-1) VERIFS.splice(i,1);
+  toast('Professionnel vérifié et publié ✓');
+  closeModal(); nav('verifications');
+}
+function refuserVerif(id){
+  const i = VERIFS.findIndex(v=>v.id===id);
+  if(i>-1) VERIFS.splice(i,1);
+  toast('Vérification refusée — professionnel notifié');
+  closeModal(); nav('verifications');
+}
+
+/* ===================== MODÉRATION DES AVIS ===================== */
+function renderModeration(){
+  return `
+  <div class="content">
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      ${AVIS_SIGNALES.map(a=>`
+        <div class="card" style="padding:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div style="font-weight:700; font-size:14px;">${a.auteur} <span style="font-weight:400; color:#9CA3AF;">à propos de</span> ${a.pro}</div>
+              <div style="color:#F59E0B; font-size:13px; margin:6px 0;">${stars(a.note)}</div>
+              <p style="font-size:14px; color:#374151; max-width:520px;">"${a.texte}"</p>
+              <span class="badge badge-pending" style="margin-top:10px;">🚩 ${a.motif}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; min-width:140px;">
+              <button class="btn btn-green btn-sm" onclick="modererAvis(${a.id},true)">Republier</button>
+              <button class="btn btn-muted btn-sm" onclick="modererAvis(${a.id},false)">Supprimer</button>
+            </div>
+          </div>
+        </div>`).join('')}
+      ${AVIS_SIGNALES.length===0? `<p style="color:#9CA3AF;">Aucun avis signalé en attente.</p>` : ''}
+    </div>
+  </div>`;
+}
+function modererAvis(id, republier){
+  const i = AVIS_SIGNALES.findIndex(a=>a.id===id);
+  if(i>-1) AVIS_SIGNALES.splice(i,1);
+  toast(republier? 'Avis republié ✓' : 'Avis supprimé définitivement');
+  nav('moderation');
+}
+
+/* ===================== UTILISATEURS ===================== */
+function renderUtilisateurs(){
+  const list = USERS[ADMIN.usersTab];
+  return `
+  <div class="content">
+    <div style="display:flex; gap:10px; margin-bottom:18px;">
+      <button class="btn ${ADMIN.usersTab==='clients'?'btn-dark':'btn-outline'} btn-sm" onclick="ADMIN.usersTab='clients'; render();">Clients</button>
+      <button class="btn ${ADMIN.usersTab==='professionnels'?'btn-dark':'btn-outline'} btn-sm" onclick="ADMIN.usersTab='professionnels'; render();">Professionnels</button>
+      <input class="input" style="max-width:240px; margin-left:auto;" placeholder="Rechercher un utilisateur…">
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table>
+        <thead><tr><th>ID</th><th>Nom</th><th>Téléphone</th><th>Inscrit le</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+          ${list.map(u=>`
+            <tr>
+              <td style="color:#9CA3AF;">${u.id}</td>
+              <td style="font-weight:700;">${u.nom}</td>
+              <td>${u.tel}</td>
+              <td>${u.inscrit}</td>
+              <td><span class="badge ${u.statut==='Actif'||u.statut==='Vérifié'?'badge-verified':u.statut==='En attente'?'badge-pending':'badge-danger'}">${u.statut}</span></td>
+              <td style="text-align:right; display:flex; gap:6px; justify-content:flex-end;">
+                <button class="btn btn-outline btn-sm" onclick="toast('Historique des connexions ouvert')">Historique</button>
+                <button class="btn btn-muted btn-sm" onclick="toggleSuspension('${u.id}')">${u.statut==='Suspendu'?'Réactiver':'Suspendre'}</button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+function toggleSuspension(id){
+  for(const key in USERS){
+    const u = USERS[key].find(u=>u.id===id);
+    if(u){ u.statut = u.statut==='Suspendu' ? (key==='clients'?'Actif':'Vérifié') : 'Suspendu'; }
+  }
+  toast('Statut du compte mis à jour');
+  render();
+}
+
+/* ===================== TRANSACTIONS ===================== */
+function renderTransactions(){
+  return `
+  <div class="content">
+    <div class="grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:20px;">
+      ${[['Confirmées','92%','var(--green)'],['En attente','5%','var(--orange)'],['Litiges','3%','#64748B'],['Commission perçue (jour)','187 400 FCFA','var(--blue)']].map(([l,v,c])=>`
+        <div class="card" style="padding:18px;">
+          <div style="font-size:12px; color:#6B7280;">${l}</div>
+          <div style="font-size:20px; font-weight:800; margin-top:6px; color:${c};">${v}</div>
+        </div>`).join('')}
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table>
+        <thead><tr><th>Transaction</th><th>Client</th><th>Professionnel</th><th>Moyen</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead>
+        <tbody>
+          ${TRANSACTIONS.map(t=>`
+            <tr>
+              <td style="color:#9CA3AF;">${t.id}</td>
+              <td>${t.client}</td>
+              <td>${t.pro}</td>
+              <td>${t.moyen}</td>
+              <td style="font-weight:700;">${t.montant}</td>
+              <td><span class="badge ${t.statut==='Confirmé'?'badge-verified':t.statut==='En attente'?'badge-pending':'badge-danger'}">${t.statut}</span></td>
+              <td style="color:#9CA3AF;">${t.date}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+/* ===================== PARAMÉTRAGE ===================== */
+function renderParametrage(){
+  return `
+  <div class="content">
+    <div class="grid" style="grid-template-columns:1fr 1fr;">
+      <div class="card" style="padding:24px;">
+        <h3>Zones desservies</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
+          ${['Cocody','Marcory','Yopougon','Treichville','Plateau','Angré','Riviera','Abobo','Adjamé','Koumassi'].map(q=>`<span class="badge badge-info">${q} ✕</span>`).join('')}
+        </div>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+          <input class="input" placeholder="Ajouter un quartier…">
+          <button class="btn btn-primary btn-sm" onclick="toast('Quartier ajouté')">Ajouter</button>
+        </div>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h3>Taux de commission</h3>
+        <div class="field" style="margin-top:14px;">
+          <label class="label">Commission appliquée par transaction</label>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input class="input" type="number" value="8" style="max-width:100px;"> <span>%</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="toast('Taux de commission mis à jour')">Enregistrer</button>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h3>Métiers disponibles</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
+          ${['Plomberie','Électricité','Serrurerie','Menuiserie','Ferronnerie','Maçonnerie','Climatisation','Électroménager','Informatique','Coiffure','Esthétique','Ménage','Garde d\'enfants'].map(m=>`<span class="badge badge-muted">${m}</span>`).join('')}
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-top:14px;" onclick="toast('Formulaire d\'ajout de métier ouvert')">+ Ajouter un métier</button>
+      </div>
+      <div class="card" style="padding:24px;">
+        <h3>Textes légaux</h3>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+          <button class="btn btn-outline btn-block" style="justify-content:space-between;" onclick="toast('Édition des CGU ouverte')">Conditions d'utilisation <span>✎</span></button>
+          <button class="btn btn-outline btn-block" style="justify-content:space-between;" onclick="toast('Édition de la politique de confidentialité ouverte')">Politique de confidentialité <span>✎</span></button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ===================== ROUTEUR ===================== */
+const ADMIN_VIEWS = {
+  dashboard: renderDashboard,
+  verifications: renderVerifications,
+  moderation: renderModeration,
+  utilisateurs: renderUtilisateurs,
+  transactions: renderTransactions,
+  parametrage: renderParametrage,
+};
+
+function render(){
+  const app = document.getElementById('app');
+  if(!ADMIN.loggedIn){ app.innerHTML = renderLogin(); return; }
+  const renderer = ADMIN_VIEWS[ADMIN.view] || renderDashboard;
+  app.innerHTML = `
+    <div class="admin-shell">
+      ${renderSidebar()}
+      <div class="admin-main">
+        ${renderTopbar()}
+        ${renderer()}
+      </div>
+    </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
