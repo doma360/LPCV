@@ -34,8 +34,8 @@ export default function Testimonials() {
         </Heading>
         <div className="mt-16 grid gap-6 sm:grid-cols-3">
           {testimonials.map((testimonial, index) => (
-            <FadeUp key={testimonial.name} delay={index * 0.08}>
-              <div className="relative h-full rounded-2xl border border-ink-100 bg-white p-7">
+            <FadeUp key={testimonial.name} delay={index * 0.08} className="h-full">
+              <div className="relative isolate h-full overflow-hidden rounded-2xl border border-ink-100 bg-white p-7">
                 <Quote className="h-6 w-6 text-brand-100" aria-hidden="true" />
                 <div className="mt-3 flex gap-0.5">
                   {Array.from({ length: testimonial.rating }).map((_, starIndex) => (
