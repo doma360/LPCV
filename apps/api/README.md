@@ -38,8 +38,8 @@ src/lib/                Prisma client, JWT
 
 ## État des modules
 
-Complets : `auth`, `users`, `vitrine` (métiers + blog), `devices` (tokens push), `professionnels` (recherche géolocalisée, matching avec rayon progressif + estimation de prix), `demandes` (création + machine à états + appel masqué client/professionnel), `avis` (publication après intervention terminée + note moyenne recalculée + signalement), `paiements` (mobile money via provider mocké, espèces avec confirmation par le professionnel, commission calculée et prélevée automatiquement).
+Complets : `auth`, `users`, `vitrine` (métiers + blog), `devices` (tokens push), `professionnels` (recherche géolocalisée, matching avec rayon progressif + estimation de prix), `demandes` (création + machine à états + appel masqué client/professionnel), `avis` (publication après intervention terminée + note moyenne recalculée + signalement), `paiements` (mobile money via provider mocké, espèces avec confirmation par le professionnel, commission calculée et prélevée automatiquement), `admin` (stats, liste des professionnels en attente, décision de vérification avec journal d'action).
 
-Squelette routé mais logique à implémenter : `admin` (back-office web, pas mobile — vérifications, modération, stats). `messages` a été retiré du plan (remplacé par l'appel, voir `docs/decisions.md`) — la route reste en `501` en attendant d'être supprimée ou réaffectée.
+`messages` a été retiré du plan (remplacé par l'appel, voir `docs/decisions.md`) — la route reste en `501` en attendant d'être supprimée ou réaffectée. Modération des avis signalés et gestion des utilisateurs pas encore exposées côté admin (l'écran existe dans `apps/admin` mais reste en attente).
 
 Deux modules tournent avec un provider mocké par défaut, aucun compte externe requis pour développer/tester : l'appel (`TELEPHONIE_PROVIDER=mock`) et le paiement (`PAIEMENT_PROVIDER=mock`). Voir `docs/deploiement.md` pour la liste complète de ce qui nécessite un vrai compte/paiement avant la mise en production.
