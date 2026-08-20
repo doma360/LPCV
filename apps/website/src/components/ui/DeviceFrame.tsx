@@ -27,7 +27,7 @@ export default function DeviceFrame({ platform, videoSrc, className = "" }: Devi
 
   return (
     <div
-      className={`relative w-[230px] select-none rounded-[2.6rem] border-[8px] border-ink-900 bg-ink-900 shadow-lifted ${className}`}
+      className={`relative w-[190px] select-none rounded-[2.6rem] border-[8px] border-ink-900 bg-ink-900 shadow-lifted sm:w-[230px] ${className}`}
     >
       <div className="relative aspect-[9/19.5] overflow-hidden rounded-[2.1rem] bg-brand-950">
         <div

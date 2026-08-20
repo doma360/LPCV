@@ -52,7 +52,7 @@ export default function SearchBar({ className = "" }: SearchBarProps) {
       </label>
       <button
         type="submit"
-        className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-accent-400 px-6 py-3 text-sm font-semibold text-brand-900 transition-all duration-200 hover:scale-[1.03] hover:bg-accent-300 active:scale-95"
       >
         Rechercher
       </button>

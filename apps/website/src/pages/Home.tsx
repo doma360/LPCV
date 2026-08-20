@@ -2,6 +2,7 @@ import { useScrollToHash } from "@/lib/useScrollToHash";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/sections/Hero";
+import ProfessionalsMarquee from "@/components/sections/ProfessionalsMarquee";
 import HowItWorks from "@/components/sections/HowItWorks";
 import PopularServices from "@/components/sections/PopularServices";
 import FeaturedProfessionals from "@/components/sections/FeaturedProfessionals";
@@ -20,6 +21,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <ProfessionalsMarquee />
         <HowItWorks />
         <PopularServices />
         <FeaturedProfessionals />

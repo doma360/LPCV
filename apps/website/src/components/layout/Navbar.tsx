@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, MapPin } from "lucide-react";
+import { Menu, X, MapPin, Download } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
@@ -58,10 +58,10 @@ export default function Navbar() {
             <MapPin className="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />
             Côte d'Ivoire
           </span>
-          <Link to="#" className="text-sm font-semibold text-ink-700 transition-colors hover:text-brand-700">
-            Connexion
-          </Link>
-          <Button variant="primary">Inscription</Button>
+          <Button variant="primary" to="/#app">
+            <Download className="h-4 w-4" aria-hidden="true" />
+            Télécharger l'app
+          </Button>
         </div>
         <button
           type="button"
@@ -74,26 +74,27 @@ export default function Navbar() {
         </button>
       </Container>
       {open && (
-        <div className="border-t border-ink-100 bg-cream-50 px-6 py-4 lg:hidden">
+        <div className="border-t border-white/10 bg-brand-900 px-6 py-5 lg:hidden">
           <nav className="flex flex-col gap-4">
             {links.map((link) => (
               <Link
                 key={link.label}
                 to={link.to}
                 onClick={link.label === "Accueil" ? handleAccueilClick : () => setOpen(false)}
-                className="text-sm font-medium text-ink-700"
+                className="text-sm font-medium text-white/85 transition-colors hover:text-accent-400"
               >
                 {link.label}
               </Link>
             ))}
-            <div className="flex items-center gap-4 pt-2">
-              <Link to="#" onClick={() => setOpen(false)} className="text-sm font-semibold text-ink-700">
-                Connexion
-              </Link>
-              <Button variant="primary" className="flex-1 justify-center">
-                Inscription
-              </Button>
-            </div>
+            <Button
+              variant="primary"
+              to="/#app"
+              onClick={() => setOpen(false)}
+              className="mt-2 w-full justify-center"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              Télécharger l'app
+            </Button>
           </nav>
         </div>
       )}

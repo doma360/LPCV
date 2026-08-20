@@ -3,6 +3,7 @@ import Container from "@/components/ui/Container";
 import SearchBar from "@/components/ui/SearchBar";
 import Float from "@/components/ui/Float";
 import FadeUp from "@/components/ui/FadeUp";
+import HeroSlideshow from "@/components/sections/HeroSlideshow";
 
 const trustPoints = [
   { icon: ShieldCheck, label: "Professionnels vérifiés" },
@@ -61,15 +62,13 @@ export default function Hero() {
             className="absolute -right-4 -top-8 -z-0 h-40 w-40 rounded-[2.5rem] bg-accent-400 sm:-right-8 sm:h-52 sm:w-52"
           />
           <div className="absolute -bottom-6 -left-6 -z-0 h-24 w-24 rounded-full bg-brand-700/10" aria-hidden="true" />
+          <div className="absolute -left-3 top-1/3 -z-0 h-10 w-10 rounded-full bg-orange-400/80" aria-hidden="true" />
 
-          <div className="relative z-10 overflow-hidden rounded-[2rem] border-4 border-white bg-brand-100 shadow-lifted">
-            {/* Remplacer par une vraie photographie : /public/images/hero-professional.jpg */}
-            <img
-              src="/images/hero-professional.jpg"
-              alt="Professionnel ivoirien LPCV au travail"
-              className="aspect-[4/5] w-full bg-brand-200 object-cover"
-            />
-          </div>
+          <Float duration={8} distance={8}>
+            <div className="relative z-10 overflow-hidden rounded-tl-[3rem] rounded-tr-2xl rounded-bl-2xl rounded-br-[3rem] ring-4 ring-white shadow-lifted">
+              <HeroSlideshow />
+            </div>
+          </Float>
 
           <div className="absolute -bottom-5 right-4 z-20 flex items-center gap-3 rounded-2xl border border-ink-100 bg-white px-4 py-3 shadow-lifted sm:right-8">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-success-100 text-success-700">

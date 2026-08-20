@@ -5,7 +5,7 @@ import { categories } from "@/data/categories";
 
 export default function Footer() {
   return (
-    <footer id="contact" className="bg-brand-950 text-brand-100">
+    <footer id="contact" className="bg-brand-900 text-brand-100">
       <Container className="grid gap-12 py-16 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <Logo tone="inverted" />

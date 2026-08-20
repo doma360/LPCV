@@ -11,34 +11,35 @@ type ButtonProps = {
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className">;
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand-700 text-white hover:bg-brand-800 shadow-soft",
-  secondary: "bg-accent-500 text-ink-900 hover:bg-accent-400",
+  primary: "bg-accent-400 text-brand-900 hover:bg-accent-300 shadow-soft",
+  secondary: "bg-white text-brand-900 hover:bg-cream-100 shadow-soft",
   outline: "border border-ink-200 text-ink-800 hover:border-brand-700 hover:text-brand-700",
   ghost: "text-ink-700 hover:text-brand-700",
 };
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors duration-200 disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-95 disabled:opacity-50 disabled:pointer-events-none disabled:hover:scale-100";
 
 export default function Button({
   children,
   variant = "primary",
   className = "",
   to,
+  onClick,
   ...props
 }: ButtonProps) {
   const classes = `${base} ${variants[variant]} ${className}`;
 
   if (to) {
     return (
-      <Link to={to} className={classes}>
+      <Link to={to} className={classes} onClick={onClick as unknown as () => void}>
         {children}
       </Link>
     );
   }
 
   return (
-    <button className={classes} {...props}>
+    <button className={classes} onClick={onClick} {...props}>
       {children}
     </button>
   );

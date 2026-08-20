@@ -21,7 +21,7 @@ export default function NearbyMap({ selectedId }: NearbyMapProps) {
         className="absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            "linear-gradient(#d3d0e0 1px, transparent 1px), linear-gradient(90deg, #d3d0e0 1px, transparent 1px)",
+            "linear-gradient(#d2d6dd 1px, transparent 1px), linear-gradient(90deg, #d2d6dd 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
         aria-hidden="true"
