@@ -6,6 +6,9 @@ import bcrypt from "bcryptjs";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+// Catégories larges (déjà utilisées côté site vitrine) + métiers précis du
+// Volume 1 §7 du LPD, pour qu'un professionnel puisse choisir son métier réel
+// à l'inscription plutôt qu'une catégorie générique.
 const professions = [
   { nom: "Maison & Bâtiment", slug: "maison-batiment", description: "Maçonnerie, menuiserie, peinture, rénovation", iconeSlug: "maison" },
   { nom: "Plomberie", slug: "plomberie", description: "Fuites, installations, dépannage sanitaire", iconeSlug: "plomberie" },
@@ -13,6 +16,16 @@ const professions = [
   { nom: "Ménage", slug: "menage", description: "Entretien et nettoyage à domicile", iconeSlug: "menage" },
   { nom: "Informatique", slug: "informatique", description: "Dépannage, réseau, installation", iconeSlug: "informatique" },
   { nom: "Transport", slug: "transport", description: "Déménagement et livraison", iconeSlug: "transport" },
+  { nom: "Serrurerie", slug: "serrurerie", description: "Ouverture de porte, remplacement de serrure", iconeSlug: "maison" },
+  { nom: "Menuiserie", slug: "menuiserie", description: "Meubles, portes, fenêtres sur mesure", iconeSlug: "maison" },
+  { nom: "Ferronnerie", slug: "ferronnerie", description: "Portails, grilles, structures métalliques", iconeSlug: "maison" },
+  { nom: "Maçonnerie", slug: "maconnerie", description: "Construction, gros œuvre, rénovation", iconeSlug: "maison" },
+  { nom: "Climatisation", slug: "climatisation", description: "Installation et entretien de climatiseurs", iconeSlug: "maison" },
+  { nom: "Électroménager", slug: "electromenager", description: "Réparation d'appareils électroménagers", iconeSlug: "electricite" },
+  { nom: "Coiffure", slug: "coiffure", description: "Coiffure à domicile, hommes et femmes", iconeSlug: "menage" },
+  { nom: "Esthétique", slug: "esthetique", description: "Soins esthétiques à domicile", iconeSlug: "menage" },
+  { nom: "Maquillage", slug: "maquillage", description: "Maquillage pour événements", iconeSlug: "menage" },
+  { nom: "Garde d'enfants", slug: "garde-enfants", description: "Nounou, garde d'enfants à domicile", iconeSlug: "menage" },
 ];
 
 const zones = [

@@ -15,12 +15,13 @@ L'URL de l'API est déduite automatiquement de la machine qui fait tourner `expo
 
 ## État des écrans
 
-Complets et testés en vrai (connexion → recherche → demande → acceptation → appel, avec les deux rôles) :
-- Connexion / Inscription (avec choix du métier pour un professionnel)
+Complets et testés en vrai (bienvenue → inscription/connexion → slides → recherche → demande → acceptation → appel, avec les deux rôles) :
+- `(auth)` : Bienvenue (branding + choix connexion/inscription), Connexion, Inscription (16 métiers au choix pour un professionnel, Volume 1 §7 du LPD)
+- `(onboarding)` : slides de présentation affichées une seule fois, juste après une inscription (pas après une connexion) — "Passer" ou parcourir jusqu'au bout mènent au même endroit
 - Client : Rechercher (matching géolocalisé avec estimation de prix avant confirmation), Mes demandes, Profil
 - Professionnel : Demandes reçues (accepter/refuser, avancer le statut, appeler), Profil (statut de vérification, note)
 
-Pas encore construits : calendrier de disponibilités, revenus, avis reçus (professionnel) ; upload de photos sur une demande ; carte + suivi temps réel de l'intervention ; pin-sur-carte et géolocalisation inverse (le repli GPS refusé se limite pour l'instant à une liste de quartiers, voir `src/hooks/useLocalisation.ts`).
+Pas encore construits : calendrier de disponibilités, revenus, avis reçus (professionnel) ; upload de photos sur une demande ; carte + suivi temps réel de l'intervention ; pin-sur-carte et géolocalisation inverse (le repli GPS refusé se limite pour l'instant à une liste de quartiers, voir `src/hooks/useLocalisation.ts`). Design volontairement minimal partout — à retravailler dans une passe dédiée plus tard.
 
 ## Notes techniques
 

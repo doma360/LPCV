@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { colors } from "@/theme/colors";
 
 function RootNavigator() {
-  const { session, loading } = useAuth();
+  const { session, loading, onboardingPending } = useAuth();
 
   if (loading) {
     return (
@@ -21,10 +21,13 @@ function RootNavigator() {
       <Stack.Protected guard={!session}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
-      <Stack.Protected guard={session?.role === "client"}>
+      <Stack.Protected guard={!!session && onboardingPending}>
+        <Stack.Screen name="(onboarding)" />
+      </Stack.Protected>
+      <Stack.Protected guard={!!session && !onboardingPending && session.role === "client"}>
         <Stack.Screen name="(client)" />
       </Stack.Protected>
-      <Stack.Protected guard={session?.role === "professionnel"}>
+      <Stack.Protected guard={!!session && !onboardingPending && session.role === "professionnel"}>
         <Stack.Screen name="(professionnel)" />
       </Stack.Protected>
     </Stack>

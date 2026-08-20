@@ -32,6 +32,10 @@ interface RegisterProfessionnelInput extends RegisterClientInput {
 interface AuthContextValue {
   session: Session | null;
   loading: boolean;
+  // true juste après une inscription réussie, le temps de montrer les slides
+  // de présentation avant d'entrer dans l'appli (Volume 2 : pas après une simple connexion).
+  onboardingPending: boolean;
+  completerOnboarding: () => void;
   login: (identifiant: string, motDePasse: string) => Promise<void>;
   registerClient: (input: RegisterClientInput) => Promise<void>;
   registerProfessionnel: (input: RegisterProfessionnelInput) => Promise<void>;
@@ -45,6 +49,7 @@ type AuthResponse = { user: Utilisateur; role: Role; accessToken: string; refres
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [onboardingPending, setOnboardingPending] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -84,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     await setTokens(res.data.accessToken, res.data.refreshToken);
     await setRole("client");
+    setOnboardingPending(true);
     setSession({ user: res.data.user, role: "client" });
   }
 
@@ -94,16 +100,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     await setTokens(res.data.accessToken, res.data.refreshToken);
     await setRole("professionnel");
+    setOnboardingPending(true);
     setSession({ user: res.data.user, role: "professionnel" });
+  }
+
+  function completerOnboarding() {
+    setOnboardingPending(false);
   }
 
   async function logout() {
     await clearTokens();
     setSession(null);
+    setOnboardingPending(false);
   }
 
   return (
-    <AuthContext.Provider value={{ session, loading, login, registerClient, registerProfessionnel, logout }}>
+    <AuthContext.Provider
+      value={{ session, loading, onboardingPending, completerOnboarding, login, registerClient, registerProfessionnel, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
