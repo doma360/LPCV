@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { created, ok, okPaginated } from "@/utils/response.js";
 import { Errors } from "@/utils/errors.js";
-import { createDemandeSchema, listDemandesSchema, updateStatutSchema } from "./demandes.schema.js";
+import { createDemandeSchema, listDemandesSchema, updatePositionSchema, updateStatutSchema } from "./demandes.schema.js";
 import * as demandesService from "./demandes.service.js";
 
 export async function createHandler(req: Request, res: Response) {
@@ -37,4 +37,11 @@ export async function lancerAppelHandler(req: Request, res: Response) {
   if (!req.auth) throw Errors.unauthorized();
   const appel = await demandesService.lancerAppel(req.params.id, req.auth.sub, req.auth.role);
   return created(res, appel, "Appel lancé");
+}
+
+export async function updatePositionHandler(req: Request, res: Response) {
+  if (req.auth?.role !== "professionnel") throw Errors.forbidden("Réservé aux professionnels");
+  const input = updatePositionSchema.parse(req.body);
+  const position = await demandesService.updatePosition(req.params.id, req.auth.sub, input);
+  return ok(res, position);
 }

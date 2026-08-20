@@ -1,3 +1,4 @@
+import path from "node:path";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -15,6 +16,7 @@ import { messagesRouter } from "@/modules/messages/messages.routes.js";
 import { devicesRouter } from "@/modules/devices/devices.routes.js";
 import { vitrineRouter } from "@/modules/vitrine/vitrine.routes.js";
 import { adminRouter } from "@/modules/admin/admin.routes.js";
+import { uploadsRouter } from "@/modules/uploads/uploads.routes.js";
 
 export function createApp(logger: Logger) {
   const app = express();
@@ -31,6 +33,15 @@ export function createApp(logger: Logger) {
 
   app.get("/health", (_req, res) => res.json({ success: true, data: { status: "ok" }, message: "OK" }));
 
+  // Provider local uniquement (voir src/lib/storage) — images servies publiquement,
+  // cross-origin-resource-policy relâché pour que l'app mobile puisse les afficher.
+  app.use(
+    "/uploads",
+    express.static(path.resolve(process.cwd(), "uploads"), {
+      setHeaders: (res) => res.setHeader("Cross-Origin-Resource-Policy", "cross-origin"),
+    }),
+  );
+
   const v1 = express.Router();
   v1.use("/auth", authRouter);
   v1.use("/users", usersRouter);
@@ -42,6 +53,7 @@ export function createApp(logger: Logger) {
   v1.use("/devices", devicesRouter);
   v1.use("/vitrine", vitrineRouter);
   v1.use("/admin", adminRouter);
+  v1.use("/uploads", uploadsRouter);
   app.use("/api/v1", v1);
 
   app.use(notFoundHandler);

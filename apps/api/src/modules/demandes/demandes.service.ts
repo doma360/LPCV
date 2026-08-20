@@ -5,7 +5,7 @@ import { getParametreNombre } from "@/lib/parametres.js";
 import { calculerPrixEstime } from "@/lib/tarification.js";
 import { getTelephonieProvider } from "@/lib/telephonie/index.js";
 import { distanceToProfessionnel } from "@/modules/professionnels/professionnels.service.js";
-import type { CreateDemandeInput, ListDemandesInput, UpdateStatutInput } from "./demandes.schema.js";
+import type { CreateDemandeInput, ListDemandesInput, UpdatePositionInput, UpdateStatutInput } from "./demandes.schema.js";
 
 const include = {
   client: { select: { id: true, nom: true, prenom: true, telephone: true, photoUrl: true } },
@@ -167,4 +167,25 @@ export async function lancerAppel(demandeId: string, userId: string, role: Role)
     });
     throw err;
   }
+}
+
+// Suivi temps réel : seulement pendant "en_route" (Volume 2 §5), dernière
+// position écrasée à chaque appel, pas d'historique conservé.
+export async function updatePosition(demandeId: string, professionnelId: string, input: UpdatePositionInput) {
+  const demande = await prisma.demande.findUnique({ where: { id: demandeId } });
+  if (!demande) throw Errors.notFound("Demande introuvable");
+  if (demande.professionnelId !== professionnelId) throw Errors.forbidden();
+  if (demande.statut !== "EN_ROUTE") {
+    throw Errors.badRequest("La position ne se met à jour que pendant le trajet");
+  }
+
+  return prisma.demande.update({
+    where: { id: demandeId },
+    data: {
+      professionnelLat: input.latitude,
+      professionnelLng: input.longitude,
+      positionMajAt: new Date(),
+    },
+    select: { professionnelLat: true, professionnelLng: true, positionMajAt: true },
+  });
 }

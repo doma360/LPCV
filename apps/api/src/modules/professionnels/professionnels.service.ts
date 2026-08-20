@@ -4,6 +4,7 @@ import { Errors } from "@/utils/errors.js";
 import { getParametreNombre } from "@/lib/parametres.js";
 import { calculerPrixEstime } from "@/lib/tarification.js";
 import type {
+  CreateDisponibiliteInput,
   MatchProfessionnelsInput,
   SearchProfessionnelsInput,
   UpdateProfessionnelInput,
@@ -209,4 +210,46 @@ export async function updateProfessionnel(id: string, input: UpdateProfessionnel
     },
     include: { profession: true, zones: { include: { zone: true } } },
   });
+}
+
+export function listDisponibilites(professionnelId: string) {
+  return prisma.disponibilite.findMany({
+    where: { professionnelId, actif: true },
+    orderBy: [{ jour: "asc" }, { heureDebut: "asc" }],
+  });
+}
+
+export function createDisponibilite(professionnelId: string, input: CreateDisponibiliteInput) {
+  if (input.heureDebut >= input.heureFin) {
+    throw Errors.badRequest("L'heure de début doit précéder l'heure de fin");
+  }
+  return prisma.disponibilite.create({ data: { professionnelId, ...input } });
+}
+
+export async function deleteDisponibilite(id: string, professionnelId: string) {
+  const dispo = await prisma.disponibilite.findUnique({ where: { id } });
+  if (!dispo) throw Errors.notFound("Créneau introuvable");
+  if (dispo.professionnelId !== professionnelId) throw Errors.forbidden();
+  await prisma.disponibilite.delete({ where: { id } });
+}
+
+export async function getRevenus(professionnelId: string) {
+  const paiements = await prisma.paiement.findMany({
+    where: { statut: "CONFIRME", demande: { professionnelId } },
+    orderBy: { dateConfirmation: "desc" },
+    take: 20,
+    select: { id: true, montantNet: true, dateConfirmation: true, demande: { select: { profession: { select: { nom: true } } } } },
+  });
+
+  const total = await prisma.paiement.aggregate({
+    where: { statut: "CONFIRME", demande: { professionnelId } },
+    _sum: { montantNet: true },
+    _count: true,
+  });
+
+  return {
+    totalGagne: total._sum.montantNet ?? 0,
+    nombrePaiements: total._count,
+    paiementsRecents: paiements,
+  };
 }

@@ -32,3 +32,13 @@ export const updateProfessionnelSchema = z.object({
 });
 
 export type UpdateProfessionnelInput = z.infer<typeof updateProfessionnelSchema>;
+
+const HEURE_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+export const createDisponibiliteSchema = z.object({
+  jour: z.enum(["LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI", "DIMANCHE"]),
+  heureDebut: z.string().regex(HEURE_REGEX, "Format attendu HH:mm"),
+  heureFin: z.string().regex(HEURE_REGEX, "Format attendu HH:mm"),
+});
+
+export type CreateDisponibiliteInput = z.infer<typeof createDisponibiliteSchema>;

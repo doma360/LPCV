@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { ClipboardList, User } from "lucide-react-native";
+import { ClipboardList, CalendarClock, Wallet, User } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 
 export default function ProfessionnelLayout() {
@@ -14,6 +14,14 @@ export default function ProfessionnelLayout() {
       <Tabs.Screen
         name="index"
         options={{ title: "Demandes", tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} /> }}
+      />
+      <Tabs.Screen
+        name="disponibilites"
+        options={{ title: "Dispos", tabBarIcon: ({ color, size }) => <CalendarClock color={color} size={size} /> }}
+      />
+      <Tabs.Screen
+        name="revenus"
+        options={{ title: "Revenus", tabBarIcon: ({ color, size }) => <Wallet color={color} size={size} /> }}
       />
       <Tabs.Screen
         name="profil"

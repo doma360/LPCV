@@ -1,6 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
+import * as Location from "expo-location";
 import { Phone } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
@@ -48,6 +49,27 @@ export default function DemandesRecues() {
       charger();
     }, [charger]),
   );
+
+  // Pendant "en route" : envoie la position toutes les ~15s pour le suivi
+  // temps réel côté client (Volume 2 §5). S'arrête dès que ce n'est plus le cas.
+  useEffect(() => {
+    const enRoute = demandes.find((d) => d.statut === "EN_ROUTE");
+    if (!enRoute) return;
+
+    async function envoyerPosition() {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status !== "granted") return;
+      const loc = await Location.getCurrentPositionAsync({});
+      await apiFetch(`/api/v1/demandes/${enRoute!.id}/position`, {
+        method: "PATCH",
+        body: JSON.stringify({ latitude: loc.coords.latitude, longitude: loc.coords.longitude }),
+      }).catch(() => {});
+    }
+
+    envoyerPosition();
+    const id = setInterval(envoyerPosition, 15000);
+    return () => clearInterval(id);
+  }, [demandes]);
 
   async function changerStatut(id: string, statut: string) {
     setEnCours(id);

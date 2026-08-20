@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { MapPin, Star, ShieldCheck } from "lucide-react-native";
+import { ActivityIndicator, FlatList, Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { MapPin, Star, ShieldCheck, Camera, Image as ImageIcon, X } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
+import { uploadPhoto } from "@/lib/upload";
 import { useLocalisation } from "@/hooks/useLocalisation";
 import { zones } from "@/data/zones";
 import { colors } from "@/theme/colors";
@@ -32,6 +34,8 @@ export default function Rechercher() {
 
   const [candidatChoisi, setCandidatChoisi] = useState<Candidat | null>(null);
   const [description, setDescription] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [envoiPhoto, setEnvoiPhoto] = useState(false);
   const [envoi, setEnvoi] = useState(false);
   const [succes, setSucces] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -51,6 +55,34 @@ export default function Rechercher() {
       .finally(() => setRecherche(false));
   }, [profession, position]);
 
+  async function ajouterPhoto(depuisCamera: boolean) {
+    if (photos.length >= 5) return;
+    const permission =
+      depuisCamera && Platform.OS !== "web"
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setErreur("Autorisation refusée pour accéder à la photo");
+      return;
+    }
+
+    const resultat =
+      depuisCamera && Platform.OS !== "web"
+        ? await ImagePicker.launchCameraAsync({ quality: 0.5 })
+        : await ImagePicker.launchImageLibraryAsync({ quality: 0.5 });
+    if (resultat.canceled) return;
+
+    setEnvoiPhoto(true);
+    try {
+      const url = await uploadPhoto(resultat.assets[0].uri);
+      setPhotos((prev) => [...prev, url]);
+    } catch {
+      setErreur("Envoi de la photo impossible");
+    } finally {
+      setEnvoiPhoto(false);
+    }
+  }
+
   async function confirmerDemande() {
     if (!candidatChoisi || !profession || !position) return;
     if (description.trim().length < 10) {
@@ -69,11 +101,13 @@ export default function Rechercher() {
           adresse: position.label,
           latitude: position.lat,
           longitude: position.lng,
+          photosUrls: photos,
         }),
       });
       setSucces(`Demande envoyée à ${candidatChoisi.prenom} ${candidatChoisi.nom}.`);
       setCandidatChoisi(null);
       setDescription("");
+      setPhotos([]);
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : "Impossible d'envoyer la demande");
     } finally {
@@ -139,9 +173,43 @@ export default function Rechercher() {
             multiline
             numberOfLines={3}
           />
+
+          <View>
+            <Text style={styles.label}>Photos (facultatif)</Text>
+            <View style={styles.photosRow}>
+              {photos.map((url) => (
+                <View key={url} style={styles.thumbWrap}>
+                  <Image source={{ uri: url }} style={styles.thumb} />
+                  <Pressable style={styles.thumbRemove} onPress={() => setPhotos((p) => p.filter((u) => u !== url))}>
+                    <X size={12} color={colors.white} />
+                  </Pressable>
+                </View>
+              ))}
+              {photos.length < 5 && !envoiPhoto && (
+                <>
+                  <Pressable style={styles.photoBtn} onPress={() => ajouterPhoto(true)}>
+                    <Camera size={18} color={colors.ink500} />
+                  </Pressable>
+                  <Pressable style={styles.photoBtn} onPress={() => ajouterPhoto(false)}>
+                    <ImageIcon size={18} color={colors.ink500} />
+                  </Pressable>
+                </>
+              )}
+              {envoiPhoto && <ActivityIndicator color={colors.brand700} />}
+            </View>
+          </View>
+
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
           <Button label={envoi ? "Envoi..." : "Confirmer la demande"} onPress={confirmerDemande} loading={envoi} />
-          <Button label="Annuler" variant="outline" onPress={() => setCandidatChoisi(null)} />
+          <Button
+            label="Annuler"
+            variant="outline"
+            onPress={() => {
+              setCandidatChoisi(null);
+              setPhotos([]);
+              setErreur(null);
+            }}
+          />
         </View>
       ) : (
         <FlatList
@@ -221,6 +289,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarText: { color: colors.white, fontWeight: "700", fontSize: 13 },
+  label: { fontSize: 13, fontWeight: "600", color: colors.ink700, marginBottom: 6 },
+  photosRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  thumbWrap: { width: 56, height: 56 },
+  thumb: { width: 56, height: 56, borderRadius: 10 },
+  thumbRemove: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.danger500,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoBtn: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.ink200,
+    borderStyle: "dashed",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   cardNom: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
   cardMeta: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 },
   cardMetaText: { fontSize: 12, color: colors.ink500, marginRight: 6 },

@@ -8,9 +8,27 @@ interface Position {
   label: string;
 }
 
-// Permission GPS avec repli manuel si refusée (le client choisit une zone
-// dans une liste plutôt qu'un pin sur carte, pour cette première version —
-// voir docs/deploiement.md pour la géolocalisation inverse complète).
+// Nominatim (OpenStreetMap) : géocodage inverse gratuit et sans clé, correct
+// pour notre faible volume. À remplacer par Google/Mapbox si le volume grossit
+// (voir docs/deploiement.md) — le reste du code ne change pas, seule cette fonction.
+async function adresseLisible(lat: number, lng: number): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=16&accept-language=fr`,
+      { headers: { "User-Agent": "LPCV/1.0 (Abidjan)" } },
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const { suburb, neighbourhood, quarter, city_district, town, city } = data.address ?? {};
+    const quartier = suburb ?? neighbourhood ?? quarter ?? city_district;
+    return [quartier, town ?? city].filter(Boolean).join(", ") || data.display_name || null;
+  } catch {
+    return null;
+  }
+}
+
+// Permission GPS avec repli manuel par quartier si refusée (pas encore de
+// pin-sur-carte — voir docs/deploiement.md).
 export function useLocalisation() {
   const [position, setPosition] = useState<Position | null>(null);
   const [refuse, setRefuse] = useState(false);
@@ -25,8 +43,12 @@ export function useLocalisation() {
         return;
       }
       const loc = await Location.getCurrentPositionAsync({});
-      setPosition({ lat: loc.coords.latitude, lng: loc.coords.longitude, source: "gps", label: "Position actuelle" });
+      const { latitude, longitude } = loc.coords;
+      setPosition({ lat: latitude, lng: longitude, source: "gps", label: "Position actuelle" });
       setRefuse(false);
+
+      const adresse = await adresseLisible(latitude, longitude);
+      if (adresse) setPosition({ lat: latitude, lng: longitude, source: "gps", label: adresse });
     } finally {
       setChargement(false);
     }

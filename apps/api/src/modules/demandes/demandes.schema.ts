@@ -26,3 +26,10 @@ export const listDemandesSchema = z.object({
 });
 
 export type ListDemandesInput = z.infer<typeof listDemandesSchema>;
+
+export const updatePositionSchema = z.object({
+  latitude: z.coerce.number().min(-90).max(90),
+  longitude: z.coerce.number().min(-180).max(180),
+});
+
+export type UpdatePositionInput = z.infer<typeof updatePositionSchema>;

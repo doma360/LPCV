@@ -268,6 +268,11 @@ model Demande {
   dateAcceptation  DateTime?     @map("date_acceptation")
   dateDebut        DateTime?     @map("date_debut")
   dateFin          DateTime?     @map("date_fin")
+  // Position du professionnel pendant "en_route" (suivi temps réel) — pas
+  // d'historique, juste la dernière position connue, écrasée à chaque mise à jour.
+  professionnelLat  Decimal?     @map("professionnel_lat") @db.Decimal(9, 6)
+  professionnelLng  Decimal?     @map("professionnel_lng") @db.Decimal(9, 6)
+  positionMajAt     DateTime?    @map("position_maj_at")
   createdAt        DateTime      @default(now()) @map("date_creation")
   updatedAt        DateTime      @updatedAt @map("date_maj")
 

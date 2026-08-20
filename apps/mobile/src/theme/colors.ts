@@ -6,6 +6,7 @@ export const colors = {
   brand100: "#d3e6da",
   brand50: "#eaf3ee",
 
+  accent500: "#f5c400",
   accent400: "#ffd83d",
   accent300: "#ffe35c",
   accent700: "#8a5d00",
@@ -16,6 +17,7 @@ export const colors = {
   ink900: "#111827",
   ink700: "#374151",
   ink500: "#6b7280",
+  ink400: "#9ca3af",
   ink200: "#e5e7eb",
   ink100: "#f3f4f6",
 

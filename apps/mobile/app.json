@@ -36,6 +36,13 @@
         {
           "locationAlwaysAndWhenInUsePermission": "LPCV utilise votre position pour trouver les professionnels les plus proches de vous."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "LPCV a besoin d'accéder à vos photos pour illustrer votre demande.",
+          "cameraPermission": "LPCV a besoin de la caméra pour prendre une photo de votre demande."
+        }
       ]
     ],
     "experiments": {

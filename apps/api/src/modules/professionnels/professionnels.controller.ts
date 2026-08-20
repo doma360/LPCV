@@ -1,7 +1,12 @@
 import type { Request, Response } from "express";
-import { ok, okPaginated } from "@/utils/response.js";
+import { created, ok, okPaginated } from "@/utils/response.js";
 import { Errors } from "@/utils/errors.js";
-import { matchProfessionnelsSchema, searchProfessionnelsSchema, updateProfessionnelSchema } from "./professionnels.schema.js";
+import {
+  createDisponibiliteSchema,
+  matchProfessionnelsSchema,
+  searchProfessionnelsSchema,
+  updateProfessionnelSchema,
+} from "./professionnels.schema.js";
 import * as professionnelsService from "./professionnels.service.js";
 
 export async function searchHandler(req: Request, res: Response) {
@@ -29,4 +34,34 @@ export async function updateHandler(req: Request, res: Response) {
   const input = updateProfessionnelSchema.parse(req.body);
   const professionnel = await professionnelsService.updateProfessionnel(req.params.id, input);
   return ok(res, professionnel, "Profil mis à jour");
+}
+
+function requireProfessionnel(req: Request) {
+  if (!req.auth || req.auth.role !== "professionnel") throw Errors.forbidden("Réservé aux professionnels");
+  return req.auth.sub;
+}
+
+export async function listDisponibilitesHandler(req: Request, res: Response) {
+  const professionnelId = requireProfessionnel(req);
+  const disponibilites = await professionnelsService.listDisponibilites(professionnelId);
+  return ok(res, disponibilites);
+}
+
+export async function createDisponibiliteHandler(req: Request, res: Response) {
+  const professionnelId = requireProfessionnel(req);
+  const input = createDisponibiliteSchema.parse(req.body);
+  const disponibilite = await professionnelsService.createDisponibilite(professionnelId, input);
+  return created(res, disponibilite, "Créneau ajouté");
+}
+
+export async function deleteDisponibiliteHandler(req: Request, res: Response) {
+  const professionnelId = requireProfessionnel(req);
+  await professionnelsService.deleteDisponibilite(req.params.id, professionnelId);
+  return ok(res, null, "Créneau supprimé");
+}
+
+export async function revenusHandler(req: Request, res: Response) {
+  const professionnelId = requireProfessionnel(req);
+  const revenus = await professionnelsService.getRevenus(professionnelId);
+  return ok(res, revenus);
 }

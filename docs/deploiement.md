@@ -24,18 +24,19 @@ déploiement.
 
 ## Stockage de fichiers (photos de profil, documents de vérification, photos de demande)
 
-- **Statut actuel** : les champs existent en base (`photoUrl`, `documentsUrls`, `photosUrls`) mais rien n'est encore uploadé nulle part — le cahier interdit tout média codé en dur (Volume 4 §10).
+- **Statut actuel** : upload fonctionnel (`POST /api/v1/uploads/photo`), mais écrit sur le disque local du serveur (`LocalStorageProvider`, servi via `/uploads`) — pas encore un vrai stockage objet externe, ce qui viole à terme le principe du Volume 4 §10 (aucun média ne doit dépendre du disque d'une seule machine).
 - **À faire** : compte stockage objet compatible S3 (AWS S3, Cloudflare R2, OVH Object Storage...). Cloudflare R2 a un tier gratuit généreux (pas de frais de sortie), bon candidat pour démarrer.
+- **Code concerné** : `apps/api/src/lib/storage/` — ajouter un fichier `s3.ts` qui implémente `StorageProvider`, puis basculer `STORAGE_PROVIDER` dans `.env`, sans toucher au reste.
 
 ## Notifications push
 
 - **Statut actuel** : le module `devices` enregistre déjà les tokens, mais rien n'envoie encore de notification.
 - **À faire** : projet Firebase (Cloud Messaging) ou Expo Push Notifications. Gratuit dans les grandes largeurs pour notre volume, mais un compte/projet est requis.
 
-## Cartes, géolocalisation, suivi temps réel
+## Cartes (affichage visuel), suivi temps réel
 
-- **Statut actuel** : recherche de proximité en Haversine (aucune dépendance externe). Rien côté carte/app mobile.
-- **À faire** : compte Google Maps Platform ou Mapbox pour l'affichage carte + le suivi temps réel du professionnel dans l'app. Free tier mensuel chez les deux, à surveiller si le volume grossit.
+- **Statut actuel** : le suivi temps réel *fonctionne* (le professionnel envoie sa position pendant "en route", le client voit la distance restante se mettre à jour) — mais sans widget de carte visuelle, juste un indicateur texte/distance. Le géocodage inverse (position GPS → adresse lisible) utilise Nominatim/OpenStreetMap, gratuit et sans clé.
+- **À faire** : compte Google Maps Platform ou Mapbox uniquement pour l'AFFICHAGE d'une vraie carte (pin sur carte, position du pro visualisée sur un plan). `react-native-maps` (la lib standard) n'a pas d'équivalent web fiable, donc cette pièce n'a pas pu être testée dans ce même environnement de développement — à construire et tester sur un vrai appareil/émulateur une fois le fournisseur choisi.
 
 ## Connexion via Google (option secondaire, Volume 5 §2)
 
