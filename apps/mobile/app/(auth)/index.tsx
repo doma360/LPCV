@@ -18,8 +18,10 @@ export default function Bienvenue() {
       </View>
 
       <View style={styles.actions}>
-        <Button label="Se connecter" onPress={() => router.push("/(auth)/connexion")} />
-        <Button label="Créer un compte" variant="outlineLight" onPress={() => router.push("/(auth)/inscription")} />
+        <Button label="Commencer" showArrow onPress={() => router.push("/(auth)/choisir-role")} />
+        <Text style={styles.lienConnexion} onPress={() => router.push("/(auth)/connexion")}>
+          Déjà un compte ? <Text style={styles.lienConnexionAccent}>Se connecter</Text>
+        </Text>
       </View>
     </View>
   );
@@ -48,5 +50,7 @@ const styles = StyleSheet.create({
     maxWidth: 280,
     lineHeight: 20,
   },
-  actions: { gap: 12, paddingBottom: 20 },
+  actions: { gap: 16, paddingBottom: 20 },
+  lienConnexion: { textAlign: "center", fontSize: 14, color: colors.brand100 },
+  lienConnexionAccent: { color: colors.accent400, fontWeight: "700" },
 });

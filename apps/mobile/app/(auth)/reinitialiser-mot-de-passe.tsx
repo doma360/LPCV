@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { KeyRound, Lock, Mail } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
@@ -43,19 +44,29 @@ export default function ReinitialiserMotDePasse() {
             onChangeText={setIdentifiant}
             autoCapitalize="none"
             keyboardType="email-address"
+            icon={Mail}
           />
-          <TextField label="Code à 6 chiffres" value={code} onChangeText={setCode} keyboardType="number-pad" maxLength={6} />
+          <TextField
+            label="Code à 6 chiffres"
+            value={code}
+            onChangeText={setCode}
+            keyboardType="number-pad"
+            maxLength={6}
+            icon={KeyRound}
+          />
           <TextField
             label="Nouveau mot de passe"
             value={nouveauMotDePasse}
             onChangeText={setNouveauMotDePasse}
             secureTextEntry
+            icon={Lock}
           />
 
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
 
           <Button
             label={loading ? "Validation..." : "Réinitialiser"}
+            showArrow
             onPress={reinitialiser}
             loading={loading}
             disabled={!identifiant || code.length !== 6 || !nouveauMotDePasse}

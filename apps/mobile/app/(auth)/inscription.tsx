@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { Lock, Mail, Phone, User } from "lucide-react-native";
 import { useAuth, type Role } from "@/hooks/useAuth";
 import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
@@ -14,7 +15,9 @@ interface Profession {
 
 export default function Inscription() {
   const { registerClient, registerProfessionnel } = useAuth();
-  const [role, setRole] = useState<Role>("client");
+  const { role: roleParam } = useLocalSearchParams<{ role?: string }>();
+  const role: Role = roleParam === "professionnel" ? "professionnel" : "client";
+
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [professionId, setProfessionId] = useState<string | null>(null);
 
@@ -60,32 +63,36 @@ export default function Inscription() {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Créer un compte</Text>
 
-        <View style={styles.roleToggle}>
-          {(["client", "professionnel"] as const).map((r) => (
-            <Pressable
-              key={r}
-              onPress={() => setRole(r)}
-              style={[styles.roleOption, role === r && styles.roleOptionActive]}
-            >
-              <Text style={[styles.roleLabel, role === r && styles.roleLabelActive]}>
-                {r === "client" ? "Je cherche un pro" : "Je suis un pro"}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={styles.roleBadgeRow}>
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleBadgeText}>
+              {role === "client" ? "Espace Client" : "Espace Professionnel"}
+            </Text>
+          </View>
+          <Pressable onPress={() => router.back()}>
+            <Text style={styles.changerRole}>Changer</Text>
+          </Pressable>
         </View>
 
         <View style={styles.form}>
           <View style={styles.row}>
             <View style={styles.flex}>
-              <TextField label="Prénom" value={prenom} onChangeText={setPrenom} />
+              <TextField label="Prénom" value={prenom} onChangeText={setPrenom} icon={User} />
             </View>
             <View style={styles.flex}>
-              <TextField label="Nom" value={nom} onChangeText={setNom} />
+              <TextField label="Nom" value={nom} onChangeText={setNom} icon={User} />
             </View>
           </View>
-          <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-          <TextField label="Téléphone" value={telephone} onChangeText={setTelephone} keyboardType="phone-pad" />
-          <TextField label="Mot de passe" value={motDePasse} onChangeText={setMotDePasse} secureTextEntry />
+          <TextField
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            icon={Mail}
+          />
+          <TextField label="Téléphone" value={telephone} onChangeText={setTelephone} keyboardType="phone-pad" icon={Phone} />
+          <TextField label="Mot de passe" value={motDePasse} onChangeText={setMotDePasse} secureTextEntry icon={Lock} />
 
           {role === "professionnel" && (
             <View style={styles.form}>
@@ -108,8 +115,7 @@ export default function Inscription() {
 
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
 
-          <Button label={loading ? "Création..." : "Créer mon compte"} onPress={handleSubmit} loading={loading} />
-          <Button label="Retour à la connexion" variant="outline" onPress={() => router.back()} />
+          <Button label={loading ? "Création..." : "Créer mon compte"} showArrow onPress={handleSubmit} loading={loading} />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -130,29 +136,27 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.ink900,
   },
-  roleToggle: {
+  roleBadgeRow: {
     flexDirection: "row",
-    backgroundColor: colors.ink100,
-    borderRadius: 12,
-    padding: 4,
-    gap: 4,
-  },
-  roleOption: {
-    flex: 1,
-    paddingVertical: 10,
     alignItems: "center",
-    borderRadius: 9,
+    justifyContent: "space-between",
+    marginTop: -8,
   },
-  roleOptionActive: {
-    backgroundColor: colors.white,
+  roleBadge: {
+    backgroundColor: colors.brand100,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
   },
-  roleLabel: {
+  roleBadgeText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.brand700,
+  },
+  changerRole: {
     fontSize: 13,
     fontWeight: "600",
     color: colors.ink500,
-  },
-  roleLabelActive: {
-    color: colors.brand900,
   },
   form: {
     gap: 14,

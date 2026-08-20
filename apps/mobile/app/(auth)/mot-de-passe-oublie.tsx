@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import { Mail } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
@@ -41,6 +42,7 @@ export default function MotDePasseOublie() {
             onChangeText={setIdentifiant}
             autoCapitalize="none"
             keyboardType="email-address"
+            icon={Mail}
           />
 
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
@@ -48,6 +50,7 @@ export default function MotDePasseOublie() {
 
           <Button
             label={loading ? "Envoi..." : "Recevoir le code"}
+            showArrow
             onPress={envoyerCode}
             loading={loading}
             disabled={!identifiant}

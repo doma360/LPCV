@@ -15,15 +15,17 @@ L'URL de l'API est déduite automatiquement de la machine qui fait tourner `expo
 
 ## État des écrans
 
-Complets et testés en vrai (bienvenue → inscription/connexion → slides → recherche → demande avec photo → acceptation → en route avec position live → appel, avec les deux rôles) :
-- `(auth)` : Bienvenue (branding + choix connexion/inscription), Connexion, Inscription (16 métiers au choix pour un professionnel, Volume 1 §7 du LPD), Mot de passe oublié + Réinitialisation (code à 6 chiffres, provider mocké — voir `docs/deploiement.md`)
+Complets et testés en vrai (bienvenue → choix du profil → inscription/connexion → slides → recherche → demande avec photo → acceptation → en route avec position live → appel, avec les deux rôles) :
+- `(auth)` : Bienvenue (un seul bouton "Commencer" + lien discret "Se connecter"), Choisir un rôle (deux cartes Client/Professionnel, inspirées d'Artisanpro CI — voir `docs/decisions.md`), Connexion, Inscription (le rôle arrive en paramètre depuis l'écran précédent, plus de bascule dans le formulaire ; 16 métiers au choix pour un professionnel, Volume 1 §7 du LPD), Mot de passe oublié + Réinitialisation (code à 6 chiffres, provider mocké — voir `docs/deploiement.md`)
 - `(onboarding)` : slides de présentation affichées une seule fois, juste après une inscription (pas après une connexion) — "Passer" ou parcourir jusqu'au bout mènent au même endroit
 - Client : Rechercher (matching géolocalisé, position lisible via géocodage inverse, photos jointes à la demande, estimation de prix avant confirmation), Mes demandes (distance du professionnel affichée en temps réel pendant "en route"), Profil, Paramètres (infos du compte, changement de mot de passe, notifications, déverrouillage rapide, désactivation du compte)
 - Professionnel : Demandes reçues (accepter/refuser, avancer le statut, appeler, envoi automatique de la position pendant "en route"), Disponibilités (ajouter/supprimer des créneaux), Revenus (total gagné + historique), Profil (statut de vérification, note, avis reçus, portfolio de réalisations), Paramètres (même écran que côté client)
 
 Verrouillage rapide (biométrie/PIN, `expo-local-authentication`) : activable depuis Paramètres, verrouille l'appli au démarrage et au retour au premier plan. Reste toujours déverrouillé sur web (pas de capteur), c'est le comportement attendu — à tester en vrai sur un appareil/émulateur avec empreinte enregistrée.
 
-Pas encore construit : widget de carte visuelle (pin sur carte, position affichée sur un plan) — `react-native-maps` n'a pas d'équivalent web fiable, donc pas testable dans cet environnement de dev ; nécessite aussi de choisir un fournisseur (voir `docs/deploiement.md`). Le suivi temps réel *fonctionne* déjà, juste sans widget de carte pour l'instant (affichage texte de la distance). Design volontairement minimal partout — à retravailler dans une passe dédiée plus tard.
+Barre d'onglets flottante personnalisée (`src/components/FloatingTabBar.tsx`) sur les deux rôles : pastille jaune animée qui se déplace derrière l'onglet actif (`Animated` natif de React Native, pas de dépendance supplémentaire), fond vert foncé arrondi. Remplace la barre par défaut d'Expo Router via la prop `tabBar` du composant `Tabs` (React Navigation en dessous). L'écran Paramètres reste volontairement absent de la barre (atteint depuis le bouton réglages du Profil).
+
+Pas encore construit : widget de carte visuelle (pin sur carte, position affichée sur un plan) — `react-native-maps` n'a pas d'équivalent web fiable, donc pas testable dans cet environnement de dev ; nécessite aussi de choisir un fournisseur (voir `docs/deploiement.md`). Le suivi temps réel *fonctionne* déjà, juste sans widget de carte pour l'instant (affichage texte de la distance). Passe design entamée sur le parcours d'entrée (Bienvenue/Choisir un rôle/Connexion/Inscription) et la barre d'onglets flottante — voir `docs/decisions.md`. Le reste des écrans (recherche, demandes, profil, paramètres...) garde encore le style minimal d'origine, à reprendre dans les prochaines passes.
 
 ## Notes techniques
 

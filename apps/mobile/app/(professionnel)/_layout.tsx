@@ -1,16 +1,10 @@
 import { Tabs } from "expo-router";
 import { ClipboardList, CalendarClock, Wallet, User } from "lucide-react-native";
-import { colors } from "@/theme/colors";
+import FloatingTabBar from "@/components/FloatingTabBar";
 
 export default function ProfessionnelLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.brand900,
-        tabBarInactiveTintColor: colors.ink500,
-      }}
-    >
+    <Tabs tabBar={(props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Tabs.Screen
         name="index"
         options={{ title: "Demandes", tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} /> }}

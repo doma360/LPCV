@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, type PressableProps } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, type PressableProps } from "react-native";
+import { ArrowRight } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 
 type Variant = "primary" | "outline" | "outlineLight";
@@ -7,6 +8,7 @@ interface ButtonProps extends Omit<PressableProps, "style"> {
   label: string;
   variant?: Variant;
   loading?: boolean;
+  showArrow?: boolean;
 }
 
 const variantStyles = {
@@ -15,8 +17,9 @@ const variantStyles = {
   outlineLight: { button: "outlineLight", label: "labelOutlineLight", spinner: colors.white },
 } as const;
 
-export default function Button({ label, variant = "primary", loading, disabled, ...props }: ButtonProps) {
+export default function Button({ label, variant = "primary", loading, disabled, showArrow, ...props }: ButtonProps) {
   const v = variantStyles[variant];
+  const couleurTexte = variant === "primary" ? colors.brand900 : variant === "outline" ? colors.ink700 : colors.white;
 
   return (
     <Pressable
@@ -29,18 +32,30 @@ export default function Button({ label, variant = "primary", loading, disabled, 
       ]}
       {...props}
     >
-      {loading ? <ActivityIndicator color={v.spinner} /> : <Text style={[styles.label, styles[v.label]]}>{label}</Text>}
+      {loading ? (
+        <ActivityIndicator color={v.spinner} />
+      ) : (
+        <View style={styles.content}>
+          <Text style={[styles.label, styles[v.label]]}>{label}</Text>
+          {showArrow && <ArrowRight size={18} color={couleurTexte} />}
+        </View>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   base: {
-    height: 50,
-    borderRadius: 12,
+    height: 56,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+  },
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   primary: {
     backgroundColor: colors.accent400,
@@ -61,7 +76,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   labelPrimary: {
     color: colors.brand900,

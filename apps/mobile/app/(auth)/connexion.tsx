@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Link } from "expo-router";
+import { Lock, Mail } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
@@ -41,19 +42,20 @@ export default function Connexion() {
             onChangeText={setIdentifiant}
             autoCapitalize="none"
             keyboardType="email-address"
+            icon={Mail}
           />
-          <TextField label="Mot de passe" value={motDePasse} onChangeText={setMotDePasse} secureTextEntry />
+          <TextField label="Mot de passe" value={motDePasse} onChangeText={setMotDePasse} secureTextEntry icon={Lock} />
 
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
 
-          <Button label={loading ? "Connexion..." : "Se connecter"} onPress={handleSubmit} loading={loading} />
+          <Button label={loading ? "Connexion..." : "Se connecter"} showArrow onPress={handleSubmit} loading={loading} />
 
           <Link href="/(auth)/mot-de-passe-oublie" style={styles.lienMdp}>
             Mot de passe oublié ?
           </Link>
         </View>
 
-        <Link href="/(auth)/inscription" style={styles.lien}>
+        <Link href="/(auth)/choisir-role" style={styles.lien}>
           Pas encore de compte ? Créer un compte
         </Link>
       </ScrollView>
