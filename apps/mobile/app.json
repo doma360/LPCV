@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "LPCV",
     "slug": "mobile",
     "version": "1.0.0",
+    "scheme": "lpcv",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,7 +25,21 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "LPCV utilise votre position pour trouver les professionnels les plus proches de vous."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
