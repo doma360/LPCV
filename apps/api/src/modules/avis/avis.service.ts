@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma.js";
 import { Errors } from "@/utils/errors.js";
 import type { CreateAvisInput } from "./avis.schema.js";
 
-async function recalculerNote(professionnelId: string) {
+export async function recalculerNote(professionnelId: string) {
   const agg = await prisma.avis.aggregate({
     where: { professionnelId, statut: "VISIBLE" },
     _avg: { note: true },
@@ -61,6 +61,38 @@ export async function signalerAvis(avisId: string) {
   if (!avis) throw Errors.notFound("Avis introuvable");
 
   const misAJour = await prisma.avis.update({ where: { id: avisId }, data: { statut: "SIGNALE" } });
+  await recalculerNote(avis.professionnelId);
+  return misAJour;
+}
+
+export async function listAvisSignales(skip: number, limit: number) {
+  const where = { statut: "SIGNALE" as const };
+  const [avis, total] = await Promise.all([
+    prisma.avis.findMany({
+      where,
+      include: {
+        client: { select: { nom: true, prenom: true } },
+        professionnel: { select: { nom: true, prenom: true } },
+      },
+      orderBy: { createdAt: "asc" },
+      skip,
+      take: limit,
+    }),
+    prisma.avis.count({ where }),
+  ]);
+  return { avis, total };
+}
+
+export async function modererAvis(avisId: string, adminId: string, decision: "APPROUVE" | "MASQUE") {
+  const avis = await prisma.avis.findUnique({ where: { id: avisId } });
+  if (!avis) throw Errors.notFound("Avis introuvable");
+  if (avis.statut !== "SIGNALE") throw Errors.badRequest("Cet avis n'est pas en attente de modération");
+
+  const nouveauStatut = decision === "APPROUVE" ? "VISIBLE" : "MASQUE";
+  const misAJour = await prisma.avis.update({
+    where: { id: avisId },
+    data: { statut: nouveauStatut, moderateurId: adminId, dateModeration: new Date() },
+  });
   await recalculerNote(avis.professionnelId);
   return misAJour;
 }

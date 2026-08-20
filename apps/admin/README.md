@@ -14,9 +14,9 @@ Tourne sur `http://localhost:5174`. Connexion avec le compte admin créé par `p
 
 ## État des écrans
 
-Complets et testés : connexion, tableau de bord (statistiques), vérifications (liste des professionnels en attente + décision approuver/refuser).
+Complets et testés : connexion, tableau de bord (statistiques), vérifications (liste des professionnels en attente + décision approuver/refuser), avis signalés (rejeter le signalement ou masquer définitivement), utilisateurs (clients et professionnels, recherche, suspension/réactivation de compte) — toutes les actions administratives sont journalisées (`JournalAction`).
 
-Pas encore construits (l'écran existe, affiche juste "pas encore construit") : modération des avis signalés, gestion des utilisateurs, paramètres de la plateforme (zones, métiers, taux de commission).
+Pas encore construit (l'écran existe, affiche juste "pas encore construit") : paramètres de la plateforme (zones, métiers, taux de commission, textes légaux). La distinction de rôle Supervision/Modération existe déjà en base (`RoleAdministrateur`) et s'affiche dans le menu, mais n'est pas encore appliquée côté backend — n'importe quel compte administrateur peut tout faire pour l'instant.
 
 ## Icônes
 

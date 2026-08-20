@@ -6,6 +6,8 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Verifications from "@/pages/Verifications";
+import AvisSignales from "@/pages/AvisSignales";
+import Utilisateurs from "@/pages/Utilisateurs";
 import AVenir from "@/pages/AVenir";
 
 function Proteger(children: ReactNode) {
@@ -24,8 +26,8 @@ export default function AppRouter() {
           <Route path="/connexion" element={<Login />} />
           <Route path="/" element={Proteger(<Dashboard />)} />
           <Route path="/verifications" element={Proteger(<Verifications />)} />
-          <Route path="/avis-signales" element={Proteger(<AVenir titre="Avis signalés" />)} />
-          <Route path="/utilisateurs" element={Proteger(<AVenir titre="Utilisateurs" />)} />
+          <Route path="/avis-signales" element={Proteger(<AvisSignales />)} />
+          <Route path="/utilisateurs" element={Proteger(<Utilisateurs />)} />
           <Route path="/parametres" element={Proteger(<AVenir titre="Paramètres" />)} />
         </Routes>
       </AuthProvider>
