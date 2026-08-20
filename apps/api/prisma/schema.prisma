@@ -1,0 +1,428 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums — valeurs mappées en snake_case pour correspondre aux exemples du
+// Volume 9 du LPD (ex. statut = 'en_attente').
+// ---------------------------------------------------------------------------
+
+enum RoleAdministrateur {
+  SUPERVISION @map("supervision")
+  MODERATION  @map("moderation")
+
+  @@map("role_administrateur")
+}
+
+enum StatutCompte {
+  ACTIF    @map("actif")
+  SUSPENDU @map("suspendu")
+
+  @@map("statut_compte")
+}
+
+enum StatutVerificationPro {
+  EN_ATTENTE @map("en_attente")
+  VERIFIE    @map("verifie")
+  REFUSE     @map("refuse")
+
+  @@map("statut_verification_pro")
+}
+
+enum StatutDemande {
+  EN_ATTENTE @map("en_attente")
+  ACCEPTEE   @map("acceptee")
+  EN_ROUTE   @map("en_route")
+  EN_COURS   @map("en_cours")
+  TERMINEE   @map("terminee")
+  ANNULEE    @map("annulee")
+  REFUSEE    @map("refusee")
+
+  @@map("statut_demande")
+}
+
+enum StatutAvis {
+  VISIBLE @map("visible")
+  SIGNALE @map("signale")
+  MASQUE  @map("masque")
+
+  @@map("statut_avis")
+}
+
+enum MethodePaiement {
+  WAVE          @map("wave")
+  ORANGE_MONEY  @map("orange_money")
+  MTN_MONEY     @map("mtn_money")
+  MOOV_MONEY    @map("moov_money")
+  ESPECES       @map("especes")
+
+  @@map("methode_paiement")
+}
+
+enum StatutPaiement {
+  EN_ATTENTE @map("en_attente")
+  CONFIRME   @map("confirme")
+  ECHOUE     @map("echoue")
+  REMBOURSE  @map("rembourse")
+
+  @@map("statut_paiement")
+}
+
+enum Plateforme {
+  ANDROID @map("android")
+  IOS     @map("ios")
+
+  @@map("plateforme")
+}
+
+enum InitiateurAppel {
+  CLIENT        @map("client")
+  PROFESSIONNEL @map("professionnel")
+
+  @@map("initiateur_appel")
+}
+
+enum StatutAppel {
+  INITIE   @map("initie")
+  CONNECTE @map("connecte")
+  ECHOUE   @map("echoue")
+
+  @@map("statut_appel")
+}
+
+enum StatutArticle {
+  BROUILLON @map("brouillon")
+  PUBLIE    @map("publie")
+
+  @@map("statut_article")
+}
+
+enum JourSemaine {
+  LUNDI    @map("lundi")
+  MARDI    @map("mardi")
+  MERCREDI @map("mercredi")
+  JEUDI    @map("jeudi")
+  VENDREDI @map("vendredi")
+  SAMEDI   @map("samedi")
+  DIMANCHE @map("dimanche")
+
+  @@map("jour_semaine")
+}
+
+// ---------------------------------------------------------------------------
+// Comptes
+// ---------------------------------------------------------------------------
+
+model Client {
+  id                 String       @id @default(uuid())
+  nom                String
+  prenom             String
+  email              String       @unique
+  telephone          String       @unique
+  motDePasseHash     String       @map("mot_de_passe_hash")
+  photoUrl           String?      @map("photo_url")
+  statut             StatutCompte @default(ACTIF)
+  derniereConnexionAt DateTime?   @map("derniere_connexion_at")
+  createdAt          DateTime     @default(now()) @map("date_creation")
+  updatedAt          DateTime     @updatedAt @map("date_maj")
+
+  demandes  Demande[]
+  avis      Avis[]
+  messages  Message[]
+  appareils Appareil[]
+
+  @@map("client")
+}
+
+model Professionnel {
+  id                  String                 @id @default(uuid())
+  nom                 String
+  prenom              String
+  email               String                 @unique
+  telephone           String                 @unique
+  motDePasseHash      String                 @map("mot_de_passe_hash")
+  photoUrl            String?                @map("photo_url")
+  presentation         String?                @db.Text
+  professionId        String                 @map("id_profession")
+  tarifIndicatifMin    Decimal?               @map("tarif_indicatif_min") @db.Decimal(10, 2)
+  tarifIndicatifMax    Decimal?               @map("tarif_indicatif_max") @db.Decimal(10, 2)
+  statutVerification   StatutVerificationPro  @default(EN_ATTENTE) @map("statut_verification")
+  documentsUrls        String[]               @map("documents_verification_urls")
+  noteMoyenne          Decimal                @default(0) @map("note_moyenne") @db.Decimal(2, 1)
+  nombreAvis           Int                    @default(0) @map("nombre_avis")
+  statut               StatutCompte           @default(ACTIF)
+  derniereConnexionAt  DateTime?              @map("derniere_connexion_at")
+  createdAt            DateTime               @default(now()) @map("date_creation")
+  updatedAt             DateTime               @updatedAt @map("date_maj")
+
+  profession    Profession               @relation(fields: [professionId], references: [id])
+  zones         ProfessionnelZone[]
+  disponibilites Disponibilite[]
+  demandes      Demande[]
+  avis          Avis[]
+  messages      Message[]
+  appareils     Appareil[]
+
+  @@index([professionId])
+  @@index([statutVerification])
+  @@map("professionnel")
+}
+
+model Administrateur {
+  id             String             @id @default(uuid())
+  nom            String
+  prenom         String
+  email          String             @unique
+  telephone      String?            @unique
+  motDePasseHash String             @map("mot_de_passe_hash")
+  role           RoleAdministrateur @default(MODERATION)
+  createdAt      DateTime           @default(now()) @map("date_creation")
+  updatedAt      DateTime           @updatedAt @map("date_maj")
+
+  articlesBlog   ArticleBlog[]
+  avisModeres    Avis[]              @relation("AvisModerePar")
+  actions        JournalAction[]
+
+  @@map("administrateur")
+}
+
+// ---------------------------------------------------------------------------
+// Catalogue métiers & zones
+// ---------------------------------------------------------------------------
+
+model Profession {
+  id          String   @id @default(uuid())
+  nom         String   @unique
+  slug        String   @unique
+  description String?
+  iconeSlug   String?  @map("icone_slug")
+  actif       Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("date_creation")
+
+  professionnels Professionnel[]
+  demandes       Demande[]
+
+  @@map("profession")
+}
+
+model ZoneIntervention {
+  id        String   @id @default(uuid())
+  nom       String
+  commune   String
+  latitude  Decimal  @db.Decimal(9, 6)
+  longitude Decimal  @db.Decimal(9, 6)
+  actif     Boolean  @default(true)
+
+  professionnels ProfessionnelZone[]
+
+  @@index([commune])
+  @@map("zone_intervention")
+}
+
+model ProfessionnelZone {
+  professionnelId String @map("id_professionnel")
+  zoneId          String @map("id_zone")
+
+  professionnel Professionnel    @relation(fields: [professionnelId], references: [id], onDelete: Cascade)
+  zone          ZoneIntervention @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@id([professionnelId, zoneId])
+  @@map("professionnel_zone")
+}
+
+model Disponibilite {
+  id              String      @id @default(uuid())
+  professionnelId String      @map("id_professionnel")
+  jour            JourSemaine
+  heureDebut      String      @map("heure_debut")
+  heureFin        String      @map("heure_fin")
+  actif           Boolean     @default(true)
+
+  professionnel Professionnel @relation(fields: [professionnelId], references: [id], onDelete: Cascade)
+
+  @@index([professionnelId])
+  @@map("disponibilite")
+}
+
+// ---------------------------------------------------------------------------
+// Demandes, avis, paiements, messagerie
+// ---------------------------------------------------------------------------
+
+model Demande {
+  id               String        @id @default(uuid())
+  clientId         String        @map("id_client")
+  professionnelId  String?       @map("id_professionnel")
+  professionId     String        @map("id_profession")
+  description      String        @db.Text
+  photosUrls       String[]      @map("photos_urls")
+  adresse          String
+  latitude         Decimal       @db.Decimal(9, 6)
+  longitude        Decimal       @db.Decimal(9, 6)
+  statut           StatutDemande @default(EN_ATTENTE)
+  motifAnnulation  String?       @map("motif_annulation")
+  prixEstime       Decimal?      @map("prix_estime") @db.Decimal(10, 2)
+  dateAcceptation  DateTime?     @map("date_acceptation")
+  dateDebut        DateTime?     @map("date_debut")
+  dateFin          DateTime?     @map("date_fin")
+  createdAt        DateTime      @default(now()) @map("date_creation")
+  updatedAt        DateTime      @updatedAt @map("date_maj")
+
+  client        Client         @relation(fields: [clientId], references: [id])
+  professionnel Professionnel? @relation(fields: [professionnelId], references: [id])
+  profession    Profession     @relation(fields: [professionId], references: [id])
+  avis          Avis?
+  paiement      Paiement?
+  messages      Message[]
+  appels        Appel[]
+
+  @@index([clientId])
+  @@index([professionnelId])
+  @@index([statut])
+  @@index([createdAt])
+  @@map("demande")
+}
+
+// Appel masqué client <-> professionnel : ni l'un ni l'autre ne voit le vrai
+// numéro de l'autre, un prestataire de téléphonie pont les deux lignes.
+// Aucune conversation enregistrée, seulement la trace de l'appel (qui, quand, durée).
+model Appel {
+  id                String          @id @default(uuid())
+  demandeId         String          @map("id_demande")
+  initiePar         InitiateurAppel @map("initie_par")
+  statut            StatutAppel     @default(INITIE)
+  providerAppelId   String?         @map("provider_appel_id")
+  dureeSecondes     Int?            @map("duree_secondes")
+  createdAt         DateTime        @default(now()) @map("date_creation")
+
+  demande Demande @relation(fields: [demandeId], references: [id])
+
+  @@index([demandeId])
+  @@map("appel")
+}
+
+model Avis {
+  id              String     @id @default(uuid())
+  demandeId       String     @unique @map("id_demande")
+  clientId        String     @map("id_client")
+  professionnelId String     @map("id_professionnel")
+  note            Int
+  commentaire     String?    @db.Text
+  statut          StatutAvis @default(VISIBLE)
+  moderateurId    String?    @map("id_administrateur_moderateur")
+  dateModeration  DateTime?  @map("date_moderation")
+  createdAt       DateTime   @default(now()) @map("date_creation")
+
+  demande       Demande        @relation(fields: [demandeId], references: [id])
+  client        Client         @relation(fields: [clientId], references: [id])
+  professionnel Professionnel  @relation(fields: [professionnelId], references: [id])
+  moderateur    Administrateur? @relation("AvisModerePar", fields: [moderateurId], references: [id])
+
+  @@index([professionnelId])
+  @@index([statut])
+  @@map("avis")
+}
+
+model Paiement {
+  id               String          @id @default(uuid())
+  demandeId        String          @unique @map("id_demande")
+  montant          Decimal         @db.Decimal(10, 2)
+  commission       Decimal         @db.Decimal(10, 2)
+  montantNet       Decimal         @map("montant_net") @db.Decimal(10, 2)
+  methode          MethodePaiement
+  statut           StatutPaiement  @default(EN_ATTENTE)
+  referenceExterne String?         @map("reference_externe")
+  createdAt        DateTime        @default(now()) @map("date_creation")
+  dateConfirmation DateTime?       @map("date_confirmation")
+
+  demande Demande @relation(fields: [demandeId], references: [id])
+
+  @@index([statut])
+  @@map("paiement")
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  demandeId       String   @map("id_demande")
+  clientId        String?  @map("id_client")
+  professionnelId String?  @map("id_professionnel")
+  contenu         String   @db.Text
+  lu              Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("date_creation")
+
+  demande       Demande        @relation(fields: [demandeId], references: [id])
+  client        Client?        @relation(fields: [clientId], references: [id])
+  professionnel Professionnel? @relation(fields: [professionnelId], references: [id])
+
+  @@index([demandeId])
+  @@map("message")
+}
+
+// ---------------------------------------------------------------------------
+// Notifications push & contenu vitrine
+// ---------------------------------------------------------------------------
+
+model Appareil {
+  id                String     @id @default(uuid())
+  token             String     @unique
+  plateforme        Plateforme
+  clientId          String?    @map("id_client")
+  professionnelId   String?    @map("id_professionnel")
+  createdAt         DateTime   @default(now()) @map("date_creation")
+  derniereUtilisation DateTime @default(now()) @map("derniere_utilisation")
+
+  client        Client?        @relation(fields: [clientId], references: [id])
+  professionnel Professionnel? @relation(fields: [professionnelId], references: [id])
+
+  @@map("appareil")
+}
+
+model ArticleBlog {
+  id                String        @id @default(uuid())
+  titre             String
+  slug              String        @unique
+  extrait           String?
+  contenu           String        @db.Text
+  imageUrl          String?       @map("image_url")
+  administrateurId  String        @map("id_administrateur")
+  statut            StatutArticle @default(BROUILLON)
+  datePublication   DateTime?     @map("date_publication")
+  createdAt         DateTime      @default(now()) @map("date_creation")
+  updatedAt         DateTime      @updatedAt @map("date_maj")
+
+  administrateur Administrateur @relation(fields: [administrateurId], references: [id])
+
+  @@index([statut])
+  @@map("article_blog")
+}
+
+// ---------------------------------------------------------------------------
+// Paramétrage & traçabilité (Volume 10)
+// ---------------------------------------------------------------------------
+
+model ParametrePlateforme {
+  cle       String   @id
+  valeur    String   @db.Text
+  updatedAt DateTime @updatedAt @map("date_maj")
+
+  @@map("parametre_plateforme")
+}
+
+model JournalAction {
+  id               String   @id @default(uuid())
+  administrateurId String   @map("id_administrateur")
+  action           String
+  cibleType        String   @map("cible_type")
+  cibleId          String   @map("cible_id")
+  details          Json?
+  createdAt        DateTime @default(now()) @map("date_creation")
+
+  administrateur Administrateur @relation(fields: [administrateurId], references: [id])
+
+  @@index([administrateurId])
+  @@index([cibleType, cibleId])
+  @@map("journal_action")
+}
