@@ -14,8 +14,9 @@ déploiement.
 
 ## SMS (OTP à l'inscription, réinitialisation de mot de passe)
 
-- **Statut actuel** : non implémenté (Volume 5 §2 le liste comme "recommandé", pas bloquant pour le MVP).
-- **À faire** : souvent le même prestataire que la téléphonie (Africa's Talking et Twilio font aussi du SMS) — un seul compte peut couvrir les deux.
+- **Statut actuel** : l'OTP à l'inscription n'est pas implémenté (Volume 5 §2 le liste comme "recommandé", pas bloquant pour le MVP). La réinitialisation de mot de passe, elle, est fonctionnelle de bout en bout — `MockNotificationProvider` affiche le code à 6 chiffres dans les logs du serveur au lieu de l'envoyer par SMS/email.
+- **À faire** : souvent le même prestataire que la téléphonie (Africa's Talking et Twilio font aussi du SMS) — un seul compte peut couvrir les deux, plus SendGrid/Mailgun si l'email est préféré au SMS pour ce cas d'usage précis.
+- **Code concerné** : `apps/api/src/lib/notification/` — ajouter un fichier `twilio.ts` / `sendgrid.ts` qui implémente `NotificationProvider`, puis basculer `NOTIFICATION_PROVIDER` dans `.env`.
 
 ## Paiement mobile money (Wave, Orange Money, MTN Money, Moov Money)
 

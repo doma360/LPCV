@@ -31,3 +31,17 @@ export const refreshSchema = z.object({
 });
 
 export type RefreshInput = z.infer<typeof refreshSchema>;
+
+export const motDePasseOublieSchema = z.object({
+  identifiant: z.string().min(1, "Email ou téléphone requis"),
+});
+
+export type MotDePasseOublieInput = z.infer<typeof motDePasseOublieSchema>;
+
+export const reinitialiserMotDePasseSchema = z.object({
+  identifiant: z.string().min(1, "Email ou téléphone requis"),
+  code: z.string().length(6, "Code à 6 chiffres"),
+  nouveauMotDePasse: z.string().min(8, "8 caractères minimum"),
+});
+
+export type ReinitialiserMotDePasseInput = z.infer<typeof reinitialiserMotDePasseSchema>;

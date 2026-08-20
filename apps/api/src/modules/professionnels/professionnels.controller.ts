@@ -4,6 +4,7 @@ import { Errors } from "@/utils/errors.js";
 import {
   createDisponibiliteSchema,
   matchProfessionnelsSchema,
+  portfolioPhotoSchema,
   searchProfessionnelsSchema,
   updateProfessionnelSchema,
 } from "./professionnels.schema.js";
@@ -64,4 +65,18 @@ export async function revenusHandler(req: Request, res: Response) {
   const professionnelId = requireProfessionnel(req);
   const revenus = await professionnelsService.getRevenus(professionnelId);
   return ok(res, revenus);
+}
+
+export async function ajouterPhotoPortfolioHandler(req: Request, res: Response) {
+  const professionnelId = requireProfessionnel(req);
+  const { url } = portfolioPhotoSchema.parse(req.body);
+  const result = await professionnelsService.ajouterPhotoPortfolio(professionnelId, url);
+  return created(res, result, "Photo ajoutée au portfolio");
+}
+
+export async function retirerPhotoPortfolioHandler(req: Request, res: Response) {
+  const professionnelId = requireProfessionnel(req);
+  const { url } = portfolioPhotoSchema.parse(req.body);
+  const result = await professionnelsService.retirerPhotoPortfolio(professionnelId, url);
+  return ok(res, result, "Photo retirée du portfolio");
 }

@@ -233,6 +233,33 @@ export async function deleteDisponibilite(id: string, professionnelId: string) {
   await prisma.disponibilite.delete({ where: { id } });
 }
 
+const PORTFOLIO_MAX = 12;
+
+export async function ajouterPhotoPortfolio(professionnelId: string, url: string) {
+  const professionnel = await prisma.professionnel.findUniqueOrThrow({ where: { id: professionnelId } }).catch(() => {
+    throw Errors.notFound();
+  });
+  if (professionnel.portfolioUrls.length >= PORTFOLIO_MAX) {
+    throw Errors.badRequest(`Maximum ${PORTFOLIO_MAX} photos dans le portfolio`);
+  }
+  return prisma.professionnel.update({
+    where: { id: professionnelId },
+    data: { portfolioUrls: { push: url } },
+    select: { portfolioUrls: true },
+  });
+}
+
+export async function retirerPhotoPortfolio(professionnelId: string, url: string) {
+  const professionnel = await prisma.professionnel.findUniqueOrThrow({ where: { id: professionnelId } }).catch(() => {
+    throw Errors.notFound();
+  });
+  return prisma.professionnel.update({
+    where: { id: professionnelId },
+    data: { portfolioUrls: professionnel.portfolioUrls.filter((u) => u !== url) },
+    select: { portfolioUrls: true },
+  });
+}
+
 export async function getRevenus(professionnelId: string) {
   const paiements = await prisma.paiement.findMany({
     where: { statut: "CONFIRME", demande: { professionnelId } },

@@ -3,13 +3,14 @@ import { apiFetch, clearTokens, getRole, setRole, setTokens } from "@/lib/api";
 
 export type Role = "client" | "professionnel";
 
-interface Utilisateur {
+export interface Utilisateur {
   id: string;
   nom: string;
   prenom: string;
   email: string;
   telephone: string;
   photoUrl: string | null;
+  notificationsActives: boolean;
 }
 
 interface Session {
@@ -40,6 +41,7 @@ interface AuthContextValue {
   registerClient: (input: RegisterClientInput) => Promise<void>;
   registerProfessionnel: (input: RegisterProfessionnelInput) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (patch: Partial<Utilisateur>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -114,9 +116,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOnboardingPending(false);
   }
 
+  function updateUser(patch: Partial<Utilisateur>) {
+    setSession((prev) => (prev ? { ...prev, user: { ...prev.user, ...patch } } : prev));
+  }
+
   return (
     <AuthContext.Provider
-      value={{ session, loading, onboardingPending, completerOnboarding, login, registerClient, registerProfessionnel, logout }}
+      value={{
+        session,
+        loading,
+        onboardingPending,
+        completerOnboarding,
+        login,
+        registerClient,
+        registerProfessionnel,
+        logout,
+        updateUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -23,6 +23,7 @@ export default function ClientLayout() {
         name="profil"
         options={{ title: "Profil", tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }}
       />
+      <Tabs.Screen name="parametres" options={{ href: null }} />
     </Tabs>
   );
 }

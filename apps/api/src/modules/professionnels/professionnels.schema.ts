@@ -42,3 +42,9 @@ export const createDisponibiliteSchema = z.object({
 });
 
 export type CreateDisponibiliteInput = z.infer<typeof createDisponibiliteSchema>;
+
+export const portfolioPhotoSchema = z.object({
+  url: z.string().url(),
+});
+
+export type PortfolioPhotoInput = z.infer<typeof portfolioPhotoSchema>;

@@ -3,10 +3,13 @@ import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useAppLock } from "@/hooks/useAppLock";
 import { colors } from "@/theme/colors";
+import EcranVerrouille from "@/components/EcranVerrouille";
 
 function RootNavigator() {
   const { session, loading, onboardingPending } = useAuth();
+  const { locked, deverrouiller } = useAppLock(!!session);
 
   if (loading) {
     return (
@@ -14,6 +17,10 @@ function RootNavigator() {
         <ActivityIndicator color={colors.brand700} />
       </View>
     );
+  }
+
+  if (locked) {
+    return <EcranVerrouille onDeverrouiller={deverrouiller} />;
   }
 
   return (

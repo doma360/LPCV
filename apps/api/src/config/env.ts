@@ -13,6 +13,7 @@ const envSchema = z.object({
   TELEPHONIE_PROVIDER: z.enum(["mock", "twilio", "africastalking"]).default("mock"),
   PAIEMENT_PROVIDER: z.enum(["mock", "cinetpay", "paydunya"]).default("mock"),
   STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
+  NOTIFICATION_PROVIDER: z.enum(["mock", "twilio", "sendgrid"]).default("mock"),
   // Sert à construire les URLs absolues des fichiers uploadés (provider local
   // uniquement) — doit être l'adresse à laquelle l'app mobile joint l'API.
   API_PUBLIC_URL: z.string().default("http://localhost:4000"),

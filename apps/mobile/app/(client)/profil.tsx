@@ -1,13 +1,19 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { Settings } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 
 export default function Profil() {
   const { session, logout } = useAuth();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
+      <Pressable style={styles.parametres} onPress={() => router.push("/(client)/parametres")}>
+        <Settings size={20} color={colors.ink500} />
+      </Pressable>
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>
           {session?.user.prenom[0]}
@@ -28,6 +34,7 @@ export default function Profil() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60, alignItems: "center" },
+  parametres: { position: "absolute", top: 56, right: 20, padding: 6 },
   avatar: {
     width: 72,
     height: 72,

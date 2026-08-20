@@ -1,6 +1,12 @@
 import type { Request, Response } from "express";
 import { created, ok } from "@/utils/response.js";
-import { loginSchema, refreshSchema, registerSchema } from "./auth.schema.js";
+import {
+  loginSchema,
+  motDePasseOublieSchema,
+  refreshSchema,
+  registerSchema,
+  reinitialiserMotDePasseSchema,
+} from "./auth.schema.js";
 import * as authService from "./auth.service.js";
 
 function sanitize<T extends { motDePasseHash: string }>(account: T) {
@@ -24,4 +30,16 @@ export async function refreshHandler(req: Request, res: Response) {
   const { refreshToken } = refreshSchema.parse(req.body);
   const tokens = await authService.refresh(refreshToken);
   return ok(res, tokens, "Jeton rafraîchi");
+}
+
+export async function motDePasseOublieHandler(req: Request, res: Response) {
+  const input = motDePasseOublieSchema.parse(req.body);
+  const result = await authService.demanderReinitialisation(input);
+  return ok(res, null, result.message);
+}
+
+export async function reinitialiserMotDePasseHandler(req: Request, res: Response) {
+  const input = reinitialiserMotDePasseSchema.parse(req.body);
+  const result = await authService.reinitialiserMotDePasse(input);
+  return ok(res, null, result.message);
 }

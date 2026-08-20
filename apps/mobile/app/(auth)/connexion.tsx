@@ -47,6 +47,10 @@ export default function Connexion() {
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
 
           <Button label={loading ? "Connexion..." : "Se connecter"} onPress={handleSubmit} loading={loading} />
+
+          <Link href="/(auth)/mot-de-passe-oublie" style={styles.lienMdp}>
+            Mot de passe oublié ?
+          </Link>
         </View>
 
         <Link href="/(auth)/inscription" style={styles.lien}>
@@ -103,5 +107,11 @@ const styles = StyleSheet.create({
     color: colors.brand700,
     fontSize: 14,
     fontWeight: "600",
+  },
+  lienMdp: {
+    textAlign: "center",
+    color: colors.ink500,
+    fontSize: 13,
+    marginTop: 4,
   },
 });

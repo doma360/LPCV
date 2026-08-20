@@ -1,11 +1,14 @@
+import { randomInt } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "@/lib/jwt.js";
 import { Errors } from "@/utils/errors.js";
-import type { LoginInput, RegisterInput } from "./auth.schema.js";
+import { getNotificationProvider } from "@/lib/notification/index.js";
+import type { LoginInput, MotDePasseOublieInput, ReinitialiserMotDePasseInput, RegisterInput } from "./auth.schema.js";
 
 const SALT_ROUNDS = 12;
+const CODE_VALIDITE_MS = 15 * 60 * 1000;
 
 function tokensFor(id: string, role: "client" | "professionnel" | "administrateur") {
   const payload = { sub: id, role };
@@ -100,4 +103,56 @@ export async function refresh(refreshToken: string) {
     throw Errors.unauthorized("Jeton de rafraîchissement invalide ou expiré");
   }
   return tokensFor(payload.sub, payload.role);
+}
+
+// Réponse volontairement identique que le compte existe ou non, pour ne pas
+// révéler quels emails/téléphones sont inscrits (énumération de comptes).
+export async function demanderReinitialisation(input: MotDePasseOublieInput) {
+  const found = await findAccountByIdentifiant(input.identifiant);
+
+  if (found && found.role !== "administrateur") {
+    const { account, role } = found;
+    const code = randomInt(0, 1_000_000).toString().padStart(6, "0");
+    const codeHash = await bcrypt.hash(code, SALT_ROUNDS);
+    const resetTokenExpireAt = new Date(Date.now() + CODE_VALIDITE_MS);
+
+    if (role === "client") {
+      await prisma.client.update({ where: { id: account.id }, data: { resetTokenHash: codeHash, resetTokenExpireAt } });
+    } else {
+      await prisma.professionnel.update({ where: { id: account.id }, data: { resetTokenHash: codeHash, resetTokenExpireAt } });
+    }
+
+    await getNotificationProvider().envoyerCode(input.identifiant, code);
+  }
+
+  return { message: "Si un compte existe, un code de réinitialisation vient d'être envoyé." };
+}
+
+export async function reinitialiserMotDePasse(input: ReinitialiserMotDePasseInput) {
+  const found = await findAccountByIdentifiant(input.identifiant);
+  if (!found || found.role === "administrateur") throw Errors.badRequest("Code invalide ou expiré");
+
+  const { account, role } = found;
+  if (!account.resetTokenHash || !account.resetTokenExpireAt || account.resetTokenExpireAt < new Date()) {
+    throw Errors.badRequest("Code invalide ou expiré");
+  }
+
+  const valide = await bcrypt.compare(input.code, account.resetTokenHash);
+  if (!valide) throw Errors.badRequest("Code invalide ou expiré");
+
+  const motDePasseHash = await bcrypt.hash(input.nouveauMotDePasse, SALT_ROUNDS);
+
+  if (role === "client") {
+    await prisma.client.update({
+      where: { id: account.id },
+      data: { motDePasseHash, resetTokenHash: null, resetTokenExpireAt: null },
+    });
+  } else {
+    await prisma.professionnel.update({
+      where: { id: account.id },
+      data: { motDePasseHash, resetTokenHash: null, resetTokenExpireAt: null },
+    });
+  }
+
+  return { message: "Mot de passe mis à jour" };
 }
