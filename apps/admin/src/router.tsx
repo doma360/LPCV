@@ -8,7 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import Verifications from "@/pages/Verifications";
 import AvisSignales from "@/pages/AvisSignales";
 import Utilisateurs from "@/pages/Utilisateurs";
-import AVenir from "@/pages/AVenir";
+import Parametres from "@/pages/Parametres";
 
 function Proteger(children: ReactNode) {
   return (
@@ -28,7 +28,7 @@ export default function AppRouter() {
           <Route path="/verifications" element={Proteger(<Verifications />)} />
           <Route path="/avis-signales" element={Proteger(<AvisSignales />)} />
           <Route path="/utilisateurs" element={Proteger(<Utilisateurs />)} />
-          <Route path="/parametres" element={Proteger(<AVenir titre="Paramètres" />)} />
+          <Route path="/parametres" element={Proteger(<Parametres />)} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

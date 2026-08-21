@@ -7,8 +7,10 @@ import type {
   ChangerStatutUtilisateurInput,
   ListUtilisateursInput,
   ModerationAvisInput,
+  UpdateParametresInput,
   VerificationDecisionInput,
 } from "./admin.schema.js";
+import { CATALOGUE_PARAMETRES, CLES_CONNUES } from "./parametres.catalogue.js";
 
 export async function getStats() {
   const [totalClients, totalProfessionnels, enAttenteVerification, demandesActives, avisSignales, activiteRecente] =
@@ -167,4 +169,42 @@ export async function changerStatutUtilisateur(
 // manuellement en attendant l'intégration d'un vrai moyen de paiement.
 export function accorderAbonnement(professionnelId: string, adminId: string, input: AccorderAbonnementInput) {
   return abonnementsService.accorderAbonnement(professionnelId, adminId, input);
+}
+
+export async function listParametres() {
+  const lignes = await prisma.parametrePlateforme.findMany();
+  const valeurs = new Map(lignes.map((l) => [l.cle, l.valeur]));
+  return CATALOGUE_PARAMETRES.map((definition) => ({
+    ...definition,
+    valeur: valeurs.get(definition.cle) ?? definition.defaut,
+  }));
+}
+
+export async function updateParametres(input: UpdateParametresInput, adminId: string) {
+  const entrees = Object.entries(input);
+  const inconnues = entrees.filter(([cle]) => !CLES_CONNUES.has(cle));
+  if (inconnues.length > 0) {
+    throw Errors.badRequest(`Clé(s) de paramètre inconnue(s) : ${inconnues.map(([cle]) => cle).join(", ")}`);
+  }
+
+  await prisma.$transaction([
+    ...entrees.map(([cle, valeur]) =>
+      prisma.parametrePlateforme.upsert({
+        where: { cle },
+        create: { cle, valeur },
+        update: { valeur },
+      }),
+    ),
+    prisma.journalAction.create({
+      data: {
+        administrateurId: adminId,
+        action: "parametres_modifies",
+        cibleType: "parametre_plateforme",
+        cibleId: entrees.map(([cle]) => cle).join(","),
+        details: input,
+      },
+    }),
+  ]);
+
+  return listParametres();
 }

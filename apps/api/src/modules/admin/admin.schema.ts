@@ -33,3 +33,9 @@ export const changerStatutUtilisateurSchema = z.object({
 });
 
 export type ChangerStatutUtilisateurInput = z.infer<typeof changerStatutUtilisateurSchema>;
+
+// Cles validees contre le catalogue (parametres.catalogue.ts) au niveau service,
+// pas ici : le schema se contente de verifier la forme generale.
+export const updateParametresSchema = z.record(z.string().min(1), z.string().max(5000));
+
+export type UpdateParametresInput = z.infer<typeof updateParametresSchema>;

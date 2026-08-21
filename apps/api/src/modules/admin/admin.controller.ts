@@ -8,6 +8,7 @@ import {
   listPendingSchema,
   listUtilisateursSchema,
   moderationAvisSchema,
+  updateParametresSchema,
   verificationDecisionSchema,
 } from "./admin.schema.js";
 import * as adminService from "./admin.service.js";
@@ -67,4 +68,16 @@ export async function accorderAbonnementHandler(req: Request, res: Response) {
   const input = accorderAbonnementSchema.parse(req.body);
   const abonnement = await adminService.accorderAbonnement(req.params.id, req.auth.sub, input);
   return ok(res, abonnement, "Abonnement accordé");
+}
+
+export async function listParametresHandler(_req: Request, res: Response) {
+  const parametres = await adminService.listParametres();
+  return ok(res, parametres);
+}
+
+export async function updateParametresHandler(req: Request, res: Response) {
+  if (!req.auth) throw Errors.unauthorized();
+  const input = updateParametresSchema.parse(req.body);
+  const parametres = await adminService.updateParametres(input, req.auth.sub);
+  return ok(res, parametres, "Paramètres mis à jour");
 }
