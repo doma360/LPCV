@@ -10,8 +10,8 @@ const PROFILS = [
     accroche: "Je propose mes services",
     description: "Plombier, électricien, coiffeuse, menuisier...",
     icone: Wrench,
-    teinte: colors.accent400,
-    teinteFond: colors.accent300 + "33",
+    teinteFond: colors.accent400,
+    teinteIcone: colors.brand900,
     teinteTexte: colors.accent700,
   },
   {
@@ -20,8 +20,8 @@ const PROFILS = [
     accroche: "Je cherche un professionnel",
     description: "Pour vos travaux ou besoins du quotidien",
     icone: Home,
-    teinte: colors.brand700,
-    teinteFond: colors.brand100,
+    teinteFond: colors.brand900,
+    teinteIcone: colors.accent400,
     teinteTexte: colors.brand700,
   },
 ];
@@ -46,18 +46,18 @@ export default function ChoisirRole() {
           <Pressable
             key={profil.role}
             style={styles.card}
-            onPress={() => router.push({ pathname: "/(auth)/inscription", params: { role: profil.role } })}
+            onPress={() => router.push({ pathname: "/(auth)/authentification", params: { role: profil.role } })}
           >
             <View style={[styles.iconTile, { backgroundColor: profil.teinteFond }]}>
-              <profil.icone size={24} color={profil.teinteTexte} />
+              <profil.icone size={24} color={profil.teinteIcone} />
             </View>
             <View style={styles.cardTexte}>
               <Text style={styles.cardTitre}>{profil.titre}</Text>
               <Text style={[styles.cardAccroche, { color: profil.teinteTexte }]}>{profil.accroche}</Text>
               <Text style={styles.cardDescription}>{profil.description}</Text>
             </View>
-            <View style={[styles.chevron, { backgroundColor: profil.teinteFond }]}>
-              <ChevronRight size={18} color={profil.teinteTexte} />
+            <View style={styles.chevron}>
+              <ChevronRight size={18} color={colors.ink500} />
             </View>
           </Pressable>
         ))}
@@ -113,5 +113,12 @@ const styles = StyleSheet.create({
   cardTitre: { fontSize: 17, fontWeight: "700", color: colors.ink900 },
   cardAccroche: { fontSize: 13, fontWeight: "700" },
   cardDescription: { fontSize: 12, color: colors.ink500 },
-  chevron: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  chevron: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.ink100,
+  },
 });

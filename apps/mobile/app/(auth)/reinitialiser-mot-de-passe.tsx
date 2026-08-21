@@ -23,7 +23,7 @@ export default function ReinitialiserMotDePasse() {
         method: "POST",
         body: JSON.stringify({ identifiant, code, nouveauMotDePasse }),
       });
-      router.replace("/(auth)/connexion");
+      router.replace({ pathname: "/(auth)/authentification", params: { onglet: "connexion" } });
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : "Réinitialisation impossible");
     } finally {
