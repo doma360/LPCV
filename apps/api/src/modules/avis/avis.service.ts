@@ -41,6 +41,21 @@ export async function createAvis(clientId: string, input: CreateAvisInput) {
   return avis;
 }
 
+export async function listAvisClient(clientId: string, skip: number, limit: number) {
+  const where = { clientId };
+  const [avis, total] = await Promise.all([
+    prisma.avis.findMany({
+      where,
+      include: { professionnel: { select: { nom: true, prenom: true } } },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.avis.count({ where }),
+  ]);
+  return { avis, total };
+}
+
 export async function listAvisProfessionnel(professionnelId: string, skip: number, limit: number) {
   const where = { professionnelId, statut: "VISIBLE" as const };
   const [avis, total] = await Promise.all([

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import { Navigation } from "lucide-react-native";
-import { apiFetch } from "@/lib/api";
+import { Navigation, Star } from "lucide-react-native";
+import { apiFetch, ApiError } from "@/lib/api";
 import { distanceKm } from "@/lib/distance";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
+import TextField from "@/components/TextField";
 
 interface Demande {
   id: string;
@@ -19,6 +20,7 @@ interface Demande {
   professionnelLng: string | null;
   profession: { nom: string; slug: string };
   professionnel: { nom: string; prenom: string } | null;
+  avis: { id: string } | null;
 }
 
 const statutLabels: Record<string, { label: string; color: string }> = {
@@ -30,6 +32,97 @@ const statutLabels: Record<string, { label: string; color: string }> = {
   ANNULEE: { label: "Annulée", color: colors.danger500 },
   REFUSEE: { label: "Refusée", color: colors.danger500 },
 };
+
+function CarteDemande({ demande, onAvisEnvoye }: { demande: Demande; onAvisEnvoye: (demandeId: string) => void }) {
+  const [formulaireOuvert, setFormulaireOuvert] = useState(false);
+  const [note, setNote] = useState(0);
+  const [commentaire, setCommentaire] = useState("");
+  const [envoi, setEnvoi] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  const statut = statutLabels[demande.statut] ?? { label: demande.statut, color: colors.ink500 };
+  const suivi =
+    demande.statut === "EN_ROUTE" && demande.professionnelLat && demande.professionnelLng
+      ? distanceKm(
+          Number(demande.latitude),
+          Number(demande.longitude),
+          Number(demande.professionnelLat),
+          Number(demande.professionnelLng),
+        )
+      : null;
+
+  async function envoyerAvis() {
+    if (note === 0) {
+      setErreur("Choisissez une note");
+      return;
+    }
+    setErreur(null);
+    setEnvoi(true);
+    try {
+      await apiFetch("/api/v1/avis", {
+        method: "POST",
+        body: JSON.stringify({ demandeId: demande.id, note, commentaire: commentaire || undefined }),
+      });
+      onAvisEnvoye(demande.id);
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : "Envoi de l'avis impossible");
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardMetier}>{demande.profession.nom}</Text>
+        <Text style={[styles.statut, { color: statut.color }]}>{statut.label}</Text>
+      </View>
+      <Text style={styles.description} numberOfLines={2}>
+        {demande.description}
+      </Text>
+      {demande.professionnel && (
+        <Text style={styles.pro}>
+          {demande.professionnel.prenom} {demande.professionnel.nom}
+        </Text>
+      )}
+      {suivi !== null && (
+        <View style={styles.suivi}>
+          <Navigation size={12} color={colors.brand700} />
+          <Text style={styles.suiviText}>{suivi.toFixed(1)} km de chez vous</Text>
+        </View>
+      )}
+      {demande.prixEstime && <Text style={styles.prix}>{demande.prixEstime} FCFA</Text>}
+      {demande.statut === "REFUSEE" && (
+        <Button
+          label="Relancer la recherche"
+          variant="outline"
+          onPress={() => router.push({ pathname: "/(client)", params: { metier: demande.profession.slug } })}
+        />
+      )}
+
+      {demande.statut === "TERMINEE" && demande.avis && <Text style={styles.avisEnvoye}>Avis envoyé, merci !</Text>}
+
+      {demande.statut === "TERMINEE" && !demande.avis && !formulaireOuvert && (
+        <Button label="Laisser un avis" variant="outline" onPress={() => setFormulaireOuvert(true)} />
+      )}
+
+      {demande.statut === "TERMINEE" && !demande.avis && formulaireOuvert && (
+        <View style={styles.formulaireAvis}>
+          <View style={styles.etoiles}>
+            {[1, 2, 3, 4, 5].map((valeur) => (
+              <Pressable key={valeur} onPress={() => setNote(valeur)}>
+                <Star size={26} color={colors.accent700} fill={valeur <= note ? colors.accent400 : "transparent"} />
+              </Pressable>
+            ))}
+          </View>
+          <TextField label="Commentaire (facultatif)" value={commentaire} onChangeText={setCommentaire} multiline />
+          {erreur && <Text style={styles.erreur}>{erreur}</Text>}
+          <Button label={envoi ? "Envoi..." : "Envoyer l'avis"} onPress={envoyerAvis} loading={envoi} />
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function MesDemandes() {
   const [demandes, setDemandes] = useState<Demande[]>([]);
@@ -69,6 +162,10 @@ export default function MesDemandes() {
     return () => clearInterval(id);
   }, [demandes, charger]);
 
+  function marquerAvisEnvoye(demandeId: string) {
+    setDemandes((prev) => prev.map((d) => (d.id === demandeId ? { ...d, avis: { id: "local" } } : d)));
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Mes demandes</Text>
@@ -87,43 +184,7 @@ export default function MesDemandes() {
         }
         contentContainerStyle={{ gap: 10, paddingTop: 16, paddingBottom: 40 }}
         ListEmptyComponent={<Text style={styles.vide}>Aucune demande pour l'instant.</Text>}
-        renderItem={({ item }) => {
-          const statut = statutLabels[item.statut] ?? { label: item.statut, color: colors.ink500 };
-          const suivi =
-            item.statut === "EN_ROUTE" && item.professionnelLat && item.professionnelLng
-              ? distanceKm(Number(item.latitude), Number(item.longitude), Number(item.professionnelLat), Number(item.professionnelLng))
-              : null;
-          return (
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardMetier}>{item.profession.nom}</Text>
-                <Text style={[styles.statut, { color: statut.color }]}>{statut.label}</Text>
-              </View>
-              <Text style={styles.description} numberOfLines={2}>
-                {item.description}
-              </Text>
-              {item.professionnel && (
-                <Text style={styles.pro}>
-                  {item.professionnel.prenom} {item.professionnel.nom}
-                </Text>
-              )}
-              {suivi !== null && (
-                <View style={styles.suivi}>
-                  <Navigation size={12} color={colors.brand700} />
-                  <Text style={styles.suiviText}>{suivi.toFixed(1)} km de chez vous</Text>
-                </View>
-              )}
-              {item.prixEstime && <Text style={styles.prix}>{item.prixEstime} FCFA</Text>}
-              {item.statut === "REFUSEE" && (
-                <Button
-                  label="Relancer la recherche"
-                  variant="outline"
-                  onPress={() => router.push({ pathname: "/(client)", params: { metier: item.profession.slug } })}
-                />
-              )}
-            </View>
-          );
-        }}
+        renderItem={({ item }) => <CarteDemande demande={item} onAvisEnvoye={marquerAvisEnvoye} />}
       />
     </View>
   );
@@ -149,4 +210,8 @@ const styles = StyleSheet.create({
   suivi: { flexDirection: "row", alignItems: "center", gap: 5 },
   suiviText: { fontSize: 12, fontWeight: "600", color: colors.brand700 },
   prix: { fontSize: 13, fontWeight: "700", color: colors.brand700 },
+  avisEnvoye: { fontSize: 13, fontWeight: "600", color: colors.success500 },
+  formulaireAvis: { gap: 10, marginTop: 4 },
+  etoiles: { flexDirection: "row", gap: 8 },
+  erreur: { color: colors.danger500, fontSize: 13 },
 });

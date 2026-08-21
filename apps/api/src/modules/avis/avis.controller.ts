@@ -12,6 +12,14 @@ export async function createHandler(req: Request, res: Response) {
   return created(res, avis, "Avis publié");
 }
 
+export async function listMesAvisHandler(req: Request, res: Response) {
+  if (req.auth?.role !== "client") throw Errors.forbidden("Réservé aux clients");
+  const filters = listAvisSchema.parse(req.query);
+  const { skip } = parsePagination({ page: filters.page, limit: filters.limit });
+  const { avis, total } = await avisService.listAvisClient(req.auth.sub, skip, filters.limit);
+  return okPaginated(res, avis, { page: filters.page, limit: filters.limit, total });
+}
+
 export async function listForProfessionnelHandler(req: Request, res: Response) {
   const filters = listAvisSchema.parse(req.query);
   const { skip } = parsePagination({ page: filters.page, limit: filters.limit });

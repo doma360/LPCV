@@ -11,6 +11,7 @@ const include = {
   client: { select: { id: true, nom: true, prenom: true, telephone: true, photoUrl: true } },
   professionnel: { select: { id: true, nom: true, prenom: true, telephone: true, photoUrl: true } },
   profession: true,
+  avis: { select: { id: true } },
 } as const;
 
 export async function createDemande(clientId: string, input: CreateDemandeInput) {
