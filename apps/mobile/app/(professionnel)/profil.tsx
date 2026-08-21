@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, Image as ImageIcon, Settings, ShieldCheck, ShieldQuestion, Star, X } from "lucide-react-native";
+import { Camera, Image as ImageIcon, Pencil, Settings, ShieldCheck, ShieldQuestion, Star, X } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch, ApiError } from "@/lib/api";
 import { uploadPhoto } from "@/lib/upload";
@@ -90,9 +90,14 @@ export default function Profil() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Pressable style={styles.parametres} onPress={() => router.push("/(professionnel)/parametres")}>
-        <Settings size={20} color={colors.ink500} />
-      </Pressable>
+      <View style={styles.actionsHaut}>
+        <Pressable style={styles.actionIcone} onPress={() => router.push("/(professionnel)/modifier-profil")}>
+          <Pencil size={18} color={colors.ink500} />
+        </Pressable>
+        <Pressable style={styles.actionIcone} onPress={() => router.push("/(professionnel)/parametres")}>
+          <Settings size={20} color={colors.ink500} />
+        </Pressable>
+      </View>
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>
           {session?.user.prenom[0]}
@@ -171,7 +176,8 @@ export default function Profil() {
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60, alignItems: "center" },
-  parametres: { position: "absolute", top: 56, right: 20, padding: 6, zIndex: 1 },
+  actionsHaut: { position: "absolute", top: 56, right: 20, zIndex: 1, flexDirection: "row", gap: 12 },
+  actionIcone: { padding: 6 },
   photosRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   thumbWrap: { width: 56, height: 56 },
   thumb: { width: 56, height: 56, borderRadius: 10 },

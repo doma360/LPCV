@@ -5,6 +5,10 @@ export function listMetiers() {
   return prisma.profession.findMany({ where: { actif: true }, orderBy: { nom: "asc" } });
 }
 
+export function listZones() {
+  return prisma.zoneIntervention.findMany({ where: { actif: true }, orderBy: { nom: "asc" } });
+}
+
 export async function listBlog(skip: number, limit: number) {
   const where = { statut: "PUBLIE" as const };
   const [articles, total] = await Promise.all([

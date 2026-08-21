@@ -8,6 +8,11 @@ export async function listMetiersHandler(_req: Request, res: Response) {
   return ok(res, metiers);
 }
 
+export async function listZonesHandler(_req: Request, res: Response) {
+  const zones = await vitrineService.listZones();
+  return ok(res, zones);
+}
+
 export async function listBlogHandler(req: Request, res: Response) {
   const { page, limit, skip } = parsePagination(req.query);
   const { articles, total } = await vitrineService.listBlog(skip, limit);
