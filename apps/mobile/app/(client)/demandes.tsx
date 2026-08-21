@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Navigation } from "lucide-react-native";
@@ -22,7 +22,7 @@ interface Demande {
 }
 
 const statutLabels: Record<string, { label: string; color: string }> = {
-  EN_ATTENTE: { label: "En attente", color: colors.accent700 },
+  EN_ATTENTE: { label: "En attente de réponse...", color: colors.accent700 },
   ACCEPTEE: { label: "Acceptée", color: colors.brand700 },
   EN_ROUTE: { label: "En route", color: colors.brand700 },
   EN_COURS: { label: "En cours", color: colors.brand700 },
@@ -34,9 +34,22 @@ const statutLabels: Record<string, { label: string; color: string }> = {
 export default function MesDemandes() {
   const [demandes, setDemandes] = useState<Demande[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  // Statuts connus au tour précédent, pour détecter une transition
+  // EN_ATTENTE -> REFUSEE (plutôt que de relancer à chaque poll).
+  const statutsConnus = useRef<Record<string, string>>({});
 
   const charger = useCallback(async () => {
     const res = await apiFetch<Demande[]>("/api/v1/demandes");
+
+    for (const demande of res.data) {
+      const precedent = statutsConnus.current[demande.id];
+      if (precedent === "EN_ATTENTE" && demande.statut === "REFUSEE") {
+        router.push({ pathname: "/(client)", params: { metier: demande.profession.slug } });
+        break;
+      }
+    }
+    statutsConnus.current = Object.fromEntries(res.data.map((d) => [d.id, d.statut]));
+
     setDemandes(res.data);
   }, []);
 
@@ -47,10 +60,11 @@ export default function MesDemandes() {
   );
 
   // Une demande "en route" a sa position mise à jour côté pro toutes les
-  // ~15s : on rafraîchit à la même cadence pour suivre en quasi temps réel.
+  // ~15s, et une demande "en attente" peut être acceptée/refusée à tout
+  // moment : on rafraîchit au même rythme pour réagir sans action du client.
   useEffect(() => {
-    const enRoute = demandes.some((d) => d.statut === "EN_ROUTE");
-    if (!enRoute) return;
+    const aSuivre = demandes.some((d) => d.statut === "EN_ROUTE" || d.statut === "EN_ATTENTE");
+    if (!aSuivre) return;
     const id = setInterval(charger, 15000);
     return () => clearInterval(id);
   }, [demandes, charger]);
