@@ -7,6 +7,7 @@ export const searchProfessionnelsSchema = z.object({
   rayonKm: z.coerce.number().positive().max(100).default(15),
   prixMax: z.coerce.number().positive().optional(),
   noteMin: z.coerce.number().min(0).max(5).optional(),
+  aLocal: z.coerce.boolean().optional(),
   tri: z.enum(["distance", "prix", "note"]).default("distance"),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(50).default(20),
@@ -29,6 +30,9 @@ export const updateProfessionnelSchema = z.object({
   tarifIndicatifMax: z.coerce.number().positive().optional(),
   photoUrl: z.string().url().optional(),
   zoneIds: z.array(z.string().uuid()).optional(),
+  // "avoir un local" et "se deplacer" ne sont pas exclusifs (docs/decisions.md).
+  aLocal: z.boolean().optional(),
+  adresseLocal: z.string().max(300).optional(),
 });
 
 export type UpdateProfessionnelInput = z.infer<typeof updateProfessionnelSchema>;

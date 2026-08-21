@@ -148,10 +148,11 @@ model Client {
   createdAt          DateTime     @default(now()) @map("date_creation")
   updatedAt          DateTime     @updatedAt @map("date_maj")
 
-  demandes  Demande[]
-  avis      Avis[]
-  messages  Message[]
-  appareils Appareil[]
+  demandes     Demande[]
+  avis         Avis[]
+  messages     Message[]
+  appareils    Appareil[]
+  reservations Reservation[]
 
   @@map("client")
 }
@@ -178,6 +179,10 @@ model Professionnel {
   resetTokenHash        String?                @map("reset_token_hash")
   resetTokenExpireAt    DateTime?              @map("reset_token_expire_at")
   derniereConnexionAt  DateTime?              @map("derniere_connexion_at")
+  // "avoir un local" et "se deplacer" ne sont pas exclusifs (voir docs/decisions.md) :
+  // un professionnel peut cumuler les deux flux sur le meme profil.
+  aLocal               Boolean                @default(false) @map("a_local")
+  adresseLocal         String?                @map("adresse_local")
   createdAt            DateTime               @default(now()) @map("date_creation")
   updatedAt             DateTime               @updatedAt @map("date_maj")
 
@@ -189,6 +194,8 @@ model Professionnel {
   messages      Message[]
   appareils     Appareil[]
   abonnement    Abonnement?
+  reservations  Reservation[]
+  portefeuille  Portefeuille?
 
   @@index([professionId])
   @@index([statutVerification])
@@ -247,6 +254,7 @@ model Profession {
 
   professionnels Professionnel[]
   demandes       Demande[]
+  reservations   Reservation[]
 
   @@map("profession")
 }
@@ -323,7 +331,6 @@ model Demande {
   profession    Profession     @relation(fields: [professionId], references: [id])
   avis          Avis?
   paiement      Paiement?
-  messages      Message[]
   appels        Appel[]
 
   @@index([clientId])
@@ -333,21 +340,96 @@ model Demande {
   @@map("demande")
 }
 
+enum StatutReservation {
+  EN_ATTENTE // client a demande, discussion en cours (chat/appel) avec le pro
+  CONFIRMEE  // pro a fixe horaire + honoraires, en attente de paiement
+  PAYEE      // client a paye, reservation active
+  TERMINEE
+  ANNULEE    // annulee par le client ou le pro avant paiement
+  REFUSEE
+}
+
+// Reservation aupres d'un professionnel "avec local" (voir docs/decisions.md) :
+// paiement reel uniquement ici (pas sur le flux de deplacement des Demande),
+// credite au Portefeuille du professionnel une fois PAYEE.
+model Reservation {
+  id              String            @id @default(uuid())
+  clientId        String            @map("id_client")
+  professionnelId String            @map("id_professionnel")
+  professionId    String            @map("id_profession")
+  description     String            @db.Text
+  dateSouhaitee   DateTime?         @map("date_souhaitee")
+  dateConfirmee   DateTime?         @map("date_confirmee")
+  montant         Decimal?          @map("montant") @db.Decimal(10, 2)
+  statut          StatutReservation @default(EN_ATTENTE)
+  createdAt       DateTime          @default(now()) @map("date_creation")
+  updatedAt       DateTime          @updatedAt @map("date_maj")
+
+  client        Client        @relation(fields: [clientId], references: [id])
+  professionnel Professionnel @relation(fields: [professionnelId], references: [id])
+  profession    Profession    @relation(fields: [professionId], references: [id])
+  messages      Message[]
+  appels        Appel[]
+  paiement      Paiement?
+
+  @@index([clientId])
+  @@index([professionnelId])
+  @@index([statut])
+  @@map("reservation")
+}
+
+model Portefeuille {
+  id              String   @id @default(uuid())
+  professionnelId String   @unique @map("id_professionnel")
+  solde           Decimal  @default(0) @map("solde") @db.Decimal(10, 2)
+  updatedAt       DateTime @updatedAt @map("date_maj")
+
+  professionnel Professionnel            @relation(fields: [professionnelId], references: [id])
+  mouvements    MouvementPortefeuille[]
+
+  @@map("portefeuille")
+}
+
+enum TypeMouvementPortefeuille {
+  CREDIT_RESERVATION
+  RETRAIT
+}
+
+model MouvementPortefeuille {
+  id             String                     @id @default(uuid())
+  portefeuilleId String                     @map("id_portefeuille")
+  type           TypeMouvementPortefeuille
+  montant        Decimal                    @db.Decimal(10, 2)
+  reservationId  String?                    @map("id_reservation")
+  createdAt      DateTime                   @default(now()) @map("date_creation")
+
+  portefeuille Portefeuille @relation(fields: [portefeuilleId], references: [id])
+
+  @@index([portefeuilleId])
+  @@map("mouvement_portefeuille")
+}
+
 // Appel masqué client <-> professionnel : ni l'un ni l'autre ne voit le vrai
 // numéro de l'autre, un prestataire de téléphonie pont les deux lignes.
 // Aucune conversation enregistrée, seulement la trace de l'appel (qui, quand, durée).
+// demandeId/reservationId : exactement l'un des deux est renseigne (verifie
+// cote application, pas de contrainte DB) - meme mecanique d'appel masque
+// pour le flux deplacement (Demande) et le flux reservation.
 model Appel {
   id                String          @id @default(uuid())
-  demandeId         String          @map("id_demande")
+  demandeId         String?         @map("id_demande")
+  reservationId     String?         @map("id_reservation")
   initiePar         InitiateurAppel @map("initie_par")
   statut            StatutAppel     @default(INITIE)
   providerAppelId   String?         @map("provider_appel_id")
   dureeSecondes     Int?            @map("duree_secondes")
   createdAt         DateTime        @default(now()) @map("date_creation")
 
-  demande Demande @relation(fields: [demandeId], references: [id])
+  demande     Demande?     @relation(fields: [demandeId], references: [id])
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
 
   @@index([demandeId])
+  @@index([reservationId])
   @@map("appel")
 }
 
@@ -373,9 +455,14 @@ model Avis {
   @@map("avis")
 }
 
+// demandeId/reservationId : exactement l'un des deux est renseigne (verifie
+// cote application). Le flux deplacement ne transite jamais reellement par la
+// plateforme (voir docs/decisions.md) - ce paiement y sert juste a tracer la
+// declaration ; le flux reservation, lui, credite reellement le Portefeuille.
 model Paiement {
   id               String          @id @default(uuid())
-  demandeId        String          @unique @map("id_demande")
+  demandeId        String?         @unique @map("id_demande")
+  reservationId    String?         @unique @map("id_reservation")
   montant          Decimal         @db.Decimal(10, 2)
   commission       Decimal         @db.Decimal(10, 2)
   montantNet       Decimal         @map("montant_net") @db.Decimal(10, 2)
@@ -385,26 +472,29 @@ model Paiement {
   createdAt        DateTime        @default(now()) @map("date_creation")
   dateConfirmation DateTime?       @map("date_confirmation")
 
-  demande Demande @relation(fields: [demandeId], references: [id])
+  demande     Demande?     @relation(fields: [demandeId], references: [id])
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
 
   @@index([statut])
   @@map("paiement")
 }
 
+// Uniquement pour la messagerie de prise de RDV liee a une Reservation (voir
+// docs/decisions.md) - le flux deplacement (Demande) reste sur l'appel masque.
 model Message {
   id              String   @id @default(uuid())
-  demandeId       String   @map("id_demande")
+  reservationId   String   @map("id_reservation")
   clientId        String?  @map("id_client")
   professionnelId String?  @map("id_professionnel")
   contenu         String   @db.Text
   lu              Boolean  @default(false)
   createdAt       DateTime @default(now()) @map("date_creation")
 
-  demande       Demande        @relation(fields: [demandeId], references: [id])
+  reservation   Reservation    @relation(fields: [reservationId], references: [id])
   client        Client?        @relation(fields: [clientId], references: [id])
   professionnel Professionnel? @relation(fields: [professionnelId], references: [id])
 
-  @@index([demandeId])
+  @@index([reservationId])
   @@map("message")
 }
 

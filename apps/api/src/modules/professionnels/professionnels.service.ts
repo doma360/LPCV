@@ -29,6 +29,8 @@ interface ProResult {
   professionNom: string;
   professionSlug: string;
   distanceKm: number | null;
+  aLocal: boolean;
+  adresseLocal: string | null;
 }
 
 // Distance calculée en SQL (Haversine) plutôt qu'en PostGIS ou Distance Matrix,
@@ -57,6 +59,7 @@ function queryNearby(lat: number, lng: number, rayonKm: number, whereClause: Pri
       p.tarif_indicatif_min as "tarifIndicatifMin", p.tarif_indicatif_max as "tarifIndicatifMax",
       p.note_moyenne as "noteMoyenne", p.nombre_avis as "nombreAvis",
       prof.nom as "professionNom", prof.slug as "professionSlug",
+      p.a_local as "aLocal", p.adresse_local as "adresseLocal",
       pd.distance_km as "distanceKm"
     FROM professionnel p
     JOIN pro_distances pd ON pd.id_professionnel = p.id
@@ -74,6 +77,7 @@ export async function searchProfessionnels(input: SearchProfessionnelsInput) {
   if (input.metier) filters.push(Prisma.sql`prof.slug = ${input.metier}`);
   if (input.prixMax) filters.push(Prisma.sql`p.tarif_indicatif_min <= ${input.prixMax}`);
   if (input.noteMin) filters.push(Prisma.sql`p.note_moyenne >= ${input.noteMin}`);
+  if (input.aLocal) filters.push(Prisma.sql`p.a_local = true`);
   const whereClause = Prisma.join(filters, " AND ");
 
   if (input.lat === undefined || input.lng === undefined) {
@@ -83,6 +87,7 @@ export async function searchProfessionnels(input: SearchProfessionnelsInput) {
         p.tarif_indicatif_min as "tarifIndicatifMin", p.tarif_indicatif_max as "tarifIndicatifMax",
         p.note_moyenne as "noteMoyenne", p.nombre_avis as "nombreAvis",
         prof.nom as "professionNom", prof.slug as "professionSlug",
+        p.a_local as "aLocal", p.adresse_local as "adresseLocal",
         NULL as "distanceKm"
       FROM professionnel p
       JOIN profession prof ON prof.id = p.id_profession

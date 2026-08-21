@@ -46,9 +46,11 @@ export async function createPaiement(clientId: string, input: CreatePaiementInpu
   });
 }
 
+// ESPECES n'existe que sur le flux deplacement (Demande) - une reservation
+// passe toujours par un vrai paiement en ligne (voir reservations.schema.ts).
 export async function confirmerPaiementEspeces(paiementId: string, professionnelId: string) {
   const paiement = await prisma.paiement.findUnique({ where: { id: paiementId }, include: { demande: true } });
-  if (!paiement) throw Errors.notFound("Paiement introuvable");
+  if (!paiement || !paiement.demande) throw Errors.notFound("Paiement introuvable");
   if (paiement.demande.professionnelId !== professionnelId) throw Errors.forbidden();
   if (paiement.methode !== "ESPECES") throw Errors.badRequest("Cette confirmation ne concerne que les paiements en espèces");
   if (paiement.statut !== "EN_ATTENTE") throw Errors.badRequest("Ce paiement n'est plus en attente");
@@ -60,12 +62,14 @@ export async function confirmerPaiementEspeces(paiementId: string, professionnel
 }
 
 export async function getPaiement(id: string, userId: string, role: Role) {
-  const paiement = await prisma.paiement.findUnique({ where: { id }, include: { demande: true } });
+  const paiement = await prisma.paiement.findUnique({ where: { id }, include: { demande: true, reservation: true } });
   if (!paiement) throw Errors.notFound("Paiement introuvable");
 
+  const engagement = paiement.demande ?? paiement.reservation;
   const isOwner =
-    (role === "client" && paiement.demande.clientId === userId) ||
-    (role === "professionnel" && paiement.demande.professionnelId === userId);
+    !!engagement &&
+    ((role === "client" && engagement.clientId === userId) ||
+      (role === "professionnel" && engagement.professionnelId === userId));
   if (!isOwner && role !== "administrateur") throw Errors.forbidden();
 
   return paiement;

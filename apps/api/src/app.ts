@@ -19,6 +19,8 @@ import { adminRouter } from "@/modules/admin/admin.routes.js";
 import { uploadsRouter } from "@/modules/uploads/uploads.routes.js";
 import { abonnementsRouter } from "@/modules/abonnements/abonnements.routes.js";
 import { verificationRouter } from "@/modules/verification/verification.routes.js";
+import { reservationsRouter } from "@/modules/reservations/reservations.routes.js";
+import { portefeuilleRouter } from "@/modules/portefeuille/portefeuille.routes.js";
 
 export function createApp(logger: Logger) {
   const app = express();
@@ -58,6 +60,8 @@ export function createApp(logger: Logger) {
   v1.use("/uploads", uploadsRouter);
   v1.use("/abonnements", abonnementsRouter);
   v1.use("/verification", verificationRouter);
+  v1.use("/reservations", reservationsRouter);
+  v1.use("/portefeuille", portefeuilleRouter);
   app.use("/api/v1", v1);
 
   app.use(notFoundHandler);
