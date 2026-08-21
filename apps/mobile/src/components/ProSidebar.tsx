@@ -1,13 +1,15 @@
 import { useEffect, useRef } from "react";
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { IdCard, Pencil, Settings, X } from "lucide-react-native";
+import { CalendarClock, IdCard, Pencil, Settings, Wallet, X } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 import { useAuth } from "@/hooks/useAuth";
 
 const LARGEUR = 280;
 
 const LIENS = [
+  { href: "/(professionnel)/reservations", label: "Réservations", icone: CalendarClock },
+  { href: "/(professionnel)/portefeuille", label: "Portefeuille", icone: Wallet },
   { href: "/(professionnel)/carte-membre", label: "Carte membre", icone: IdCard },
   { href: "/(professionnel)/modifier-profil", label: "Modifier le profil", icone: Pencil },
   { href: "/(professionnel)/parametres", label: "Paramètres", icone: Settings },

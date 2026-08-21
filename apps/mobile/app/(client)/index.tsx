@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { MapPin, Star, ShieldCheck, Camera, Image as ImageIcon, X } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
@@ -26,12 +26,25 @@ interface Candidat {
   prixEstime: number;
 }
 
+interface ProAvecLocal {
+  id: string;
+  nom: string;
+  prenom: string;
+  presentation: string | null;
+  noteMoyenne: string;
+  tarifIndicatifMin: string | null;
+  tarifIndicatifMax: string | null;
+  adresseLocal: string | null;
+}
+
 export default function Rechercher() {
   const { metier: metierParam } = useLocalSearchParams<{ metier?: string }>();
   const { position, refuse, chargement, demanderPosition, choisirZone } = useLocalisation();
+  const [mode, setMode] = useState<"deplacement" | "reservation">("deplacement");
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [profession, setProfession] = useState<Profession | null>(null);
   const [candidats, setCandidats] = useState<Candidat[] | null>(null);
+  const [prosAvecLocal, setProsAvecLocal] = useState<ProAvecLocal[] | null>(null);
   const [recherche, setRecherche] = useState(false);
 
   const [candidatChoisi, setCandidatChoisi] = useState<Candidat | null>(null);
@@ -58,7 +71,7 @@ export default function Rechercher() {
   }, [metierParam, professions]);
 
   useEffect(() => {
-    if (!profession || !position) return;
+    if (mode !== "deplacement" || !profession || !position) return;
     setRecherche(true);
     setCandidats(null);
     apiFetch<{ candidats: Candidat[] }>(
@@ -66,7 +79,18 @@ export default function Rechercher() {
     )
       .then((res) => setCandidats(res.data.candidats))
       .finally(() => setRecherche(false));
-  }, [profession, position]);
+  }, [mode, profession, position]);
+
+  // Reservation : parcourir les pros "avec local" pour le metier choisi, pas
+  // besoin de position (le client se deplace vers le local, pas l'inverse).
+  useEffect(() => {
+    if (mode !== "reservation" || !profession) return;
+    setRecherche(true);
+    setProsAvecLocal(null);
+    apiFetch<ProAvecLocal[]>(`/api/v1/professionnels?metier=${profession.slug}&aLocal=true`)
+      .then((res) => setProsAvecLocal(res.data))
+      .finally(() => setRecherche(false));
+  }, [mode, profession]);
 
   async function ajouterPhoto(depuisCamera: boolean) {
     if (photos.length >= 5) return;
@@ -134,6 +158,21 @@ export default function Rechercher() {
 
       {succes && <Text style={styles.succes}>{succes}</Text>}
 
+      <View style={styles.modeToggle}>
+        <Pressable
+          onPress={() => setMode("deplacement")}
+          style={[styles.modeBtn, mode === "deplacement" && styles.modeBtnActive]}
+        >
+          <Text style={[styles.modeLabel, mode === "deplacement" && styles.modeLabelActive]}>Déplacement</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setMode("reservation")}
+          style={[styles.modeBtn, mode === "reservation" && styles.modeBtnActive]}
+        >
+          <Text style={[styles.modeLabel, mode === "reservation" && styles.modeLabelActive]}>Réservation</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.chips}>
         {professions.map((p) => (
           <Pressable
@@ -146,7 +185,7 @@ export default function Rechercher() {
         ))}
       </View>
 
-      {!position && (
+      {mode === "deplacement" && !position && (
         <View style={styles.localisation}>
           <Button label="Utiliser ma position" onPress={demanderPosition} loading={chargement} />
           {refuse && (
@@ -164,7 +203,7 @@ export default function Rechercher() {
         </View>
       )}
 
-      {position && (
+      {mode === "deplacement" && position && (
         <View style={styles.positionBadge}>
           <MapPin size={14} color={colors.brand700} />
           <Text style={styles.positionText}>{position.label}</Text>
@@ -173,7 +212,56 @@ export default function Rechercher() {
 
       {recherche && <ActivityIndicator style={{ marginTop: 20 }} color={colors.brand700} />}
 
-      {candidatChoisi ? (
+      {mode === "reservation" && (
+        <FlatList
+          data={prosAvecLocal ?? []}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ gap: 10, paddingTop: 16 }}
+          renderItem={({ item }) => (
+            <Pressable
+              style={styles.card}
+              onPress={() =>
+                router.push({
+                  pathname: "/(client)/reserver",
+                  params: {
+                    professionnelId: item.id,
+                    professionId: profession?.id ?? "",
+                    nomPro: `${item.prenom} ${item.nom}`,
+                    adresseLocal: item.adresseLocal ?? "",
+                  },
+                })
+              }
+            >
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {item.prenom[0]}
+                  {item.nom[0]}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.cardNom}>
+                  {item.prenom} {item.nom}
+                </Text>
+                <View style={styles.cardMeta}>
+                  <MapPin size={12} color={colors.ink500} />
+                  <Text style={styles.cardMetaText} numberOfLines={1}>
+                    {item.adresseLocal ?? "Local non précisé"}
+                  </Text>
+                  <Star size={12} color={colors.accent700} />
+                  <Text style={styles.cardMetaText}>{item.noteMoyenne}</Text>
+                </View>
+              </View>
+            </Pressable>
+          )}
+          ListEmptyComponent={
+            !recherche && profession ? (
+              <Text style={styles.aide}>Aucun professionnel avec local pour ce métier pour l'instant.</Text>
+            ) : null
+          }
+        />
+      )}
+
+      {mode === "deplacement" && (candidatChoisi ? (
         <View style={styles.confirmCard}>
           <Text style={styles.confirmTitle}>
             {candidatChoisi.prenom} {candidatChoisi.nom}
@@ -253,7 +341,7 @@ export default function Rechercher() {
             </Pressable>
           )}
         />
-      )}
+      ))}
     </View>
   );
 }
@@ -262,6 +350,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
   title: { fontSize: 22, fontWeight: "700", color: colors.ink900, marginBottom: 16 },
   succes: { color: colors.success500, fontWeight: "600", marginBottom: 12 },
+  modeToggle: { flexDirection: "row", gap: 6, backgroundColor: colors.white, borderRadius: 999, padding: 4, marginBottom: 14, borderWidth: 1, borderColor: colors.ink100 },
+  modeBtn: { flex: 1, paddingVertical: 8, borderRadius: 999, alignItems: "center" },
+  modeBtnActive: { backgroundColor: colors.brand900 },
+  modeLabel: { fontSize: 13, fontWeight: "700", color: colors.ink700 },
+  modeLabelActive: { color: colors.accent400 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: colors.ink200 },
   chipActive: { backgroundColor: colors.brand900, borderColor: colors.brand900 },
