@@ -16,6 +16,20 @@ function resolveApiUrl() {
 
 const API_URL = resolveApiUrl();
 
+// Meme logique que resolveApiUrl, pour le lien encode dans le QR de la carte
+// membre (le site vitrine tourne sur le port 5173 en dev).
+function resolveWebsiteUrl() {
+  if (process.env.EXPO_PUBLIC_WEBSITE_URL) return process.env.EXPO_PUBLIC_WEBSITE_URL;
+
+  const hostUri = Constants.expoConfig?.hostUri;
+  const host = hostUri?.split(":")[0];
+  if (host) return `http://${host}:5173`;
+
+  return "http://localhost:5173";
+}
+
+export const WEBSITE_URL = resolveWebsiteUrl();
+
 interface ApiResponse<T> {
   success: boolean;
   data: T;

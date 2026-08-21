@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, Image as ImageIcon, Pencil, Settings, ShieldCheck, ShieldQuestion, Star, X } from "lucide-react-native";
+import { Camera, IdCard, Image as ImageIcon, Pencil, Settings, ShieldCheck, ShieldQuestion, Star, X } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch, ApiError } from "@/lib/api";
 import { uploadPhoto } from "@/lib/upload";
@@ -91,6 +91,9 @@ export default function Profil() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.actionsHaut}>
+        <Pressable style={styles.actionIcone} onPress={() => router.push("/(professionnel)/carte-membre")}>
+          <IdCard size={19} color={colors.ink500} />
+        </Pressable>
         <Pressable style={styles.actionIcone} onPress={() => router.push("/(professionnel)/modifier-profil")}>
           <Pencil size={18} color={colors.ink500} />
         </Pressable>

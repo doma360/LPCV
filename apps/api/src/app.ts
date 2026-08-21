@@ -18,6 +18,7 @@ import { vitrineRouter } from "@/modules/vitrine/vitrine.routes.js";
 import { adminRouter } from "@/modules/admin/admin.routes.js";
 import { uploadsRouter } from "@/modules/uploads/uploads.routes.js";
 import { abonnementsRouter } from "@/modules/abonnements/abonnements.routes.js";
+import { verificationRouter } from "@/modules/verification/verification.routes.js";
 
 export function createApp(logger: Logger) {
   const app = express();
@@ -56,6 +57,7 @@ export function createApp(logger: Logger) {
   v1.use("/admin", adminRouter);
   v1.use("/uploads", uploadsRouter);
   v1.use("/abonnements", abonnementsRouter);
+  v1.use("/verification", verificationRouter);
   app.use("/api/v1", v1);
 
   app.use(notFoundHandler);
