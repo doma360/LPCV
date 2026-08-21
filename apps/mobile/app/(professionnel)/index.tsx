@@ -2,9 +2,19 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import * as Location from "expo-location";
-import { Phone } from "lucide-react-native";
+import { Menu, Phone, Star } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
+import { useAuth } from "@/hooks/useAuth";
+import ProSidebar from "@/components/ProSidebar";
+
+interface ProfilResume {
+  noteMoyenne: string;
+}
+
+interface Revenus {
+  totalGagne: string;
+}
 
 interface Demande {
   id: string;
@@ -33,11 +43,16 @@ const prochaineEtape: Record<string, { statut: string; label: string }> = {
 };
 
 const APPEL_AUTORISE = ["ACCEPTEE", "EN_ROUTE", "EN_COURS"];
+const STATUTS_INACTIFS = new Set(["TERMINEE", "ANNULEE", "REFUSEE"]);
 
 export default function DemandesRecues() {
+  const { session } = useAuth();
   const [demandes, setDemandes] = useState<Demande[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [enCours, setEnCours] = useState<string | null>(null);
+  const [sidebarOuvert, setSidebarOuvert] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const [totalGagne, setTotalGagne] = useState<string | null>(null);
 
   const charger = useCallback(async () => {
     const res = await apiFetch<Demande[]>("/api/v1/demandes");
@@ -47,8 +62,14 @@ export default function DemandesRecues() {
   useFocusEffect(
     useCallback(() => {
       charger();
-    }, [charger]),
+      if (session) {
+        apiFetch<ProfilResume>(`/api/v1/professionnels/${session.user.id}`).then((res) => setNote(res.data.noteMoyenne));
+      }
+      apiFetch<Revenus>("/api/v1/professionnels/revenus").then((res) => setTotalGagne(res.data.totalGagne));
+    }, [charger, session]),
   );
+
+  const demandesActives = demandes.filter((d) => !STATUTS_INACTIFS.has(d.statut)).length;
 
   // Pendant "en route" : envoie la position toutes les ~15s pour le suivi
   // temps réel côté client (Volume 2 §5). S'arrête dès que ce n'est plus le cas.
@@ -97,7 +118,35 @@ export default function DemandesRecues() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Demandes reçues</Text>
+      <View style={styles.headerRow}>
+        <Pressable style={styles.hamburger} onPress={() => setSidebarOuvert(true)} hitSlop={10}>
+          <Menu size={22} color={colors.ink900} />
+        </Pressable>
+        <Text style={styles.title}>Demandes reçues</Text>
+      </View>
+
+      <View style={styles.stats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statValeur}>{demandesActives}</Text>
+          <Text style={styles.statLabel}>Actives</Text>
+        </View>
+        <View style={styles.statSeparateur} />
+        <View style={styles.statItem}>
+          <Text style={styles.statValeur}>{totalGagne ?? "—"}</Text>
+          <Text style={styles.statLabel}>FCFA gagnés</Text>
+        </View>
+        <View style={styles.statSeparateur} />
+        <View style={styles.statItem}>
+          <View style={styles.statNoteRow}>
+            <Star size={13} color={colors.accent700} fill={colors.accent500} />
+            <Text style={styles.statValeur}>{note ?? "—"}</Text>
+          </View>
+          <Text style={styles.statLabel}>Note</Text>
+        </View>
+      </View>
+
+      <ProSidebar visible={sidebarOuvert} onClose={() => setSidebarOuvert(false)} />
+
       <FlatList
         data={demandes}
         keyExtractor={(item) => item.id}
@@ -177,7 +226,22 @@ export default function DemandesRecues() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  hamburger: { padding: 4 },
   title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
+  stats: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.brand900,
+    borderRadius: 16,
+    paddingVertical: 16,
+    marginTop: 16,
+  },
+  statItem: { flex: 1, alignItems: "center", gap: 3 },
+  statSeparateur: { width: 1, height: 28, backgroundColor: colors.brand700 },
+  statValeur: { fontSize: 16, fontWeight: "800", color: colors.white },
+  statLabel: { fontSize: 11, color: colors.brand100 },
+  statNoteRow: { flexDirection: "row", alignItems: "center", gap: 4 },
   vide: { marginTop: 40, textAlign: "center", color: colors.ink500 },
   card: {
     backgroundColor: colors.white,
