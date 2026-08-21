@@ -1,26 +1,32 @@
-// Mêmes tokens que apps/website/src/index.css et apps/admin/src/index.css —
-// cohérence de marque entre les trois surfaces (Volume 3 §12 du LPD).
+// Nouvelle identité de marque (voir docs/decisions.md) : bleu nuit/bleu clair/
+// jaune, versions vives, fond blanc. À reporter aussi sur apps/website/src/index.css
+// et apps/admin/src/index.css (échelle de teintes complète à générer séparément —
+// pas fait dans cette passe, voir le journal de décisions).
 export const colors = {
-  brand900: "#0f2e22",
-  brand700: "#17452b",
-  brand100: "#d3e6da",
-  brand50: "#eaf3ee",
+  brand900: "#172242", // Bleu Nuit — couleur de marque principale (remplace le vert foncé)
+  brand700: "#2b3f66", // teinte intermédiaire dérivée, usages secondaires
+  brand100: "#d7e3f5",
+  brand50: "#eef3fc",
 
-  accent500: "#f5c400",
-  accent400: "#ffd83d",
-  accent300: "#ffe35c",
-  accent700: "#8a5d00",
+  bleuClair: "#5DAEF7", // Bleu Clair — nouvel accent secondaire du moodboard
+
+  accent500: "#FFC107", // Jaune Chaud — accent plus soutenu
+  accent400: "#FDE235", // Jaune Soleil — couleur d'action principale (vif)
+  accent300: "#FFF3B0",
+  accent700: "#8a5d00", // texte lisible sur fond jaune, inchangé
+
+  orange500: "#FF7A00", // Orange Énergie — touche parcimonieuse
 
   success500: "#16a34a",
   danger500: "#dc2626",
 
-  ink900: "#111827",
+  ink900: "#111721", // Noir Profond
   ink700: "#374151",
   ink500: "#6b7280",
   ink400: "#9ca3af",
   ink200: "#e5e7eb",
   ink100: "#f3f4f6",
 
-  cream100: "#fffdf6",
+  cream100: "#ffffff", // fond blanc demandé — l'app est un vrai produit à livrer, pas un moodboard
   white: "#ffffff",
 };
