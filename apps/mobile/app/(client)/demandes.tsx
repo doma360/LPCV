@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Navigation } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { distanceKm } from "@/lib/distance";
 import { colors } from "@/theme/colors";
+import Button from "@/components/Button";
 
 interface Demande {
   id: string;
@@ -16,7 +17,7 @@ interface Demande {
   longitude: string;
   professionnelLat: string | null;
   professionnelLng: string | null;
-  profession: { nom: string };
+  profession: { nom: string; slug: string };
   professionnel: { nom: string; prenom: string } | null;
 }
 
@@ -99,6 +100,13 @@ export default function MesDemandes() {
                 </View>
               )}
               {item.prixEstime && <Text style={styles.prix}>{item.prixEstime} FCFA</Text>}
+              {item.statut === "REFUSEE" && (
+                <Button
+                  label="Relancer la recherche"
+                  variant="outline"
+                  onPress={() => router.push({ pathname: "/(client)", params: { metier: item.profession.slug } })}
+                />
+              )}
             </View>
           );
         }}

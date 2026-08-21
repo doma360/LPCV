@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { MapPin, Star, ShieldCheck, Camera, Image as ImageIcon, X } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
@@ -26,6 +27,7 @@ interface Candidat {
 }
 
 export default function Rechercher() {
+  const { metier: metierParam } = useLocalSearchParams<{ metier?: string }>();
   const { position, refuse, chargement, demanderPosition, choisirZone } = useLocalisation();
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [profession, setProfession] = useState<Profession | null>(null);
@@ -43,6 +45,17 @@ export default function Rechercher() {
   useEffect(() => {
     apiFetch<Profession[]>("/api/v1/vitrine/metiers").then((res) => setProfessions(res.data));
   }, []);
+
+  // Revenu d'une demande refusée par un professionnel : relance directement
+  // la recherche sur le même métier plutôt que de repartir d'un écran vide.
+  useEffect(() => {
+    if (!metierParam || professions.length === 0) return;
+    const correspondance = professions.find((p) => p.slug === metierParam);
+    if (correspondance) {
+      setProfession(correspondance);
+      setSucces("Ce professionnel a refusé votre demande — voici d'autres profils disponibles.");
+    }
+  }, [metierParam, professions]);
 
   useEffect(() => {
     if (!profession || !position) return;
