@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0f2e22"
+      "backgroundColor": "#172242"
     },
     "ios": {
       "supportsTablet": true,
@@ -21,7 +21,7 @@
       "package": "com.lpcv.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffd83d"
+        "backgroundColor": "#FDE235"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
