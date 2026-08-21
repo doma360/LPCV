@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { ok, okPaginated } from "@/utils/response.js";
 import { Errors } from "@/utils/errors.js";
 import { parsePagination } from "@/utils/pagination.js";
+import { accorderAbonnementSchema } from "@/modules/abonnements/abonnements.schema.js";
 import {
   changerStatutUtilisateurSchema,
   listPendingSchema,
@@ -59,4 +60,11 @@ export async function changerStatutUtilisateurHandler(req: Request, res: Respons
   const input = changerStatutUtilisateurSchema.parse(req.body);
   const utilisateur = await adminService.changerStatutUtilisateur(req.params.type, req.params.id, req.auth.sub, input);
   return ok(res, utilisateur, "Statut mis à jour");
+}
+
+export async function accorderAbonnementHandler(req: Request, res: Response) {
+  if (!req.auth) throw Errors.unauthorized();
+  const input = accorderAbonnementSchema.parse(req.body);
+  const abonnement = await adminService.accorderAbonnement(req.params.id, req.auth.sub, input);
+  return ok(res, abonnement, "Abonnement accordé");
 }

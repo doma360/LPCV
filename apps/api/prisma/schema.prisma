@@ -33,6 +33,21 @@ enum StatutVerificationPro {
   @@map("statut_verification_pro")
 }
 
+enum PalierAbonnement {
+  MENSUEL @map("mensuel")
+  ANNUEL  @map("annuel")
+
+  @@map("palier_abonnement")
+}
+
+enum StatutAbonnement {
+  ACTIF   @map("actif")
+  EXPIRE  @map("expire")
+  ANNULE  @map("annule")
+
+  @@map("statut_abonnement")
+}
+
 enum StatutDemande {
   EN_ATTENTE @map("en_attente")
   ACCEPTEE   @map("acceptee")
@@ -173,10 +188,30 @@ model Professionnel {
   avis          Avis[]
   messages      Message[]
   appareils     Appareil[]
+  abonnement    Abonnement?
 
   @@index([professionId])
   @@index([statutVerification])
   @@map("professionnel")
+}
+
+// Base du futur systeme d'abonnement (portefeuille pro, reservation, carte
+// membre avec QR) - voir docs/decisions.md. Un seul abonnement courant par
+// professionnel pour l'instant, pas d'historique de facturation.
+model Abonnement {
+  id              String            @id @default(uuid())
+  professionnelId String            @unique @map("id_professionnel")
+  palier          PalierAbonnement
+  statut          StatutAbonnement  @default(ACTIF)
+  montant         Decimal           @db.Decimal(10, 2)
+  dateDebut       DateTime          @map("date_debut")
+  dateFin         DateTime          @map("date_fin")
+  createdAt       DateTime          @default(now()) @map("date_creation")
+  updatedAt       DateTime          @updatedAt @map("date_maj")
+
+  professionnel Professionnel @relation(fields: [professionnelId], references: [id])
+
+  @@map("abonnement")
 }
 
 model Administrateur {

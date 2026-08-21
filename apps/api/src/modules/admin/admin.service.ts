@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma.js";
 import { Errors } from "@/utils/errors.js";
 import * as avisService from "@/modules/avis/avis.service.js";
+import * as abonnementsService from "@/modules/abonnements/abonnements.service.js";
+import type { AccorderAbonnementInput } from "@/modules/abonnements/abonnements.schema.js";
 import type {
   ChangerStatutUtilisateurInput,
   ListUtilisateursInput,
@@ -158,4 +160,11 @@ export async function changerStatutUtilisateur(
 
   const { motDePasseHash: _h, ...rest } = misAJour;
   return rest;
+}
+
+// Pas de flux d'achat en libre-service pour l'instant (voir docs/decisions.md,
+// chantier reservation/portefeuille) : un administrateur accorde l'abonnement
+// manuellement en attendant l'intégration d'un vrai moyen de paiement.
+export function accorderAbonnement(professionnelId: string, adminId: string, input: AccorderAbonnementInput) {
+  return abonnementsService.accorderAbonnement(professionnelId, adminId, input);
 }

@@ -20,7 +20,7 @@ déploiement.
 
 ## Paiement mobile money (Wave, Orange Money, MTN Money, Moov Money)
 
-- **Statut actuel** : module `paiements` en stub, rien de branché.
+- **Statut actuel** : module `paiements` en stub, rien de branché. Le nouveau module `abonnements` (Mensuel/Annuel pour les professionnels) a le même besoin — pour l'instant un administrateur l'accorde manuellement (`POST /admin/abonnements/:id`), aucun paiement réel ne le déclenche.
 - **À faire** : ouvrir un compte chez un agrégateur (CinetPay ou PayDunya, cités au Volume 4 §3), contrat marchand, clés API de production après validation KYC. **Le plus gros morceau, à traiter en dernier avec soin — argent réel, cf. `decisions.md`.**
 
 ## Stockage de fichiers (photos de profil, documents de vérification, photos de demande)
