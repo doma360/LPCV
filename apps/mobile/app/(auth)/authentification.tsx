@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, Lock, Mail, Phone, User } from "lucide-react-native";
 import { useAuth, type Role } from "@/hooks/useAuth";
@@ -29,6 +29,7 @@ export default function Authentification() {
 
   // --- inscription ---
   const [professions, setProfessions] = useState<Profession[]>([]);
+  const [professionsStatut, setProfessionsStatut] = useState<"chargement" | "ok" | "erreur">("chargement");
   const [professionId, setProfessionId] = useState<string | null>(null);
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
@@ -38,12 +39,20 @@ export default function Authentification() {
   const [erreurInscription, setErreurInscription] = useState<string | null>(null);
   const [loadingInscription, setLoadingInscription] = useState(false);
 
-  useEffect(() => {
+  const chargerProfessions = useCallback(() => {
     if (role !== "professionnel") return;
+    setProfessionsStatut("chargement");
     apiFetch<Profession[]>("/api/v1/vitrine/metiers")
-      .then((res) => setProfessions(res.data))
-      .catch(() => setProfessions([]));
+      .then((res) => {
+        setProfessions(res.data);
+        setProfessionsStatut("ok");
+      })
+      .catch(() => setProfessionsStatut("erreur"));
   }, [role]);
+
+  useEffect(() => {
+    chargerProfessions();
+  }, [chargerProfessions]);
 
   async function handleConnexion() {
     setErreurConnexion(null);
@@ -169,19 +178,30 @@ export default function Authentification() {
             {role === "professionnel" && (
               <View style={styles.form}>
                 <Text style={styles.label}>Métier</Text>
-                <View style={styles.chips}>
-                  {professions.map((profession) => (
-                    <Pressable
-                      key={profession.id}
-                      onPress={() => setProfessionId(profession.id)}
-                      style={[styles.chip, professionId === profession.id && styles.chipActive]}
-                    >
-                      <Text style={[styles.chipLabel, professionId === profession.id && styles.chipLabelActive]}>
-                        {profession.nom}
-                      </Text>
+                {professionsStatut === "chargement" && <ActivityIndicator color={colors.brand700} />}
+                {professionsStatut === "erreur" && (
+                  <View style={styles.metierErreur}>
+                    <Text style={styles.erreur}>Impossible de charger la liste des métiers. Vérifiez votre connexion.</Text>
+                    <Pressable onPress={chargerProfessions}>
+                      <Text style={styles.reessayer}>Réessayer</Text>
                     </Pressable>
-                  ))}
-                </View>
+                  </View>
+                )}
+                {professionsStatut === "ok" && (
+                  <View style={styles.chips}>
+                    {professions.map((profession) => (
+                      <Pressable
+                        key={profession.id}
+                        onPress={() => setProfessionId(profession.id)}
+                        style={[styles.chip, professionId === profession.id && styles.chipActive]}
+                      >
+                        <Text style={[styles.chipLabel, professionId === profession.id && styles.chipLabelActive]}>
+                          {profession.nom}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
               </View>
             )}
 
@@ -257,4 +277,6 @@ const styles = StyleSheet.create({
   chipLabelActive: { color: colors.accent400 },
   erreur: { color: colors.danger500, fontSize: 13 },
   lienMdp: { textAlign: "right", color: colors.ink500, fontSize: 13, fontWeight: "600" },
+  metierErreur: { gap: 8 },
+  reessayer: { color: colors.brand700, fontSize: 13, fontWeight: "700" },
 });
