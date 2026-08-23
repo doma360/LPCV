@@ -89,6 +89,10 @@ export default function Accueil() {
       <Text style={styles.sousSalutation}>Trouvez un professionnel de confiance près de chez vous.</Text>
 
       <View style={styles.section}>
+        <PromoCarousel />
+      </View>
+
+      <View style={styles.section}>
         <MiniCartePosition label={position?.label ?? null} chargement={chargement} onRecentrer={demanderPosition} />
         {!position && (
           <View style={styles.localisation}>
@@ -142,10 +146,6 @@ export default function Accueil() {
         <View style={{ marginTop: 14 }}>
           <Button label="Rechercher" showArrow onPress={lancerRecherche} disabled={!metierChoisi || !position} />
         </View>
-      </View>
-
-      <View style={styles.section}>
-        <PromoCarousel />
       </View>
 
       {enCours.length > 0 && (
