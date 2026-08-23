@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import { CalendarClock, Menu, Search } from "lucide-react-native";
+import { Bell, CalendarClock, ChevronRight, Search } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalisation } from "@/hooks/useLocalisation";
@@ -12,7 +12,6 @@ import MiniCartePosition from "@/components/MiniCartePosition";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
 import LpcvLogo from "@/components/LpcvLogo";
-import ClientSidebar from "@/components/ClientSidebar";
 
 interface Profession {
   id: string;
@@ -46,7 +45,6 @@ export default function Accueil() {
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [texteMetier, setTexteMetier] = useState("");
   const [metierChoisi, setMetierChoisi] = useState<Profession | null>(null);
-  const [sidebarOuvert, setSidebarOuvert] = useState(false);
 
   useEffect(() => {
     apiFetch<Profession[]>("/api/v1/vitrine/metiers").then((res) => setProfessions(res.data));
@@ -94,12 +92,10 @@ export default function Accueil() {
           <Text style={styles.wordmark}>LPCV</Text>
           <Text style={styles.tagline}>Les Professionnels Chez Vous</Text>
         </View>
-        <Pressable style={styles.hamburger} onPress={() => setSidebarOuvert(true)} hitSlop={10}>
-          <Menu size={22} color={colors.brand900} />
+        <Pressable style={styles.cloche} onPress={() => router.push("/(client)/notifications")} hitSlop={10}>
+          <Bell size={22} color={colors.brand900} />
         </Pressable>
       </View>
-
-      <ClientSidebar visible={sidebarOuvert} onClose={() => setSidebarOuvert(false)} />
 
       <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
         <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
@@ -131,12 +127,15 @@ export default function Accueil() {
       </View>
 
       <View style={styles.section}>
-        <View style={styles.champPosition}>
-          <Text style={styles.champLabel}>Ma position</Text>
-          <Text style={styles.champValeur} numberOfLines={1}>
-            {position?.label ?? "Non renseignée"}
-          </Text>
-        </View>
+        <Pressable style={styles.champPosition} onPress={demanderPosition}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.champLabel}>Ma position</Text>
+            <Text style={styles.champValeur} numberOfLines={1}>
+              {position?.label ?? "Non renseignée"}
+            </Text>
+          </View>
+          <ChevronRight size={18} color={colors.ink400} />
+        </Pressable>
 
         <View style={{ marginTop: 10 }}>
           <TextField
@@ -208,7 +207,7 @@ const styles = StyleSheet.create({
   },
   wordmark: { fontSize: 20, fontWeight: "900", color: colors.brand900, letterSpacing: 0.5 },
   tagline: { fontSize: 10, fontWeight: "700", color: colors.brand700, marginTop: 1, letterSpacing: 0.3 },
-  hamburger: { padding: 4 },
+  cloche: { padding: 4 },
   container: { padding: 20, paddingBottom: 40 },
   salutation: { fontSize: 18, fontWeight: "800", color: colors.ink900 },
   sousSalutation: { fontSize: 12, color: colors.ink500, marginTop: 2 },
@@ -220,6 +219,8 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: colors.ink200 },
   chipLabel: { fontSize: 13, fontWeight: "600", color: colors.ink700 },
   champPosition: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     borderRadius: 16,
     paddingHorizontal: 16,

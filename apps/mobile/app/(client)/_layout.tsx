@@ -1,12 +1,12 @@
 import { Tabs } from "expo-router";
 import { Home, ClipboardList, User } from "lucide-react-native";
-import FloatingTabBar from "@/components/FloatingTabBar";
+import ClientTabBar from "@/components/ClientTabBar";
 import { LocalisationProvider } from "@/hooks/useLocalisation";
 
 export default function ClientLayout() {
   return (
     <LocalisationProvider>
-      <Tabs tabBar={(props) => <FloatingTabBar {...props} />} screenOptions={{ headerShown: false }}>
+      <Tabs tabBar={(props) => <ClientTabBar {...props} />} screenOptions={{ headerShown: false }}>
         <Tabs.Screen
           name="index"
           options={{ title: "Accueil", tabBarIcon: ({ color, size }) => <Home color={color} size={size} /> }}

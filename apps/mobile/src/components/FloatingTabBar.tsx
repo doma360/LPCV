@@ -4,9 +4,18 @@ import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "@/theme/colors";
 
-// Écrans enregistrés comme onglets mais volontairement absents de la barre
-// (ex. Paramètres, atteint via le bouton réglages du Profil).
-const ROUTES_MASQUEES = new Set(["parametres"]);
+// Toutes les routes du groupe (professionnel) qui ne sont pas des onglets a
+// proprement parler - sans ca, chacune consomme quand meme un flex:1 dans la
+// barre (Pressable vide, juste sans icone) et compresse les vrais onglets.
+// Meme piege trouve et corrige cote client (ClientTabBar.tsx).
+const ROUTES_MASQUEES = new Set([
+  "parametres",
+  "modifier-profil",
+  "carte-membre",
+  "portefeuille",
+  "reservations",
+  "reservation/[id]",
+]);
 
 const LARGEUR_INDICATEUR = 28;
 
