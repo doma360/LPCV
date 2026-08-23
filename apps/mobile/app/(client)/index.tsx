@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import { CalendarClock, Search } from "lucide-react-native";
+import { CalendarClock, Menu, Search } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalisation } from "@/hooks/useLocalisation";
@@ -11,6 +11,8 @@ import PromoCarousel from "@/components/PromoCarousel";
 import MiniCartePosition from "@/components/MiniCartePosition";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
+import LpcvLogo from "@/components/LpcvLogo";
+import ClientSidebar from "@/components/ClientSidebar";
 
 interface Profession {
   id: string;
@@ -44,6 +46,7 @@ export default function Accueil() {
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [texteMetier, setTexteMetier] = useState("");
   const [metierChoisi, setMetierChoisi] = useState<Profession | null>(null);
+  const [sidebarOuvert, setSidebarOuvert] = useState(false);
 
   useEffect(() => {
     apiFetch<Profession[]>("/api/v1/vitrine/metiers").then((res) => setProfessions(res.data));
@@ -85,8 +88,18 @@ export default function Accueil() {
 
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
-      <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
-      <Text style={styles.sousSalutation}>Trouvez un professionnel de confiance près de chez vous.</Text>
+      <View style={styles.entete}>
+        <LpcvLogo size={38} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
+          <Text style={styles.sousSalutation}>Trouvez un professionnel de confiance près de chez vous.</Text>
+        </View>
+        <Pressable style={styles.hamburger} onPress={() => setSidebarOuvert(true)} hitSlop={10}>
+          <Menu size={22} color={colors.ink900} />
+        </Pressable>
+      </View>
+
+      <ClientSidebar visible={sidebarOuvert} onClose={() => setSidebarOuvert(false)} />
 
       <View style={styles.section}>
         <PromoCarousel />
@@ -181,8 +194,10 @@ export default function Accueil() {
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.cream100 },
   container: { padding: 20, paddingTop: 60, paddingBottom: 40 },
-  salutation: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
-  sousSalutation: { fontSize: 13, color: colors.ink500, marginTop: 2 },
+  entete: { flexDirection: "row", alignItems: "center", gap: 12 },
+  hamburger: { padding: 4 },
+  salutation: { fontSize: 18, fontWeight: "800", color: colors.ink900 },
+  sousSalutation: { fontSize: 12, color: colors.ink500, marginTop: 2 },
   section: { marginTop: 20 },
   sectionTitre: { fontSize: 16, fontWeight: "700", color: colors.ink900, marginBottom: 12 },
   localisation: { marginTop: 12, gap: 10 },

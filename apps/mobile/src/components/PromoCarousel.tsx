@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dimensions, FlatList, StyleSheet, Text, View, type NativeSyntheticEvent, type NativeScrollEvent } from "react-native";
 import { ShieldCheck, Sparkles, Wallet } from "lucide-react-native";
 import { colors } from "@/theme/colors";
@@ -38,6 +38,17 @@ export default function PromoCarousel() {
     const i = Math.round(e.nativeEvent.contentOffset.x / LARGEUR_CARTE);
     if (i !== index) setIndex(i);
   }
+
+  // Defilement automatique : un accueil statique se sentait "dormant" (retour
+  // utilisateur), le swipe manuel reste possible et remet le minuteur a zero.
+  useEffect(() => {
+    const id = setInterval(() => {
+      const suivant = (index + 1) % SLIDES.length;
+      listeRef.current?.scrollToOffset({ offset: suivant * LARGEUR_CARTE, animated: true });
+      setIndex(suivant);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [index]);
 
   return (
     <View>
