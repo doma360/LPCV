@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import * as Location from "expo-location";
 
 interface Position {
@@ -7,6 +7,16 @@ interface Position {
   source: "gps" | "manuel";
   label: string;
 }
+
+interface LocalisationContextValue {
+  position: Position | null;
+  refuse: boolean;
+  chargement: boolean;
+  demanderPosition: () => Promise<void>;
+  choisirZone: (zone: { nom: string; latitude: number; longitude: number }) => void;
+}
+
+const LocalisationContext = createContext<LocalisationContextValue | null>(null);
 
 // Nominatim (OpenStreetMap) : géocodage inverse gratuit et sans clé, correct
 // pour notre faible volume. À remplacer par Google/Mapbox si le volume grossit
@@ -27,9 +37,10 @@ async function adresseLisible(lat: number, lng: number): Promise<string | null> 
   }
 }
 
-// Permission GPS avec repli manuel par quartier si refusée (pas encore de
-// pin-sur-carte — voir docs/deploiement.md).
-export function useLocalisation() {
+// Partagee via contexte (pas juste un useState local) : la position doit
+// survivre a la navigation entre ecrans (Accueil -> fiche pro -> demande),
+// pas seulement vivre dans le composant qui l'a demandee la premiere fois.
+export function LocalisationProvider({ children }: { children: ReactNode }) {
   const [position, setPosition] = useState<Position | null>(null);
   const [refuse, setRefuse] = useState(false);
   const [chargement, setChargement] = useState(false);
@@ -59,5 +70,15 @@ export function useLocalisation() {
     setRefuse(false);
   }
 
-  return { position, refuse, chargement, demanderPosition, choisirZone };
+  return (
+    <LocalisationContext.Provider value={{ position, refuse, chargement, demanderPosition, choisirZone }}>
+      {children}
+    </LocalisationContext.Provider>
+  );
+}
+
+export function useLocalisation() {
+  const ctx = useContext(LocalisationContext);
+  if (!ctx) throw new Error("useLocalisation doit être utilisé dans LocalisationProvider");
+  return ctx;
 }
