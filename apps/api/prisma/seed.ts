@@ -26,6 +26,9 @@ const professions = [
   { nom: "Esthétique", slug: "esthetique", description: "Soins esthétiques à domicile", iconeSlug: "menage" },
   { nom: "Maquillage", slug: "maquillage", description: "Maquillage pour événements", iconeSlug: "menage" },
   { nom: "Garde d'enfants", slug: "garde-enfants", description: "Nounou, garde d'enfants à domicile", iconeSlug: "menage" },
+  // Ajoute au metier non mentionne dans le LPD, pour l'espace "Decouvrir"
+  // (professionnels avec local) - voir docs/decisions.md.
+  { nom: "Couture", slug: "couture", description: "Couture, retouches, confection sur mesure", iconeSlug: "menage" },
 ];
 
 const zones = [
