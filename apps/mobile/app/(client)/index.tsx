@@ -1,11 +1,22 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import { CalendarClock, ClipboardList, Search, Star, User } from "lucide-react-native";
+import { CalendarClock, Search } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocalisation } from "@/hooks/useLocalisation";
+import { zones } from "@/data/zones";
 import { colors } from "@/theme/colors";
 import PromoCarousel from "@/components/PromoCarousel";
+import MiniCartePosition from "@/components/MiniCartePosition";
+import TextField from "@/components/TextField";
+import Button from "@/components/Button";
+
+interface Profession {
+  id: string;
+  nom: string;
+  slug: string;
+}
 
 interface Demande {
   id: string;
@@ -25,17 +36,18 @@ interface Reservation {
 const DEMANDE_ACTIVE = new Set(["EN_ATTENTE", "ACCEPTEE", "EN_ROUTE", "EN_COURS"]);
 const RESERVATION_ACTIVE = new Set(["EN_ATTENTE", "CONFIRMEE", "PAYEE"]);
 
-const ACCES_RAPIDE = [
-  { label: "Rechercher", description: "Un pro pour vous", icone: Search, fond: colors.accent400, texte: colors.brand900, route: "/(client)/rechercher" as const },
-  { label: "Mes demandes", description: "Déplacements & réservations", icone: ClipboardList, fond: colors.brand900, texte: colors.white, route: "/(client)/demandes" as const },
-  { label: "Avis laissés", description: "Vos évaluations", icone: Star, fond: colors.bleuClair, texte: colors.white, route: "/(client)/profil" as const },
-  { label: "Profil", description: "Infos & paramètres", icone: User, fond: colors.orange500, texte: colors.white, route: "/(client)/profil" as const },
-];
-
 export default function Accueil() {
   const { session } = useAuth();
+  const { position, refuse, chargement, demanderPosition, choisirZone } = useLocalisation();
   const [demandes, setDemandes] = useState<Demande[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [professions, setProfessions] = useState<Profession[]>([]);
+  const [texteMetier, setTexteMetier] = useState("");
+  const [metierChoisi, setMetierChoisi] = useState<Profession | null>(null);
+
+  useEffect(() => {
+    apiFetch<Profession[]>("/api/v1/vitrine/metiers").then((res) => setProfessions(res.data));
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -56,36 +68,84 @@ export default function Accueil() {
     })),
   ];
 
+  const suggestions =
+    texteMetier.trim().length > 0 && !metierChoisi
+      ? professions.filter((p) => p.nom.toLowerCase().includes(texteMetier.trim().toLowerCase()))
+      : [];
+
+  function choisirMetier(p: Profession) {
+    setMetierChoisi(p);
+    setTexteMetier(p.nom);
+  }
+
+  function lancerRecherche() {
+    if (!metierChoisi) return;
+    router.push({ pathname: "/(client)/rechercher", params: { metier: metierChoisi.slug } });
+  }
+
   return (
     <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
       <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
       <Text style={styles.sousSalutation}>Trouvez un professionnel de confiance près de chez vous.</Text>
 
-      <Pressable style={styles.rechercheBarre} onPress={() => router.push("/(client)/rechercher")}>
-        <Search size={18} color={colors.ink400} />
-        <Text style={styles.rechercheTexte}>Rechercher un métier...</Text>
-      </Pressable>
-
       <View style={styles.section}>
-        <PromoCarousel />
+        <MiniCartePosition label={position?.label ?? null} chargement={chargement} onRecentrer={demanderPosition} />
+        {!position && (
+          <View style={styles.localisation}>
+            <Button label="Utiliser ma position" onPress={demanderPosition} loading={chargement} />
+            {refuse && (
+              <>
+                <Text style={styles.aide}>Position refusée — choisissez votre quartier :</Text>
+                <View style={styles.chips}>
+                  {zones.map((zone) => (
+                    <Pressable key={zone.nom} onPress={() => choisirZone(zone)} style={styles.chip}>
+                      <Text style={styles.chipLabel}>{zone.nom}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            )}
+          </View>
+        )}
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitre}>Accès rapide</Text>
-        <View style={styles.grille}>
-          {ACCES_RAPIDE.map((item) => {
-            const Icone = item.icone;
-            return (
-              <Pressable key={item.label} style={styles.tuile} onPress={() => router.push(item.route)}>
-                <View style={[styles.tuileIcone, { backgroundColor: item.fond }]}>
-                  <Icone size={20} color={item.texte} />
-                </View>
-                <Text style={styles.tuileLabel}>{item.label}</Text>
-                <Text style={styles.tuileDescription}>{item.description}</Text>
-              </Pressable>
-            );
-          })}
+        <View style={styles.champPosition}>
+          <Text style={styles.champLabel}>Ma position</Text>
+          <Text style={styles.champValeur} numberOfLines={1}>
+            {position?.label ?? "Non renseignée"}
+          </Text>
         </View>
+
+        <View style={{ marginTop: 10 }}>
+          <TextField
+            label="Métier recherché"
+            icon={Search}
+            value={texteMetier}
+            onChangeText={(t) => {
+              setTexteMetier(t);
+              if (metierChoisi) setMetierChoisi(null);
+            }}
+            placeholder="Ex. Plomberie, Coiffure..."
+          />
+          {suggestions.length > 0 && (
+            <View style={styles.suggestions}>
+              {suggestions.map((p) => (
+                <Pressable key={p.id} style={styles.suggestionItem} onPress={() => choisirMetier(p)}>
+                  <Text style={styles.suggestionTexte}>{p.nom}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={{ marginTop: 14 }}>
+          <Button label="Rechercher" showArrow onPress={lancerRecherche} disabled={!metierChoisi || !position} />
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <PromoCarousel />
       </View>
 
       {enCours.length > 0 && (
@@ -123,38 +183,33 @@ const styles = StyleSheet.create({
   container: { padding: 20, paddingTop: 60, paddingBottom: 40 },
   salutation: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
   sousSalutation: { fontSize: 13, color: colors.ink500, marginTop: 2 },
-  rechercheBarre: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: colors.white,
-    borderRadius: 999,
-    paddingHorizontal: 18,
-    height: 52,
-    marginTop: 18,
-    borderWidth: 1,
-    borderColor: colors.ink100,
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 1,
-  },
-  rechercheTexte: { fontSize: 14, color: colors.ink400 },
-  section: { marginTop: 24 },
+  section: { marginTop: 20 },
   sectionTitre: { fontSize: 16, fontWeight: "700", color: colors.ink900, marginBottom: 12 },
-  grille: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  tuile: {
-    width: "47%",
+  localisation: { marginTop: 12, gap: 10 },
+  aide: { fontSize: 13, color: colors.ink500 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: colors.ink200 },
+  chipLabel: { fontSize: 13, fontWeight: "600", color: colors.ink700 },
+  champPosition: {
     backgroundColor: colors.white,
-    borderRadius: 18,
-    padding: 14,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderWidth: 1,
     borderColor: colors.ink100,
   },
-  tuileIcone: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", marginBottom: 10 },
-  tuileLabel: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
-  tuileDescription: { fontSize: 11, color: colors.ink500, marginTop: 2 },
+  champLabel: { fontSize: 11, fontWeight: "700", color: colors.ink400, textTransform: "uppercase" },
+  champValeur: { fontSize: 14, fontWeight: "600", color: colors.ink900, marginTop: 2 },
+  suggestions: {
+    marginTop: 6,
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+    overflow: "hidden",
+  },
+  suggestionItem: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.ink100 },
+  suggestionTexte: { fontSize: 14, color: colors.ink900, fontWeight: "600" },
   carteEnCours: {
     flexDirection: "row",
     alignItems: "center",

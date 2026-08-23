@@ -114,7 +114,9 @@ function CarteDemande({ demande, onAvisEnvoye }: { demande: Demande; onAvisEnvoy
         <Button
           label="Relancer la recherche"
           variant="outline"
-          onPress={() => router.push({ pathname: "/(client)", params: { metier: demande.profession.slug } })}
+          onPress={() =>
+            router.push({ pathname: "/(client)/rechercher", params: { metier: demande.profession.slug, relance: "1" } })
+          }
         />
       )}
 
@@ -157,7 +159,7 @@ export default function MesDemandes() {
     for (const demande of res.data) {
       const precedent = statutsConnus.current[demande.id];
       if (precedent === "EN_ATTENTE" && demande.statut === "REFUSEE") {
-        router.push({ pathname: "/(client)", params: { metier: demande.profession.slug } });
+        router.push({ pathname: "/(client)/rechercher", params: { metier: demande.profession.slug, relance: "1" } });
         break;
       }
     }
