@@ -87,23 +87,27 @@ export default function Accueil() {
   }
 
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
-      <View style={styles.entete}>
-        <LpcvLogo size={38} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
-          <Text style={styles.sousSalutation}>Trouvez un professionnel de confiance près de chez vous.</Text>
+    <View style={styles.flex}>
+      <View style={styles.bandeau}>
+        <LpcvLogo size={36} />
+        <View style={{ flex: 1, marginLeft: 10 }}>
+          <Text style={styles.wordmark}>LPCV</Text>
+          <Text style={styles.tagline}>Les Professionnels Chez Vous</Text>
         </View>
         <Pressable style={styles.hamburger} onPress={() => setSidebarOuvert(true)} hitSlop={10}>
-          <Menu size={22} color={colors.ink900} />
+          <Menu size={22} color={colors.brand900} />
         </Pressable>
       </View>
 
       <ClientSidebar visible={sidebarOuvert} onClose={() => setSidebarOuvert(false)} />
 
-      <View style={styles.section}>
-        <PromoCarousel />
-      </View>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
+        <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
+        <Text style={styles.sousSalutation}>Trouvez un professionnel de confiance près de chez vous.</Text>
+
+        <View style={styles.section}>
+          <PromoCarousel />
+        </View>
 
       <View style={styles.section}>
         <MiniCartePosition label={position?.label ?? null} chargement={chargement} onRecentrer={demanderPosition} />
@@ -187,15 +191,25 @@ export default function Accueil() {
           </View>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.cream100 },
-  container: { padding: 20, paddingTop: 60, paddingBottom: 40 },
-  entete: { flexDirection: "row", alignItems: "center", gap: 12 },
+  bandeau: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.accent400,
+    paddingTop: 56,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+  },
+  wordmark: { fontSize: 20, fontWeight: "900", color: colors.brand900, letterSpacing: 0.5 },
+  tagline: { fontSize: 10, fontWeight: "700", color: colors.brand700, marginTop: 1, letterSpacing: 0.3 },
   hamburger: { padding: 4 },
+  container: { padding: 20, paddingBottom: 40 },
   salutation: { fontSize: 18, fontWeight: "800", color: colors.ink900 },
   sousSalutation: { fontSize: 12, color: colors.ink500, marginTop: 2 },
   section: { marginTop: 20 },
