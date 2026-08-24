@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import * as Location from "expo-location";
-import { Menu, Phone, Star } from "lucide-react-native";
+import { ClipboardList, MapPin, Menu, Phone, Star } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,14 +26,14 @@ interface Demande {
   client: { nom: string; prenom: string };
 }
 
-const statutLabels: Record<string, { label: string; color: string }> = {
-  EN_ATTENTE: { label: "En attente", color: colors.accent700 },
-  ACCEPTEE: { label: "Acceptée", color: colors.brand700 },
-  EN_ROUTE: { label: "En route", color: colors.brand700 },
-  EN_COURS: { label: "En cours", color: colors.brand700 },
-  TERMINEE: { label: "Terminée", color: colors.success500 },
-  ANNULEE: { label: "Annulée", color: colors.danger500 },
-  REFUSEE: { label: "Refusée", color: colors.danger500 },
+const statutLabels: Record<string, { label: string; color: string; fond: string }> = {
+  EN_ATTENTE: { label: "En attente", color: colors.accent700, fond: colors.accent300 },
+  ACCEPTEE: { label: "Acceptée", color: colors.brand700, fond: colors.brand50 },
+  EN_ROUTE: { label: "En route", color: colors.brand700, fond: colors.brand50 },
+  EN_COURS: { label: "En cours", color: colors.brand700, fond: colors.brand50 },
+  TERMINEE: { label: "Terminée", color: colors.success500, fond: "#E7F7EE" },
+  ANNULEE: { label: "Annulée", color: colors.danger500, fond: "#FDECEC" },
+  REFUSEE: { label: "Refusée", color: colors.danger500, fond: "#FDECEC" },
 };
 
 const prochaineEtape: Record<string, { statut: string; label: string }> = {
@@ -160,10 +160,18 @@ export default function DemandesRecues() {
             }}
           />
         }
-        contentContainerStyle={{ gap: 10, paddingTop: 16, paddingBottom: 40 }}
-        ListEmptyComponent={<Text style={styles.vide}>Aucune demande pour l'instant.</Text>}
+        contentContainerStyle={{ gap: 12, paddingTop: 16, paddingBottom: 40 }}
+        ListEmptyComponent={
+          <View style={styles.vide}>
+            <View style={styles.videIcone}>
+              <ClipboardList size={26} color={colors.ink400} />
+            </View>
+            <Text style={styles.videTitre}>Aucune demande pour l'instant</Text>
+            <Text style={styles.videTexte}>Les nouvelles demandes de clients apparaîtront ici.</Text>
+          </View>
+        }
         renderItem={({ item }) => {
-          const statut = statutLabels[item.statut] ?? { label: item.statut, color: colors.ink500 };
+          const statut = statutLabels[item.statut] ?? { label: item.statut, color: colors.ink500, fond: colors.cream100 };
           const etape = prochaineEtape[item.statut];
           const chargement = enCours === item.id;
 
@@ -171,15 +179,25 @@ export default function DemandesRecues() {
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardMetier}>{item.profession.nom}</Text>
-                <Text style={[styles.statut, { color: statut.color }]}>{statut.label}</Text>
+                <View style={[styles.statutPill, { backgroundColor: statut.fond }]}>
+                  <Text style={[styles.statutLabel, { color: statut.color }]}>{statut.label}</Text>
+                </View>
               </View>
               <Text style={styles.client}>
-                {item.client.prenom} {item.client.nom} · {item.adresse}
+                {item.client.prenom} {item.client.nom}
               </Text>
+              <View style={styles.badge}>
+                <MapPin size={11} color={colors.brand700} />
+                <Text style={styles.badgeLabel}>{item.adresse}</Text>
+              </View>
               <Text style={styles.description} numberOfLines={2}>
                 {item.description}
               </Text>
-              {item.prixEstime && <Text style={styles.prix}>{item.prixEstime} FCFA</Text>}
+              {item.prixEstime && (
+                <View style={styles.prixPill}>
+                  <Text style={styles.prixLabel}>{item.prixEstime} FCFA</Text>
+                </View>
+              )}
 
               {item.statut === "EN_ATTENTE" && (
                 <View style={styles.actions}>
@@ -227,8 +245,20 @@ export default function DemandesRecues() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
   headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  hamburger: { padding: 4 },
-  title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
+  hamburger: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  title: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
   stats: {
     flexDirection: "row",
     alignItems: "center",
@@ -242,21 +272,52 @@ const styles = StyleSheet.create({
   statValeur: { fontSize: 16, fontWeight: "800", color: colors.white },
   statLabel: { fontSize: 11, color: colors.brand100 },
   statNoteRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  vide: { marginTop: 40, textAlign: "center", color: colors.ink500 },
+  vide: { alignItems: "center", paddingTop: 60, paddingHorizontal: 20, gap: 8 },
+  videIcone: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+  },
+  videTitre: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
+  videTexte: { fontSize: 13, color: colors.ink500, textAlign: "center", lineHeight: 18 },
   card: {
     backgroundColor: colors.white,
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: 16,
+    padding: 16,
     borderWidth: 1,
     borderColor: colors.ink100,
     gap: 6,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1,
   },
   cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  cardMetier: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
-  statut: { fontSize: 12, fontWeight: "700" },
-  client: { fontSize: 12, color: colors.ink500 },
+  cardMetier: { fontSize: 15, fontWeight: "700", color: colors.ink900 },
+  statutPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
+  statutLabel: { fontSize: 11, fontWeight: "700" },
+  client: { fontSize: 13, fontWeight: "600", color: colors.ink900 },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.cream100,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    alignSelf: "flex-start",
+  },
+  badgeLabel: { fontSize: 11, fontWeight: "600", color: colors.ink700 },
   description: { fontSize: 13, color: colors.ink700 },
-  prix: { fontSize: 13, fontWeight: "700", color: colors.brand700 },
+  prixPill: { backgroundColor: colors.accent400, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, alignSelf: "flex-start" },
+  prixLabel: { fontSize: 12, fontWeight: "800", color: colors.brand900 },
   actions: { flexDirection: "row", gap: 8, marginTop: 8 },
   actionPrimary: { flex: 1, backgroundColor: colors.accent400, borderRadius: 10, paddingVertical: 10, alignItems: "center" },
   actionPrimaryLabel: { fontSize: 13, fontWeight: "700", color: colors.brand900 },
