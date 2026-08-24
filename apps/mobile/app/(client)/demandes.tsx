@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useFocusEffect } from "expo-router";
 import { ClipboardList, Navigation, Star } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
@@ -7,6 +8,7 @@ import { distanceKm } from "@/lib/distance";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import { polices } from "@/theme/typography";
 
 interface Demande {
   id: string;
@@ -222,7 +224,7 @@ export default function MesDemandes() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
-  title: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "800", color: colors.ink900 },
   sousTitre: { fontSize: 12, color: colors.ink500, marginTop: 2 },
   vide: { alignItems: "center", paddingTop: 60, paddingHorizontal: 20, gap: 8 },
   videIcone: {

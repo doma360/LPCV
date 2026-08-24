@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, Text, View, type PressableProps } from "react-native";
+import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, View, type PressableProps } from "react-native";
+import Text from "@/components/Texte";
 import { ArrowRight } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 

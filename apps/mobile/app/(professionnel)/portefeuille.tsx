@@ -1,11 +1,13 @@
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useFocusEffect } from "expo-router";
 import { ArrowDownCircle, ArrowLeft, ArrowUpCircle } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import { polices } from "@/theme/typography";
 
 interface Mouvement {
   id: string;
@@ -127,7 +129,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12,
   },
-  title: { fontSize: 22, fontWeight: "700", color: colors.ink900, marginBottom: 16 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "700", color: colors.ink900, marginBottom: 16 },
   soldeCard: { backgroundColor: colors.brand900, borderRadius: 16, padding: 20 },
   soldeLabel: { fontSize: 12, color: colors.brand100, fontWeight: "600" },
   soldeValeur: { fontSize: 28, color: colors.white, fontWeight: "800", marginTop: 4 },

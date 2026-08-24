@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Platform, Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft, Phone, Send } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,6 +8,7 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import { polices } from "@/theme/typography";
 
 type Statut = "EN_ATTENTE" | "CONFIRMEE" | "PAYEE" | "TERMINEE" | "ANNULEE" | "REFUSEE";
 
@@ -273,7 +275,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 8,
   },
-  title: { fontSize: 20, fontWeight: "700", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 20, fontWeight: "700", color: colors.ink900 },
   avec: { fontSize: 13, color: colors.ink500 },
   statut: { fontSize: 13, fontWeight: "700", marginTop: 4 },
   description: { fontSize: 14, color: colors.ink700, marginTop: 8 },

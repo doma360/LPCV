@@ -1,7 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router } from "expo-router";
 import { ArrowLeft, ChevronRight, Home, Wrench } from "lucide-react-native";
 import { colors } from "@/theme/colors";
+import { polices } from "@/theme/typography";
 
 const PROFILS = [
   {
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   badgeText: { fontSize: 22, fontWeight: "800", color: colors.accent400 },
-  title: { fontSize: 26, fontWeight: "800", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 26, fontWeight: "800", color: colors.ink900 },
   subtitle: { fontSize: 14, color: colors.ink500, marginTop: 6 },
   cards: { gap: 16 },
   card: {

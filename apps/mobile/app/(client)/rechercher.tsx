@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, MapPin, ShieldCheck, Star } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
@@ -7,6 +8,7 @@ import { useLocalisation } from "@/hooks/useLocalisation";
 import { zones } from "@/data/zones";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
+import { polices } from "@/theme/typography";
 
 interface Profession {
   id: string;
@@ -190,7 +192,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  title: { fontSize: 20, fontWeight: "800", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 20, fontWeight: "800", color: colors.ink900 },
   sousTitre: { fontSize: 12, color: colors.ink500, marginTop: 2 },
   succes: { color: colors.success500, fontWeight: "600", marginBottom: 12 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

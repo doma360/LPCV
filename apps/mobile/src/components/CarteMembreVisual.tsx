@@ -1,7 +1,9 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import QRCode from "react-native-qrcode-svg";
 import { Calendar, Check, MapPin, Phone, ShieldCheck, Star, Wrench } from "lucide-react-native";
 import { colors } from "@/theme/colors";
+import { polices } from "@/theme/typography";
 import LpcvLogo from "@/components/LpcvLogo";
 import DegradeFond from "@/components/DegradeFond";
 
@@ -226,7 +228,7 @@ const styles = StyleSheet.create({
   },
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   marqueBloc: { flexDirection: "row", alignItems: "center", gap: 8 },
-  wordmark: { color: colors.white, fontSize: 16, fontWeight: "900", letterSpacing: 0.5 },
+  wordmark: { fontFamily: polices.titre, color: colors.white, fontSize: 16, letterSpacing: 0.5 },
   tagline: { color: colors.brand100, fontSize: 8, fontWeight: "700", letterSpacing: 0.3 },
   memberPill: {
     flexDirection: "row",

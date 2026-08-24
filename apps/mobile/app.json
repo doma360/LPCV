@@ -58,7 +58,8 @@
         {
           "faceIDPermission": "LPCV utilise Face ID pour déverrouiller l'application rapidement."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

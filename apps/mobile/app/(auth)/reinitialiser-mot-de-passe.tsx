@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useLocalSearchParams } from "expo-router";
 import { KeyRound, Lock, Mail } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
+import { polices } from "@/theme/typography";
 
 export default function ReinitialiserMotDePasse() {
   const { identifiant: identifiantParam } = useLocalSearchParams<{ identifiant?: string }>();
@@ -80,7 +82,7 @@ export default function ReinitialiserMotDePasse() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { flexGrow: 1, backgroundColor: colors.cream100, padding: 24, justifyContent: "center", gap: 8 },
-  title: { fontSize: 26, fontWeight: "700", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 26, fontWeight: "700", color: colors.ink900 },
   subtitle: { fontSize: 14, color: colors.ink500, marginBottom: 16 },
   form: { gap: 14 },
   erreur: { color: colors.danger500, fontSize: 13 },

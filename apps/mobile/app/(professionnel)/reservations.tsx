@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
+import { polices } from "@/theme/typography";
 
 interface Reservation {
   id: string;
@@ -78,7 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12,
   },
-  title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "700", color: colors.ink900 },
   vide: { marginTop: 40, textAlign: "center", color: colors.ink500 },
   card: { backgroundColor: colors.white, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: colors.ink100, gap: 6 },
   cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },

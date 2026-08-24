@@ -1,5 +1,7 @@
 import type { ComponentType } from "react";
-import { StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
+import { StyleSheet, View, type TextInputProps } from "react-native";
+import Text from "@/components/Texte";
+import TextInput from "@/components/Saisie";
 import type { LucideProps } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 

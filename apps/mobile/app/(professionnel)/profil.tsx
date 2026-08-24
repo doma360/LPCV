@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import {

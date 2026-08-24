@@ -1,7 +1,9 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { Lock } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
+import { polices } from "@/theme/typography";
 
 export default function EcranVerrouille({ onDeverrouiller }: { onDeverrouiller: () => void }) {
   return (
@@ -27,6 +29,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 8,
   },
-  title: { fontSize: 20, fontWeight: "700", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 20, fontWeight: "700", color: colors.ink900 },
   subtitle: { fontSize: 14, color: colors.ink500, textAlign: "center", marginBottom: 16 },
 });

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useFocusEffect } from "expo-router";
 import { CalendarClock, ChevronRight, Search } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";

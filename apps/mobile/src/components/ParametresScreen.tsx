@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, View } from "react-native";
+import Text from "@/components/Texte";
 import { useRouter } from "expo-router";
 import * as LocalAuthentication from "expo-local-authentication";
 import { ArrowLeft, Bell, Fingerprint, KeyRound, TriangleAlert, UserRound } from "lucide-react-native";
@@ -9,6 +10,7 @@ import { getItem, setItem, deleteItem } from "@/lib/storage";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
+import { polices } from "@/theme/typography";
 
 const CLE_VERROUILLAGE = "lpcv_verrouillage_actif";
 
@@ -234,7 +236,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  title: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "800", color: colors.ink900 },
   section: {
     backgroundColor: colors.white,
     borderRadius: 16,

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, type LayoutChangeEvent, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, type LayoutChangeEvent, Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";

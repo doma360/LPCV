@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { ArrowLeft, Camera, Image as ImageIcon, X } from "lucide-react-native";
@@ -9,6 +10,7 @@ import { useLocalisation } from "@/hooks/useLocalisation";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import { polices } from "@/theme/typography";
 
 export default function Demander() {
   const { professionnelId, professionId, nomPro, prixEstime } = useLocalSearchParams<{
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "700", color: colors.ink900 },
   recapCard: {
     flexDirection: "row",
     alignItems: "center",

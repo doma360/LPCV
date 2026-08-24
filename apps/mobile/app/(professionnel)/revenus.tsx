@@ -1,10 +1,12 @@
 import { useCallback, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { useFocusEffect } from "expo-router";
 import { TrendingUp, Wallet } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import DegradeFond from "@/components/DegradeFond";
+import { polices } from "@/theme/typography";
 
 interface PaiementRecent {
   id: string;
@@ -75,7 +77,7 @@ export default function RevenusScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
-  title: { fontSize: 22, fontWeight: "800", color: colors.ink900, marginBottom: 16 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "800", color: colors.ink900, marginBottom: 16 },
   totalCard: { borderRadius: 20, padding: 20, marginBottom: 20, overflow: "hidden" },
   accentRevenus: {
     position: "absolute",

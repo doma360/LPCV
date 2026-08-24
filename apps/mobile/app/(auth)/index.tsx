@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
-import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, Image, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router } from "expo-router";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { Home, MapPin } from "lucide-react-native";
 import { colors } from "@/theme/colors";
+import { polices } from "@/theme/typography";
 import Button from "@/components/Button";
 
 // Copie fidele d'une reference envoyee par l'utilisateur ("cette fois tu
@@ -107,6 +109,7 @@ const styles = StyleSheet.create({
   hero: { alignItems: "center" },
   logoComplet: { width: 210, height: 212 },
   headline: {
+    fontFamily: polices.titre,
     fontSize: 32,
     fontWeight: "800",
     color: colors.brand900,

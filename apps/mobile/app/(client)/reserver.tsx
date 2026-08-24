@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
+import { polices } from "@/theme/typography";
 
 export default function Reserver() {
   const { professionnelId, professionId, nomPro, adresseLocal } = useLocalSearchParams<{
@@ -102,7 +104,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "700", color: colors.ink900 },
   subtitle: { fontSize: 13, color: colors.ink500, marginTop: -8 },
   form: { gap: 14 },
   aide: { fontSize: 12, color: colors.ink400 },

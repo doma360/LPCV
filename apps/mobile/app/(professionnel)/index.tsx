@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { useFocusEffect } from "expo-router";
 import * as Location from "expo-location";
 import { ClipboardList, MapPin, Menu, Phone, Star } from "lucide-react-native";
@@ -8,6 +9,7 @@ import { colors } from "@/theme/colors";
 import { useAuth } from "@/hooks/useAuth";
 import ProSidebar from "@/components/ProSidebar";
 import DegradeFond from "@/components/DegradeFond";
+import { polices } from "@/theme/typography";
 
 interface ProfilResume {
   noteMoyenne: string;
@@ -260,7 +262,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  title: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "800", color: colors.ink900 },
   stats: {
     flexDirection: "row",
     alignItems: "center",

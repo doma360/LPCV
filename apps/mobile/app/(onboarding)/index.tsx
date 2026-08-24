@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Dimensions, FlatList, Pressable, StyleSheet, Text, View, type NativeSyntheticEvent, type NativeScrollEvent } from "react-native";
+import { Dimensions, FlatList, Pressable, StyleSheet, View, type NativeSyntheticEvent, type NativeScrollEvent } from "react-native";
+import Text from "@/components/Texte";
 import { ShieldCheck, MapPin, Wallet, Headphones } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { colors } from "@/theme/colors";

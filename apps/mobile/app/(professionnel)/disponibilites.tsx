@@ -1,11 +1,13 @@
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { useFocusEffect } from "expo-router";
 import { CalendarClock, Clock, Trash2 } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import { polices } from "@/theme/typography";
 
 interface Disponibilite {
   id: string;
@@ -125,7 +127,7 @@ export default function Disponibilites() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
-  title: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "800", color: colors.ink900 },
   subtitle: { fontSize: 13, color: colors.ink500, marginTop: 4, marginBottom: 16 },
   form: { gap: 12, backgroundColor: colors.white, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: colors.ink100 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },

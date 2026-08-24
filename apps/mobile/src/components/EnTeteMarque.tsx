@@ -1,6 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { Bell } from "lucide-react-native";
 import { colors } from "@/theme/colors";
+import { polices } from "@/theme/typography";
 import LpcvLogo from "@/components/LpcvLogo";
 
 interface EnTeteMarqueProps {
@@ -36,7 +38,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     paddingHorizontal: 20,
   },
-  wordmark: { fontSize: 20, fontWeight: "900", color: colors.brand900, letterSpacing: 0.5 },
+  wordmark: { fontFamily: polices.titre, fontSize: 20, color: colors.brand900, letterSpacing: 0.5 },
   tagline: { fontSize: 10, fontWeight: "700", color: colors.brand700, marginTop: 1, letterSpacing: 0.3 },
   cloche: { padding: 4 },
 });

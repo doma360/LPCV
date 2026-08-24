@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ComponentType } from "react";
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Modal, Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { useRouter, type Href } from "expo-router";
 import { X, type LucideProps } from "lucide-react-native";
 import { colors } from "@/theme/colors";

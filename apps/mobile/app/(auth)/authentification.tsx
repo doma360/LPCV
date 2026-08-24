@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, Lock, Mail, Phone, User } from "lucide-react-native";
 import { useAuth, type Role } from "@/hooks/useAuth";
@@ -7,6 +8,7 @@ import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
+import { polices } from "@/theme/typography";
 
 interface Profession {
   id: string;
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   badgeText: { fontSize: 20, fontWeight: "800", color: colors.accent400 },
-  title: { fontSize: 24, fontWeight: "800", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 24, fontWeight: "800", color: colors.ink900 },
   roleBadge: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 },
   roleBadgeText: { fontSize: 13, fontWeight: "700" },
   segmented: {

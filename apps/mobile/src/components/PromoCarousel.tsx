@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Dimensions, FlatList, StyleSheet, Text, View, type NativeSyntheticEvent, type NativeScrollEvent } from "react-native";
+import { Dimensions, FlatList, StyleSheet, View, type NativeSyntheticEvent, type NativeScrollEvent } from "react-native";
+import Text from "@/components/Texte";
 import { ShieldCheck, Sparkles, Wallet } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 import DegradeFond from "@/components/DegradeFond";

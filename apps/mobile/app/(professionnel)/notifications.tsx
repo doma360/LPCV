@@ -1,7 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Text from "@/components/Texte";
 import { router } from "expo-router";
 import { ArrowLeft, BellOff } from "lucide-react-native";
 import { colors } from "@/theme/colors";
+import { polices } from "@/theme/typography";
 
 // Ecran reel mais volontairement vide, symetrique de (client)/notifications.tsx :
 // pas encore de systeme de notifications construit cote backend (voir docs/decisions.md).
@@ -32,7 +34,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12,
   },
-  title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
+  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "700", color: colors.ink900 },
   vide: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10, marginTop: -40 },
   videTexte: { fontSize: 14, color: colors.ink500 },
 });
