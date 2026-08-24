@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, IdCard, Image as ImageIcon, MessageSquareOff, Pencil, Settings, ShieldCheck, ShieldQuestion, Star, X } from "lucide-react-native";
+import { Camera, Image as ImageIcon, MessageSquareOff, Pencil, Settings, ShieldCheck, ShieldQuestion, Star, X } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch, ApiError } from "@/lib/api";
 import { uploadPhoto } from "@/lib/upload";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
+import CarteMembreVisual from "@/components/CarteMembreVisual";
 
 const PORTFOLIO_MAX = 12;
 
@@ -15,6 +16,7 @@ interface ProfilDetail {
   statutVerification: "EN_ATTENTE" | "VERIFIE" | "REFUSE";
   noteMoyenne: string;
   nombreAvis: number;
+  photoUrl: string | null;
   profession: { nom: string };
   portfolioUrls: string[];
 }
@@ -91,9 +93,6 @@ export default function Profil() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.actionsHaut}>
-        <Pressable style={styles.actionIcone} onPress={() => router.push("/(professionnel)/carte-membre")}>
-          <IdCard size={19} color={colors.ink500} />
-        </Pressable>
         <Pressable style={styles.actionIcone} onPress={() => router.push("/(professionnel)/modifier-profil")}>
           <Pencil size={18} color={colors.ink500} />
         </Pressable>
@@ -101,29 +100,32 @@ export default function Profil() {
           <Settings size={20} color={colors.ink500} />
         </Pressable>
       </View>
-      <View style={styles.carteProfil}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {session?.user.prenom[0]}
-            {session?.user.nom[0]}
-          </Text>
-        </View>
-        <Text style={styles.nom}>
-          {session?.user.prenom} {session?.user.nom}
-        </Text>
-        <Text style={styles.info}>{detail?.profession.nom}</Text>
 
+      <View style={styles.zoneCarteMembre}>
+        <CarteMembreVisual
+          nom={session?.user.nom ?? ""}
+          prenom={session?.user.prenom ?? ""}
+          metier={detail?.profession.nom ?? "—"}
+          photoUrl={detail?.photoUrl}
+          verifie={verifie}
+          onPress={() => router.push("/(professionnel)/carte-membre")}
+        />
+      </View>
+
+      <View style={styles.statutsRow}>
         <View style={[styles.badge, verifie ? styles.badgeVerifie : styles.badgeAttente]}>
           {verifie ? <ShieldCheck size={14} color={colors.success500} /> : <ShieldQuestion size={14} color={colors.accent700} />}
           <Text style={[styles.badgeLabel, { color: verifie ? colors.success500 : colors.accent700 }]}>
             {verifie ? "Profil vérifié" : "Vérification en attente"}
           </Text>
         </View>
-
         {detail && (
-          <Text style={styles.note}>
-            {detail.noteMoyenne}/5 · {detail.nombreAvis} avis
-          </Text>
+          <View style={styles.noteBadge}>
+            <Star size={13} color={colors.accent700} fill={colors.accent500} />
+            <Text style={styles.noteBadgeTexte}>
+              {detail.noteMoyenne}/5 · {detail.nombreAvis} avis
+            </Text>
+          </View>
         )}
       </View>
 
@@ -227,33 +229,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   erreur: { color: colors.danger500, fontSize: 13 },
-  carteProfil: {
-    width: "100%",
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    padding: 24,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.ink100,
-    marginTop: 12,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    backgroundColor: colors.brand900,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  avatarText: { color: colors.accent400, fontSize: 24, fontWeight: "800" },
-  nom: { fontSize: 18, fontWeight: "700", color: colors.ink900 },
-  info: { fontSize: 13, color: colors.ink500, marginTop: 2 },
-  badge: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 14, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
+  zoneCarteMembre: { width: "100%", marginTop: 12 },
+  statutsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14, width: "100%" },
+  badge: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
   badgeVerifie: { backgroundColor: colors.success500 + "1A" },
   badgeAttente: { backgroundColor: colors.accent400 + "33" },
   badgeLabel: { fontSize: 12, fontWeight: "700" },
-  note: { fontSize: 13, color: colors.ink700, marginTop: 10 },
+  noteBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: colors.white,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+  },
+  noteBadgeTexte: { fontSize: 12, fontWeight: "700", color: colors.ink700 },
   avisSection: { width: "100%", marginTop: 24, gap: 10 },
   avisTitle: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
   videCard: {
