@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Animated, Image, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, Image, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { Home, MapPin } from "lucide-react-native";
@@ -17,13 +17,23 @@ import Button from "@/components/Button";
 export default function Bienvenue() {
   const opacite = useRef(new Animated.Value(0)).current;
   const echelle = useRef(new Animated.Value(0.92)).current;
+  const respiration = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(opacite, { toValue: 1, duration: 650, useNativeDriver: true }),
       Animated.spring(echelle, { toValue: 1, friction: 7, tension: 45, useNativeDriver: true }),
     ]).start();
-  }, [echelle, opacite]);
+
+    const boucle = Animated.loop(
+      Animated.sequence([
+        Animated.timing(respiration, { toValue: 1, duration: 2200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(respiration, { toValue: 0, duration: 2200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ]),
+    );
+    boucle.start();
+    return () => boucle.stop();
+  }, [echelle, opacite, respiration]);
 
   return (
     <View style={styles.container}>
@@ -39,8 +49,16 @@ export default function Bienvenue() {
       </Svg>
 
       <View style={styles.quartier} pointerEvents="none">
-        {[18, 28, 20, 34, 16, 24].map((h, i) => (
-          <View key={i} style={[styles.immeuble, { height: h }]} />
+        {[
+          { h: 20, w: 22 },
+          { h: 34, w: 28 },
+          { h: 16, w: 18 },
+          { h: 42, w: 30 },
+          { h: 24, w: 22 },
+          { h: 30, w: 26 },
+          { h: 18, w: 18 },
+        ].map((b, i) => (
+          <View key={i} style={[styles.immeuble, { height: b.h, width: b.w }]} />
         ))}
       </View>
 
@@ -61,12 +79,20 @@ export default function Bienvenue() {
       </Animated.View>
 
       <View style={styles.filigraneZone} pointerEvents="none">
-        <View style={styles.filigraneFond}>
+        <Animated.View
+          style={[
+            styles.filigraneFond,
+            {
+              opacity: respiration.interpolate({ inputRange: [0, 1], outputRange: [0.28, 0.42] }),
+              transform: [{ scale: respiration.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] }) }],
+            },
+          ]}
+        >
           <Home size={130} color={colors.accent700} strokeWidth={1.2} />
           <View style={styles.filigranePin}>
             <MapPin size={44} color={colors.accent700} strokeWidth={1.2} fill={colors.accent300} />
           </View>
-        </View>
+        </Animated.View>
       </View>
 
       <View style={styles.actions}>
@@ -100,16 +126,16 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    top: 26,
+    top: 22,
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "center",
-    gap: 8,
-    opacity: 0.14,
+    gap: 7,
+    opacity: 0.16,
   },
-  immeuble: { width: 26, backgroundColor: colors.accent500, borderTopLeftRadius: 2, borderTopRightRadius: 2 },
+  immeuble: { backgroundColor: colors.brand900, borderTopLeftRadius: 2, borderTopRightRadius: 2 },
   filigraneZone: { flex: 1, alignItems: "center", justifyContent: "center" },
-  filigraneFond: { alignItems: "center", justifyContent: "center", opacity: 0.16 },
+  filigraneFond: { alignItems: "center", justifyContent: "center" },
   filigranePin: { position: "absolute", bottom: -10, right: -6 },
   actions: { paddingBottom: 24 },
 });
