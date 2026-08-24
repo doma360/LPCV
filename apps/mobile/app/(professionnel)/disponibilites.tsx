@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "expo-router";
-import { Trash2 } from "lucide-react-native";
+import { CalendarClock, Clock, Trash2 } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
@@ -93,15 +93,27 @@ export default function Disponibilites() {
       <FlatList
         data={dispos}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ gap: 8, paddingTop: 20, paddingBottom: 40 }}
-        ListEmptyComponent={<Text style={styles.vide}>Aucun créneau enregistré.</Text>}
+        contentContainerStyle={{ gap: 10, paddingTop: 20, paddingBottom: 40 }}
+        ListEmptyComponent={
+          <View style={styles.vide}>
+            <View style={styles.videIcone}>
+              <CalendarClock size={22} color={colors.ink400} />
+            </View>
+            <Text style={styles.videTexte}>Aucun créneau enregistré.</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View style={styles.creneauCard}>
-            <Text style={styles.creneauJour}>{joursLabels[item.jour]}</Text>
-            <Text style={styles.creneauHeure}>
-              {item.heureDebut} – {item.heureFin}
-            </Text>
-            <Pressable onPress={() => supprimerCreneau(item.id)}>
+            <View style={styles.creneauIcone}>
+              <Clock size={16} color={colors.brand700} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.creneauJour}>{joursLabels[item.jour]}</Text>
+              <Text style={styles.creneauHeure}>
+                {item.heureDebut} – {item.heureFin}
+              </Text>
+            </View>
+            <Pressable style={styles.supprimer} onPress={() => supprimerCreneau(item.id)} hitSlop={8}>
               <Trash2 size={16} color={colors.danger500} />
             </Pressable>
           </View>
@@ -113,7 +125,7 @@ export default function Disponibilites() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
-  title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
+  title: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
   subtitle: { fontSize: 13, color: colors.ink500, marginTop: 4, marginBottom: 16 },
   form: { gap: 12, backgroundColor: colors.white, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: colors.ink100 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
@@ -124,17 +136,42 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", gap: 12 },
   flex: { flex: 1 },
   erreur: { color: colors.danger500, fontSize: 13 },
-  vide: { textAlign: "center", color: colors.ink400, marginTop: 20 },
+  vide: { alignItems: "center", gap: 8, marginTop: 24 },
+  videIcone: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.ink100,
+  },
+  videTexte: { fontSize: 13, color: colors.ink400 },
   creneauCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
     backgroundColor: colors.white,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 16,
+    padding: 14,
     borderWidth: 1,
     borderColor: colors.ink100,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1,
   },
-  creneauJour: { fontSize: 13, fontWeight: "700", color: colors.ink900, width: 90 },
-  creneauHeure: { fontSize: 13, color: colors.ink500, flex: 1 },
+  creneauIcone: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: colors.brand50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  creneauJour: { fontSize: 13, fontWeight: "700", color: colors.ink900 },
+  creneauHeure: { fontSize: 12, color: colors.ink500, marginTop: 1 },
+  supprimer: { padding: 4 },
 });
