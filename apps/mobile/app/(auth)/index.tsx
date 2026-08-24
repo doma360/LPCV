@@ -1,19 +1,19 @@
 import { useEffect, useRef } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, Image, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { Home, MapPin } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
-import LpcvLogo from "@/components/LpcvLogo";
 
 // Copie fidele d'une reference envoyee par l'utilisateur ("cette fois tu
 // peux copier totalement") : fond blanc avec un halo jaune rayonnant depuis
-// le haut (degrade radial SVG), logo LPCV existant (garde tel quel plutot
-// que redessiner un personnage detaille a part, pour rester coherent avec
-// le reste de l'app), titre bicolore, filigrane du logo en arriere-plan,
-// bouton pilule. Petite animation d'entree (fondu + zoom leger) ajoutee au
-// passage suite au retour sur le manque de vie visuelle.
+// le haut (degrade radial SVG), vrai fichier logo fourni par l'utilisateur
+// (apps/mobile/assets/logo-complet.png - icone + wordmark + tagline deja
+// integres dans l'image, PNG transparent), titre bicolore, filigrane
+// maison+pin en arriere-plan, bouton pilule. Petite animation d'entree
+// (fondu + zoom leger) ajoutee au passage suite au retour sur le manque de
+// vie visuelle.
 export default function Bienvenue() {
   const opacite = useRef(new Animated.Value(0)).current;
   const echelle = useRef(new Animated.Value(0.92)).current;
@@ -45,11 +45,11 @@ export default function Bienvenue() {
       </View>
 
       <Animated.View style={[styles.hero, { opacity: opacite, transform: [{ scale: echelle }] }]}>
-        <LpcvLogo size={110} />
-        <Text style={styles.wordmark}>
-          LPC<Text style={{ color: colors.accent500 }}>V</Text>
-        </Text>
-        <Text style={styles.tagline}>Les Professionnels Chez Vous</Text>
+        <Image
+          source={require("../../assets/logo-complet.png")}
+          style={styles.logoComplet}
+          resizeMode="contain"
+        />
 
         <Text style={styles.headline}>
           Trouvez le pro{"\n"}
@@ -79,8 +79,7 @@ export default function Bienvenue() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, paddingHorizontal: 24, paddingTop: 80 },
   hero: { alignItems: "center" },
-  wordmark: { fontSize: 42, fontWeight: "900", color: colors.brand900, marginTop: 18, letterSpacing: 1 },
-  tagline: { fontSize: 12, fontWeight: "700", color: colors.ink500, marginTop: 2, letterSpacing: 2 },
+  logoComplet: { width: 210, height: 212 },
   headline: {
     fontSize: 32,
     fontWeight: "800",
