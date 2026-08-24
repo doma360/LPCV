@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
+import { Home, MapPin } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import LpcvLogo from "@/components/LpcvLogo";
@@ -37,6 +38,12 @@ export default function Bienvenue() {
         <Rect x="0" y="0" width="100%" height="100%" fill="url(#rayonnement)" />
       </Svg>
 
+      <View style={styles.quartier} pointerEvents="none">
+        {[18, 28, 20, 34, 16, 24].map((h, i) => (
+          <View key={i} style={[styles.immeuble, { height: h }]} />
+        ))}
+      </View>
+
       <Animated.View style={[styles.hero, { opacity: opacite, transform: [{ scale: echelle }] }]}>
         <LpcvLogo size={110} />
         <Text style={styles.wordmark}>
@@ -53,9 +60,12 @@ export default function Bienvenue() {
         </Text>
       </Animated.View>
 
-      <View style={styles.filigraneZone}>
-        <View style={styles.filigrane}>
-          <LpcvLogo size={220} />
+      <View style={styles.filigraneZone} pointerEvents="none">
+        <View style={styles.filigraneFond}>
+          <Home size={130} color={colors.accent700} strokeWidth={1.2} />
+          <View style={styles.filigranePin}>
+            <MapPin size={44} color={colors.accent700} strokeWidth={1.2} fill={colors.accent300} />
+          </View>
         </View>
       </View>
 
@@ -87,7 +97,20 @@ const styles = StyleSheet.create({
     maxWidth: 300,
     lineHeight: 20,
   },
+  quartier: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 26,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    gap: 8,
+    opacity: 0.14,
+  },
+  immeuble: { width: 26, backgroundColor: colors.accent500, borderTopLeftRadius: 2, borderTopRightRadius: 2 },
   filigraneZone: { flex: 1, alignItems: "center", justifyContent: "center" },
-  filigrane: { opacity: 0.06 },
+  filigraneFond: { alignItems: "center", justifyContent: "center", opacity: 0.16 },
+  filigranePin: { position: "absolute", bottom: -10, right: -6 },
   actions: { paddingBottom: 24 },
 });
