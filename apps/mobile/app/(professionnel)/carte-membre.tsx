@@ -75,8 +75,24 @@ export default function CarteMembre() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60, alignItems: "center" },
-  retour: { position: "absolute", top: 56, left: 20, zIndex: 1, padding: 6 },
-  titre: { fontSize: 18, fontWeight: "700", color: colors.ink900, marginBottom: 24 },
+  retour: {
+    position: "absolute",
+    top: 56,
+    left: 20,
+    zIndex: 1,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  titre: { fontSize: 18, fontWeight: "800", color: colors.ink900, marginBottom: 24 },
   carte: {
     width: "100%",
     maxWidth: 340,
