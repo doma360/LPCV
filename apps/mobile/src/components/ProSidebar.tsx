@@ -1,10 +1,10 @@
-import { IdCard, Pencil, Settings } from "lucide-react-native";
+import { Pencil, Settings } from "lucide-react-native";
 import Sidebar, { type LienSidebar } from "@/components/Sidebar";
 
 // Reservations/Portefeuille mis en cache pour l'instant (voir docs/decisions.md) :
 // ecrans et backend intacts, juste retires de la navigation.
+// Carte membre supprimee de la navigation : integree directement sur Profil (voir docs/decisions.md).
 const LIENS: LienSidebar[] = [
-  { href: "/(professionnel)/carte-membre", label: "Carte membre", icone: IdCard },
   { href: "/(professionnel)/modifier-profil", label: "Modifier le profil", icone: Pencil },
   { href: "/(professionnel)/parametres", label: "Paramètres", icone: Settings },
 ];
