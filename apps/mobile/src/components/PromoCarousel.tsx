@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Dimensions, FlatList, StyleSheet, Text, View, type NativeSyntheticEvent, type NativeScrollEvent } from "react-native";
 import { ShieldCheck, Sparkles, Wallet } from "lucide-react-native";
 import { colors } from "@/theme/colors";
+import DegradeFond from "@/components/DegradeFond";
 
 const LARGEUR_ECRAN = Dimensions.get("window").width;
 const LARGEUR_CARTE = LARGEUR_ECRAN - 40;
@@ -12,6 +13,7 @@ const SLIDES = [
     texte: "Des professionnels vérifiés, près de chez vous à Abidjan.",
     icone: ShieldCheck,
     fond: colors.brand900,
+    fondVers: colors.brand700,
     accent: colors.accent400,
   },
   {
@@ -19,6 +21,7 @@ const SLIDES = [
     texte: "Décrivez votre besoin, un professionnel vérifié arrive à votre domicile.",
     icone: Sparkles,
     fond: colors.bleuClair,
+    fondVers: colors.brand900,
     accent: colors.brand900,
   },
   {
@@ -26,6 +29,7 @@ const SLIDES = [
     texte: "Réglez en Mobile Money, en toute confiance.",
     icone: Wallet,
     fond: colors.accent400,
+    fondVers: colors.accent500,
     accent: colors.brand900,
   },
 ] as const;
@@ -63,10 +67,11 @@ export default function PromoCarousel() {
         onScroll={onScroll}
         scrollEventThrottle={16}
         keyExtractor={(item) => item.titre}
-        renderItem={({ item }) => {
+        renderItem={({ item, index: i }) => {
           const Icone = item.icone;
           return (
-            <View style={[styles.slide, { backgroundColor: item.fond, width: LARGEUR_CARTE }]}>
+            <View style={[styles.slide, { width: LARGEUR_CARTE }]}>
+              <DegradeFond id={`promoDegrade${i}`} de={item.fond} vers={item.fondVers} />
               <View style={[styles.iconeRond, { backgroundColor: item.accent }]}>
                 <Icone size={22} color={item.fond} />
               </View>
@@ -90,7 +95,7 @@ export default function PromoCarousel() {
 }
 
 const styles = StyleSheet.create({
-  slide: { borderRadius: 20, padding: 20, minHeight: 140, justifyContent: "center", marginRight: 0 },
+  slide: { borderRadius: 20, padding: 20, minHeight: 140, justifyContent: "center", marginRight: 0, overflow: "hidden" },
   iconeRond: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", marginBottom: 10 },
   titre: { fontSize: 16, fontWeight: "800" },
   texte: { fontSize: 12.5, marginTop: 4, lineHeight: 18 },

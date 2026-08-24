@@ -7,6 +7,7 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import { useAuth } from "@/hooks/useAuth";
 import ProSidebar from "@/components/ProSidebar";
+import DegradeFond from "@/components/DegradeFond";
 
 interface ProfilResume {
   noteMoyenne: string;
@@ -126,6 +127,7 @@ export default function DemandesRecues() {
       </View>
 
       <View style={styles.stats}>
+        <DegradeFond id="statsDegrade" de={colors.brand900} vers={colors.brand700} />
         <View style={styles.statItem}>
           <Text style={styles.statValeur}>{demandesActives}</Text>
           <Text style={styles.statLabel}>Actives</Text>
@@ -262,10 +264,10 @@ const styles = StyleSheet.create({
   stats: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.brand900,
     borderRadius: 16,
     paddingVertical: 16,
     marginTop: 16,
+    overflow: "hidden",
   },
   statItem: { flex: 1, alignItems: "center", gap: 3 },
   statSeparateur: { width: 1, height: 28, backgroundColor: colors.brand700 },

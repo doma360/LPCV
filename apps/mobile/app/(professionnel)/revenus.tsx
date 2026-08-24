@@ -4,6 +4,7 @@ import { useFocusEffect } from "expo-router";
 import { TrendingUp, Wallet } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
+import DegradeFond from "@/components/DegradeFond";
 
 interface PaiementRecent {
   id: string;
@@ -32,6 +33,8 @@ export default function RevenusScreen() {
       <Text style={styles.title}>Revenus</Text>
 
       <View style={styles.totalCard}>
+        <DegradeFond id="revenusDegrade" de={colors.brand900} vers={colors.brand700} />
+        <View style={styles.accentRevenus} />
         <View style={styles.totalIcone}>
           <Wallet size={18} color={colors.accent400} />
         </View>
@@ -73,7 +76,17 @@ export default function RevenusScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
   title: { fontSize: 22, fontWeight: "800", color: colors.ink900, marginBottom: 16 },
-  totalCard: { backgroundColor: colors.brand900, borderRadius: 20, padding: 20, marginBottom: 20 },
+  totalCard: { borderRadius: 20, padding: 20, marginBottom: 20, overflow: "hidden" },
+  accentRevenus: {
+    position: "absolute",
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: colors.accent400,
+    right: -50,
+    top: -60,
+    opacity: 0.4,
+  },
   totalIcone: {
     width: 36,
     height: 36,

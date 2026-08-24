@@ -3,6 +3,7 @@ import QRCode from "react-native-qrcode-svg";
 import { Calendar, Check, MapPin, Phone, ShieldCheck, Star, Wrench } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 import LpcvLogo from "@/components/LpcvLogo";
+import DegradeFond from "@/components/DegradeFond";
 
 interface AbonnementInfo {
   actif: boolean;
@@ -50,6 +51,7 @@ export default function CarteMembreVisual({
 }: CarteMembreVisualProps) {
   return (
     <View style={styles.carte}>
+      <DegradeFond id="carteMembreDegrade" de={colors.brand900} vers={colors.brand700} />
       <View style={styles.accent1} />
       <View style={styles.accent2} />
 
@@ -194,7 +196,6 @@ const styles = StyleSheet.create({
   carte: {
     width: "100%",
     borderRadius: 22,
-    backgroundColor: colors.brand900,
     padding: 16,
     overflow: "hidden",
     shadowColor: "#000",
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent400,
     right: -50,
     top: -40,
-    opacity: 0.35,
+    opacity: 0.5,
   },
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   marqueBloc: { flexDirection: "row", alignItems: "center", gap: 8 },
