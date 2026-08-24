@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, IdCard, Image as ImageIcon, Pencil, Settings, ShieldCheck, ShieldQuestion, Star, X } from "lucide-react-native";
+import { Camera, IdCard, Image as ImageIcon, MessageSquareOff, Pencil, Settings, ShieldCheck, ShieldQuestion, Star, X } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch, ApiError } from "@/lib/api";
 import { uploadPhoto } from "@/lib/upload";
@@ -101,29 +101,31 @@ export default function Profil() {
           <Settings size={20} color={colors.ink500} />
         </Pressable>
       </View>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>
-          {session?.user.prenom[0]}
-          {session?.user.nom[0]}
+      <View style={styles.carteProfil}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {session?.user.prenom[0]}
+            {session?.user.nom[0]}
+          </Text>
+        </View>
+        <Text style={styles.nom}>
+          {session?.user.prenom} {session?.user.nom}
         </Text>
-      </View>
-      <Text style={styles.nom}>
-        {session?.user.prenom} {session?.user.nom}
-      </Text>
-      <Text style={styles.info}>{detail?.profession.nom}</Text>
+        <Text style={styles.info}>{detail?.profession.nom}</Text>
 
-      <View style={[styles.badge, verifie ? styles.badgeVerifie : styles.badgeAttente]}>
-        {verifie ? <ShieldCheck size={14} color={colors.success500} /> : <ShieldQuestion size={14} color={colors.accent700} />}
-        <Text style={[styles.badgeLabel, { color: verifie ? colors.success500 : colors.accent700 }]}>
-          {verifie ? "Profil vérifié" : "Vérification en attente"}
-        </Text>
-      </View>
+        <View style={[styles.badge, verifie ? styles.badgeVerifie : styles.badgeAttente]}>
+          {verifie ? <ShieldCheck size={14} color={colors.success500} /> : <ShieldQuestion size={14} color={colors.accent700} />}
+          <Text style={[styles.badgeLabel, { color: verifie ? colors.success500 : colors.accent700 }]}>
+            {verifie ? "Profil vérifié" : "Vérification en attente"}
+          </Text>
+        </View>
 
-      {detail && (
-        <Text style={styles.note}>
-          {detail.noteMoyenne}/5 · {detail.nombreAvis} avis
-        </Text>
-      )}
+        {detail && (
+          <Text style={styles.note}>
+            {detail.noteMoyenne}/5 · {detail.nombreAvis} avis
+          </Text>
+        )}
+      </View>
 
       <View style={styles.avisSection}>
         <Text style={styles.avisTitle}>Portfolio de réalisations</Text>
@@ -153,7 +155,14 @@ export default function Profil() {
 
       <View style={styles.avisSection}>
         <Text style={styles.avisTitle}>Avis reçus</Text>
-        {avis.length === 0 && <Text style={styles.vide}>Aucun avis pour l'instant.</Text>}
+        {avis.length === 0 && (
+          <View style={styles.videCard}>
+            <View style={styles.videIcone}>
+              <MessageSquareOff size={22} color={colors.ink400} />
+            </View>
+            <Text style={styles.vide}>Aucun avis pour l'instant.</Text>
+          </View>
+        )}
         {avis.map((item) => (
           <View key={item.id} style={styles.avisCard}>
             <View style={styles.avisHeader}>
@@ -179,8 +188,20 @@ export default function Profil() {
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60, alignItems: "center" },
-  actionsHaut: { position: "absolute", top: 56, right: 20, zIndex: 1, flexDirection: "row", gap: 12 },
-  actionIcone: { padding: 6 },
+  actionsHaut: { position: "absolute", top: 56, right: 20, zIndex: 1, flexDirection: "row", gap: 8 },
+  actionIcone: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
   photosRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   thumbWrap: { width: 56, height: 56 },
   thumb: { width: 56, height: 56, borderRadius: 10 },
@@ -206,6 +227,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   erreur: { color: colors.danger500, fontSize: 13 },
+  carteProfil: {
+    width: "100%",
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.ink100,
+    marginTop: 12,
+  },
   avatar: {
     width: 72,
     height: 72,
@@ -223,10 +254,39 @@ const styles = StyleSheet.create({
   badgeAttente: { backgroundColor: colors.accent400 + "33" },
   badgeLabel: { fontSize: 12, fontWeight: "700" },
   note: { fontSize: 13, color: colors.ink700, marginTop: 10 },
-  avisSection: { width: "100%", marginTop: 28, gap: 10 },
+  avisSection: { width: "100%", marginTop: 24, gap: 10 },
   avisTitle: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
+  videCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+  },
+  videIcone: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: colors.cream100,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   vide: { fontSize: 13, color: colors.ink400 },
-  avisCard: { backgroundColor: colors.white, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.ink100, gap: 4 },
+  avisCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+    gap: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1,
+  },
   avisHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   avisNom: { fontSize: 13, fontWeight: "700", color: colors.ink900 },
   avisNote: { flexDirection: "row", alignItems: "center", gap: 3 },
