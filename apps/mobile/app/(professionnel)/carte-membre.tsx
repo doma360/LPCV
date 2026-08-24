@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import { ChevronLeft, IdCard } from "lucide-react-native";
+import { ChevronLeft, Mail, Phone, ShieldCheck } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch, WEBSITE_URL } from "@/lib/api";
 import { colors } from "@/theme/colors";
+import LpcvLogo from "@/components/LpcvLogo";
 
 interface Abonnement {
   statut: "ACTIF" | "EXPIRE" | "ANNULE";
@@ -13,19 +14,38 @@ interface Abonnement {
   dateFin: string;
 }
 
+interface ProfessionnelDetail {
+  photoUrl: string | null;
+  createdAt: string;
+  profession: { nom: string };
+}
+
+function formaterDate(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
 export default function CarteMembre() {
   const { session } = useAuth();
   const router = useRouter();
   const [abonnement, setAbonnement] = useState<Abonnement | null>(null);
+  const [detail, setDetail] = useState<ProfessionnelDetail | null>(null);
   const [chargement, setChargement] = useState(true);
 
   useEffect(() => {
-    apiFetch<Abonnement | null>("/api/v1/abonnements/moi")
-      .then((res) => setAbonnement(res.data))
+    if (!session) return;
+    Promise.all([
+      apiFetch<Abonnement | null>("/api/v1/abonnements/moi"),
+      apiFetch<ProfessionnelDetail>(`/api/v1/professionnels/${session.user.id}`),
+    ])
+      .then(([abonnementRes, detailRes]) => {
+        setAbonnement(abonnementRes.data);
+        setDetail(detailRes.data);
+      })
       .finally(() => setChargement(false));
-  }, []);
+  }, [session]);
 
   const actif = abonnement?.statut === "ACTIF";
+  const numeroMembre = session ? session.user.id.slice(0, 8).toUpperCase() : "—";
 
   return (
     <View style={styles.container}>
@@ -36,39 +56,93 @@ export default function CarteMembre() {
       <Text style={styles.titre}>Carte membre LPCV</Text>
 
       <View style={styles.carte}>
-        <View style={styles.carteHaut}>
-          <IdCard size={20} color={colors.accent400} />
-          <Text style={styles.carteMarque}>LPCV</Text>
+        <View style={styles.bandeau}>
+          <View style={styles.vagueAccent1} />
+          <View style={styles.vagueAccent2} />
+          <View style={styles.bandeauMarque}>
+            <LpcvLogo size={22} />
+            <Text style={styles.carteMarque}>LPCV</Text>
+          </View>
         </View>
 
-        <Text style={styles.carteNom}>
-          {session?.user.prenom} {session?.user.nom}
-        </Text>
-
-        <View style={styles.qrZone}>
-          {chargement && <ActivityIndicator color={colors.white} />}
-          {!chargement && actif && session && (
-            <View style={styles.qrFond}>
-              <QRCode value={`${WEBSITE_URL}/verification/${session.user.id}`} size={140} />
+        <View style={styles.identite}>
+          {detail?.photoUrl ? (
+            <Image source={{ uri: detail.photoUrl }} style={styles.photo} />
+          ) : (
+            <View style={styles.photoPlaceholder}>
+              <Text style={styles.photoInitiales}>
+                {session?.user.prenom[0]}
+                {session?.user.nom[0]}
+              </Text>
             </View>
           )}
-          {!chargement && !actif && (
-            <Text style={styles.qrVide}>
-              Le QR de votre carte s'active avec un abonnement LPCV actif.
+          <View style={{ flex: 1 }}>
+            <Text style={styles.carteNom}>
+              {session?.user.prenom} {session?.user.nom}
             </Text>
-          )}
+            <Text style={styles.carteMetier}>{detail?.profession.nom ?? "—"}</Text>
+          </View>
         </View>
 
-        <Text style={styles.carteStatut}>
-          {actif
-            ? `Abonnement ${abonnement?.palier === "ANNUEL" ? "annuel" : "mensuel"} actif`
-            : "Aucun abonnement actif"}
-        </Text>
-      </View>
+        <View style={styles.corps}>
+          <View style={styles.grille}>
+            <View style={styles.champ}>
+              <Text style={styles.champLabel}>N° membre</Text>
+              <Text style={styles.champValeur}>{numeroMembre}</Text>
+            </View>
+            <View style={styles.champ}>
+              <Text style={styles.champLabel}>Membre depuis</Text>
+              <Text style={styles.champValeur}>{detail ? formaterDate(detail.createdAt) : "—"}</Text>
+            </View>
+            <View style={styles.champ}>
+              <Text style={styles.champLabel}>Abonnement</Text>
+              <Text style={styles.champValeur}>
+                {actif ? (abonnement?.palier === "ANNUEL" ? "Annuel" : "Mensuel") : "Aucun"}
+              </Text>
+            </View>
+            <View style={styles.champ}>
+              <Text style={styles.champLabel}>Expire le</Text>
+              <Text style={styles.champValeur}>{actif && abonnement ? formaterDate(abonnement.dateFin) : "—"}</Text>
+            </View>
+          </View>
 
-      <Text style={styles.aide}>
-        Scannez le QR pour vérifier en un instant qu'un professionnel LPCV est bien abonné.
-      </Text>
+          <View style={styles.contactRow}>
+            <View style={styles.contactItem}>
+              <Mail size={12} color={colors.ink500} />
+              <Text style={styles.contactTexte} numberOfLines={1}>
+                {session?.user.email}
+              </Text>
+            </View>
+            <View style={styles.contactItem}>
+              <Phone size={12} color={colors.ink500} />
+              <Text style={styles.contactTexte}>{session?.user.telephone}</Text>
+            </View>
+          </View>
+
+          <View style={styles.bas}>
+            <View style={styles.qrZone}>
+              {chargement && <ActivityIndicator color={colors.brand700} />}
+              {!chargement && actif && session && (
+                <QRCode value={`${WEBSITE_URL}/verification/${session.user.id}`} size={72} />
+              )}
+              {!chargement && !actif && (
+                <Text style={styles.qrVide}>QR inactif</Text>
+              )}
+            </View>
+            <View style={styles.basTexte}>
+              {actif ? (
+                <View style={styles.statutRow}>
+                  <ShieldCheck size={13} color={colors.success500} />
+                  <Text style={styles.statutTexte}>Abonnement actif</Text>
+                </View>
+              ) : (
+                <Text style={styles.statutTexteInactif}>Aucun abonnement actif</Text>
+              )}
+              <Text style={styles.basAide}>Scannez pour vérifier ce professionnel</Text>
+            </View>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
@@ -95,27 +169,102 @@ const styles = StyleSheet.create({
   titre: { fontSize: 18, fontWeight: "800", color: colors.ink900, marginBottom: 24 },
   carte: {
     width: "100%",
-    maxWidth: 340,
+    maxWidth: 360,
     borderRadius: 20,
-    backgroundColor: colors.brand900,
-    padding: 24,
-    alignItems: "center",
+    backgroundColor: colors.white,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
-  carteHaut: { flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start" },
-  carteMarque: { color: colors.white, fontWeight: "800", fontSize: 14, letterSpacing: 1 },
-  carteNom: { color: colors.white, fontSize: 20, fontWeight: "700", marginTop: 20, alignSelf: "flex-start" },
-  qrZone: {
-    marginTop: 24,
-    width: 172,
-    height: 172,
-    borderRadius: 12,
+  bandeau: {
+    height: 64,
+    backgroundColor: colors.brand900,
+    overflow: "hidden",
+    justifyContent: "center",
+  },
+  vagueAccent1: {
+    position: "absolute",
+    width: 220,
+    height: 220,
+    borderRadius: 110,
     backgroundColor: colors.brand700,
+    right: -80,
+    top: -110,
+    opacity: 0.7,
+  },
+  vagueAccent2: {
+    position: "absolute",
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: colors.accent400,
+    right: -60,
+    top: -30,
+    opacity: 0.9,
+  },
+  bandeauMarque: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 20 },
+  carteMarque: { color: colors.white, fontWeight: "800", fontSize: 15, letterSpacing: 1 },
+  identite: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    paddingHorizontal: 20,
+    marginTop: -28,
+    marginBottom: 16,
+  },
+  photo: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    borderWidth: 3,
+    borderColor: colors.white,
+  },
+  photoPlaceholder: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    borderWidth: 3,
+    borderColor: colors.white,
+    backgroundColor: colors.brand900,
     alignItems: "center",
     justifyContent: "center",
-    padding: 12,
   },
-  qrFond: { backgroundColor: colors.white, padding: 8, borderRadius: 8 },
-  qrVide: { color: colors.brand100, fontSize: 12, textAlign: "center" },
-  carteStatut: { color: colors.accent400, fontSize: 13, fontWeight: "700", marginTop: 20 },
-  aide: { color: colors.ink500, fontSize: 13, textAlign: "center", marginTop: 20, maxWidth: 300 },
+  photoInitiales: { color: colors.accent400, fontWeight: "800", fontSize: 20 },
+  carteNom: { fontSize: 17, fontWeight: "800", color: colors.ink900, marginTop: 20 },
+  carteMetier: { fontSize: 12, fontWeight: "700", color: colors.brand700, marginTop: 2 },
+  corps: { paddingHorizontal: 20, paddingBottom: 20, gap: 14 },
+  grille: { flexDirection: "row", flexWrap: "wrap" },
+  champ: { width: "50%", marginBottom: 10 },
+  champLabel: { fontSize: 10, fontWeight: "700", color: colors.ink400, textTransform: "uppercase" },
+  champValeur: { fontSize: 13, fontWeight: "700", color: colors.ink900, marginTop: 2 },
+  contactRow: { gap: 6, borderTopWidth: 1, borderTopColor: colors.ink100, paddingTop: 12 },
+  contactItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  contactTexte: { fontSize: 12, color: colors.ink700, flexShrink: 1 },
+  bas: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    borderTopWidth: 1,
+    borderTopColor: colors.ink100,
+    paddingTop: 14,
+  },
+  qrZone: {
+    width: 84,
+    height: 84,
+    borderRadius: 12,
+    backgroundColor: colors.cream100,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  qrVide: { fontSize: 10, color: colors.ink400, textAlign: "center" },
+  basTexte: { flex: 1, gap: 4 },
+  statutRow: { flexDirection: "row", alignItems: "center", gap: 5 },
+  statutTexte: { fontSize: 13, fontWeight: "700", color: colors.success500 },
+  statutTexteInactif: { fontSize: 13, fontWeight: "700", color: colors.ink400 },
+  basAide: { fontSize: 11, color: colors.ink400 },
 });
