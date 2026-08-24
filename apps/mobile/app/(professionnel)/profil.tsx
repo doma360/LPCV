@@ -2,18 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import QRCode from "react-native-qrcode-svg";
-import {
-  Camera,
-  Image as ImageIcon,
-  MessageSquareOff,
-  Pencil,
-  Settings,
-  ShieldCheck,
-  ShieldQuestion,
-  Star,
-  X,
-} from "lucide-react-native";
+import { Camera, Image as ImageIcon, MessageSquareOff, Pencil, Settings, Star, X } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch, ApiError, WEBSITE_URL } from "@/lib/api";
 import { uploadPhoto } from "@/lib/upload";
@@ -137,83 +126,32 @@ export default function Profil() {
           nom={session?.user.nom ?? ""}
           prenom={session?.user.prenom ?? ""}
           metier={detail?.profession.nom ?? "—"}
+          telephone={session?.user.telephone}
           photoUrl={detail?.photoUrl}
           verifie={verifie}
+          numeroMembre={numeroMembre}
+          membreDepuis={detail ? formaterDate(detail.createdAt) : "—"}
+          abonnement={{
+            actif: abonnementActif,
+            palier: abonnement?.palier,
+            dateDebut: abonnement ? formaterDate(abonnement.dateDebut) : undefined,
+            dateFin: abonnement ? formaterDate(abonnement.dateFin) : undefined,
+            joursRestants: abonnement ? joursRestants(abonnement.dateFin) : undefined,
+          }}
+          qrValue={abonnementActif && session ? `${WEBSITE_URL}/verification/${session.user.id}` : null}
         />
       </View>
 
-      <View style={styles.statutsRow}>
-        <View style={[styles.badge, verifie ? styles.badgeVerifie : styles.badgeAttente]}>
-          {verifie ? <ShieldCheck size={14} color={colors.success500} /> : <ShieldQuestion size={14} color={colors.accent700} />}
-          <Text style={[styles.badgeLabel, { color: verifie ? colors.success500 : colors.accent700 }]}>
-            {verifie ? "Profil vérifié" : "Vérification en attente"}
-          </Text>
-        </View>
-        {detail && (
+      {detail && (
+        <View style={styles.statutsRow}>
           <View style={styles.noteBadge}>
             <Star size={13} color={colors.accent700} fill={colors.accent500} />
             <Text style={styles.noteBadgeTexte}>
               {detail.noteMoyenne}/5 · {detail.nombreAvis} avis
             </Text>
           </View>
-        )}
-      </View>
-
-      <View style={styles.carteInfoSection}>
-        <View style={styles.grilleInfo}>
-          <View style={styles.champInfo}>
-            <Text style={styles.champLabel}>N° membre</Text>
-            <Text style={styles.champValeur}>{numeroMembre}</Text>
-          </View>
-          <View style={styles.champInfo}>
-            <Text style={styles.champLabel}>Membre depuis</Text>
-            <Text style={styles.champValeur}>{detail ? formaterDate(detail.createdAt) : "—"}</Text>
-          </View>
         </View>
-
-        <View style={styles.separateur} />
-
-        <View style={styles.abonnementRow}>
-          <View style={{ flex: 1 }}>
-            <View style={styles.abonnementStatutRow}>
-              <View style={[styles.statutPastille, abonnementActif ? styles.statutPastilleActif : styles.statutPastilleInactif]}>
-                <Text style={[styles.statutPastilleTexte, { color: abonnementActif ? colors.success500 : colors.ink500 }]}>
-                  {abonnementActif ? "Actif" : "Inactif"}
-                </Text>
-              </View>
-              <Text style={styles.abonnementPalier}>
-                {abonnement ? (abonnement.palier === "ANNUEL" ? "Abonnement annuel" : "Abonnement mensuel") : "Aucun abonnement"}
-              </Text>
-            </View>
-            {abonnement && (
-              <Text style={styles.abonnementDates}>
-                {formaterDate(abonnement.dateDebut)} → {formaterDate(abonnement.dateFin)}
-                {abonnementActif ? ` · expire dans ${joursRestants(abonnement.dateFin)} jours` : ""}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.separateur} />
-
-        <View style={styles.qrRow}>
-          <View style={styles.qrZone}>
-            {abonnementActif && session ? (
-              <QRCode value={`${WEBSITE_URL}/verification/${session.user.id}`} size={88} />
-            ) : (
-              <Text style={styles.qrVide}>QR inactif</Text>
-            )}
-          </View>
-          <View style={styles.qrTexte}>
-            <Text style={styles.qrTitre}>Carte de vérification</Text>
-            <Text style={styles.qrAide}>
-              {abonnementActif
-                ? "Scannez pour vérifier ce professionnel en un instant."
-                : "Le QR s'active avec un abonnement LPCV actif."}
-            </Text>
-          </View>
-        </View>
-      </View>
+      )}
 
       <View style={styles.avisSection}>
         <Text style={styles.avisTitle}>Portfolio de réalisations</Text>
@@ -317,10 +255,6 @@ const styles = StyleSheet.create({
   erreur: { color: colors.danger500, fontSize: 13 },
   zoneCarteMembre: { width: "100%", marginTop: 12 },
   statutsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14, width: "100%" },
-  badge: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
-  badgeVerifie: { backgroundColor: colors.success500 + "1A" },
-  badgeAttente: { backgroundColor: colors.accent400 + "33" },
-  badgeLabel: { fontSize: 12, fontWeight: "700" },
   noteBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -333,43 +267,6 @@ const styles = StyleSheet.create({
     borderColor: colors.ink100,
   },
   noteBadgeTexte: { fontSize: 12, fontWeight: "700", color: colors.ink700 },
-  carteInfoSection: {
-    width: "100%",
-    backgroundColor: colors.white,
-    borderRadius: 18,
-    padding: 16,
-    marginTop: 14,
-    borderWidth: 1,
-    borderColor: colors.ink100,
-  },
-  grilleInfo: { flexDirection: "row" },
-  champInfo: { flex: 1 },
-  champLabel: { fontSize: 10, fontWeight: "700", color: colors.ink400, textTransform: "uppercase" },
-  champValeur: { fontSize: 13, fontWeight: "700", color: colors.ink900, marginTop: 2 },
-  separateur: { height: 1, backgroundColor: colors.ink100, marginVertical: 12 },
-  abonnementRow: { flexDirection: "row", alignItems: "center" },
-  abonnementStatutRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  statutPastille: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999 },
-  statutPastilleActif: { backgroundColor: colors.success500 + "1A" },
-  statutPastilleInactif: { backgroundColor: colors.ink100 },
-  statutPastilleTexte: { fontSize: 11, fontWeight: "800" },
-  abonnementPalier: { fontSize: 13, fontWeight: "700", color: colors.ink900 },
-  abonnementDates: { fontSize: 12, color: colors.ink500, marginTop: 6 },
-  qrRow: { flexDirection: "row", alignItems: "center", gap: 14 },
-  qrZone: {
-    width: 96,
-    height: 96,
-    borderRadius: 12,
-    backgroundColor: colors.cream100,
-    borderWidth: 1,
-    borderColor: colors.ink100,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  qrVide: { fontSize: 10, color: colors.ink400, textAlign: "center" },
-  qrTexte: { flex: 1, gap: 3 },
-  qrTitre: { fontSize: 13, fontWeight: "700", color: colors.ink900 },
-  qrAide: { fontSize: 12, color: colors.ink500, lineHeight: 17 },
   avisSection: { width: "100%", marginTop: 24, gap: 10 },
   avisTitle: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
   videCard: {
