@@ -1,9 +1,9 @@
-import { CalendarClock, IdCard, Pencil, Settings, Wallet } from "lucide-react-native";
+import { IdCard, Pencil, Settings } from "lucide-react-native";
 import Sidebar, { type LienSidebar } from "@/components/Sidebar";
 
+// Reservations/Portefeuille mis en cache pour l'instant (voir docs/decisions.md) :
+// ecrans et backend intacts, juste retires de la navigation.
 const LIENS: LienSidebar[] = [
-  { href: "/(professionnel)/reservations", label: "Réservations", icone: CalendarClock },
-  { href: "/(professionnel)/portefeuille", label: "Portefeuille", icone: Wallet },
   { href: "/(professionnel)/carte-membre", label: "Carte membre", icone: IdCard },
   { href: "/(professionnel)/modifier-profil", label: "Modifier le profil", icone: Pencil },
   { href: "/(professionnel)/parametres", label: "Paramètres", icone: Settings },

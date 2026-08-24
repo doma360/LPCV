@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
-import { ArrowLeft, Check } from "lucide-react-native";
+import { ArrowLeft } from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
@@ -19,8 +19,6 @@ interface ProfessionnelDetail {
   tarifIndicatifMin: string | null;
   tarifIndicatifMax: string | null;
   zones: { zone: Zone }[];
-  aLocal: boolean;
-  adresseLocal: string | null;
 }
 
 export default function ModifierProfil() {
@@ -31,8 +29,6 @@ export default function ModifierProfil() {
   const [presentation, setPresentation] = useState("");
   const [tarifMin, setTarifMin] = useState("");
   const [tarifMax, setTarifMax] = useState("");
-  const [aLocal, setALocal] = useState(false);
-  const [adresseLocal, setAdresseLocal] = useState("");
   const [chargement, setChargement] = useState(true);
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -50,8 +46,6 @@ export default function ModifierProfil() {
         setTarifMin(detailRes.data.tarifIndicatifMin ?? "");
         setTarifMax(detailRes.data.tarifIndicatifMax ?? "");
         setZonesChoisies(detailRes.data.zones.map((z) => z.zone.id));
-        setALocal(detailRes.data.aLocal);
-        setAdresseLocal(detailRes.data.adresseLocal ?? "");
       })
       .finally(() => setChargement(false));
   }, [session]);
@@ -73,8 +67,6 @@ export default function ModifierProfil() {
           tarifIndicatifMin: tarifMin ? Number(tarifMin) : undefined,
           tarifIndicatifMax: tarifMax ? Number(tarifMax) : undefined,
           zoneIds: zonesChoisies,
-          aLocal,
-          adresseLocal: aLocal ? adresseLocal || undefined : undefined,
         }),
       });
       setSucces(true);
@@ -131,26 +123,8 @@ export default function ModifierProfil() {
             ))}
           </View>
 
-          <Pressable style={styles.toggleRow} onPress={() => setALocal((v) => !v)}>
-            <View style={[styles.checkbox, aLocal && styles.checkboxActive]}>
-              {aLocal && <Check size={14} color={colors.white} />}
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>J'ai un local</Text>
-              <Text style={styles.aide}>
-                Salon, atelier... les clients pourront demander une réservation en plus du déplacement.
-              </Text>
-            </View>
-          </Pressable>
-
-          {aLocal && (
-            <TextField
-              label="Adresse du local"
-              value={adresseLocal}
-              onChangeText={setAdresseLocal}
-              placeholder="Ex. Rue des Jardins, Cocody"
-            />
-          )}
+          {/* Toggle "J'ai un local" mis en cache avec la reservation (voir docs/decisions.md) :
+              styles toggleRow/checkbox conserves pour reactivation. */}
 
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
           {succes && <Text style={styles.succesTexte}>Profil mis à jour.</Text>}

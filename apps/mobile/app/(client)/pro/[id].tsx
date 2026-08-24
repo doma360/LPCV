@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, Home, MapPin, ShieldCheck, Star, Store } from "lucide-react-native";
+import { ArrowLeft, MapPin, ShieldCheck, Star } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
@@ -173,26 +173,8 @@ export default function FicheProfessionnel() {
             })
           }
         />
-        {pro.aLocal && (
-          <Pressable
-            style={styles.boutonLocal}
-            onPress={() =>
-              router.push({
-                pathname: "/(client)/reserver",
-                params: { professionnelId: id, professionId, nomPro, adresseLocal: pro.adresseLocal ?? "" },
-              })
-            }
-          >
-            <Store size={18} color={colors.brand900} />
-            <Text style={styles.boutonLocalLabel}>Chez le pro{pro.adresseLocal ? ` · ${pro.adresseLocal}` : ""}</Text>
-          </Pressable>
-        )}
-        {!pro.aLocal && (
-          <View style={styles.aideDomicile}>
-            <Home size={14} color={colors.ink400} />
-            <Text style={styles.aideDomicileText}>Ce professionnel se déplace uniquement.</Text>
-          </View>
-        )}
+        {/* Reservation "chez le pro" mise en cache pour l'instant (voir docs/decisions.md) :
+            code du flux intact (reserver.tsx, backend), juste ce point d'entree retire. */}
       </View>
     </ScrollView>
   );

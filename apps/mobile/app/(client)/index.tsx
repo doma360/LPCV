@@ -26,22 +26,12 @@ interface Demande {
   createdAt: string;
 }
 
-interface Reservation {
-  id: string;
-  statut: string;
-  dateConfirmee: string | null;
-  profession: { nom: string };
-  professionnel: { nom: string; prenom: string };
-}
-
 const DEMANDE_ACTIVE = new Set(["EN_ATTENTE", "ACCEPTEE", "EN_ROUTE", "EN_COURS"]);
-const RESERVATION_ACTIVE = new Set(["EN_ATTENTE", "CONFIRMEE", "PAYEE"]);
 
 export default function Accueil() {
   const { session } = useAuth();
   const { position, refuse, chargement, demanderPosition, choisirZone } = useLocalisation();
   const [demandes, setDemandes] = useState<Demande[]>([]);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [texteMetier, setTexteMetier] = useState("");
   const [metierChoisi, setMetierChoisi] = useState<Profession | null>(null);
@@ -53,21 +43,10 @@ export default function Accueil() {
   useFocusEffect(
     useCallback(() => {
       apiFetch<Demande[]>("/api/v1/demandes").then((res) => setDemandes(res.data));
-      apiFetch<Reservation[]>("/api/v1/reservations").then((res) => setReservations(res.data));
     }, []),
   );
 
-  const demandesActives = demandes.filter((d) => DEMANDE_ACTIVE.has(d.statut));
-  const reservationsActives = reservations.filter((r) => RESERVATION_ACTIVE.has(r.statut));
-  const enCours = [
-    ...demandesActives.map((d) => ({ id: d.id, type: "demande" as const, profession: d.profession.nom, sousTitre: "Déplacement" })),
-    ...reservationsActives.map((r) => ({
-      id: r.id,
-      type: "reservation" as const,
-      profession: r.profession.nom,
-      sousTitre: `Chez ${r.professionnel.prenom} ${r.professionnel.nom}`,
-    })),
-  ];
+  const enCours = demandes.filter((d) => DEMANDE_ACTIVE.has(d.statut));
 
   const suggestions =
     texteMetier.trim().length > 0 && !metierChoisi
@@ -169,21 +148,13 @@ export default function Accueil() {
           <Text style={styles.sectionTitre}>Vos demandes en cours</Text>
           <View style={{ gap: 10 }}>
             {enCours.map((item) => (
-              <Pressable
-                key={`${item.type}-${item.id}`}
-                style={styles.carteEnCours}
-                onPress={() =>
-                  router.push(
-                    item.type === "demande" ? "/(client)/demandes" : `/(client)/reservation/${item.id}`,
-                  )
-                }
-              >
+              <Pressable key={item.id} style={styles.carteEnCours} onPress={() => router.push("/(client)/demandes")}>
                 <View style={styles.carteEnCoursIcone}>
                   <CalendarClock size={16} color={colors.brand700} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.carteEnCoursTitre}>{item.profession}</Text>
-                  <Text style={styles.carteEnCoursSousTitre}>{item.sousTitre}</Text>
+                  <Text style={styles.carteEnCoursTitre}>{item.profession.nom}</Text>
+                  <Text style={styles.carteEnCoursSousTitre}>Déplacement</Text>
                 </View>
               </Pressable>
             ))}

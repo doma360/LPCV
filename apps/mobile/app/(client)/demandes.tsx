@@ -8,24 +8,6 @@ import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
 
-interface Reservation {
-  id: string;
-  statut: "EN_ATTENTE" | "CONFIRMEE" | "PAYEE" | "TERMINEE" | "ANNULEE" | "REFUSEE";
-  description: string;
-  montant: string | null;
-  profession: { nom: string };
-  professionnel: { nom: string; prenom: string };
-}
-
-const statutReservationLabels: Record<Reservation["statut"], { label: string; color: string }> = {
-  EN_ATTENTE: { label: "En attente de réponse...", color: colors.accent700 },
-  CONFIRMEE: { label: "À payer", color: colors.brand700 },
-  PAYEE: { label: "Confirmée", color: colors.success500 },
-  TERMINEE: { label: "Terminée", color: colors.success500 },
-  ANNULEE: { label: "Annulée", color: colors.danger500 },
-  REFUSEE: { label: "Refusée", color: colors.danger500 },
-};
-
 interface Demande {
   id: string;
   statut: string;
@@ -145,9 +127,7 @@ function CarteDemande({ demande, onAvisEnvoye }: { demande: Demande; onAvisEnvoy
 }
 
 export default function MesDemandes() {
-  const [onglet, setOnglet] = useState<"demandes" | "reservations">("demandes");
   const [demandes, setDemandes] = useState<Demande[]>([]);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   // Statuts connus au tour précédent, pour détecter une transition
   // EN_ATTENTE -> REFUSEE (plutôt que de relancer à chaque poll).
@@ -168,16 +148,10 @@ export default function MesDemandes() {
     setDemandes(res.data);
   }, []);
 
-  const chargerReservations = useCallback(async () => {
-    const res = await apiFetch<Reservation[]>("/api/v1/reservations");
-    setReservations(res.data);
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
       charger();
-      chargerReservations();
-    }, [charger, chargerReservations]),
+    }, [charger]),
   );
 
   // Une demande "en route" a sa position mise à jour côté pro toutes les
@@ -198,62 +172,23 @@ export default function MesDemandes() {
     <View style={styles.container}>
       <Text style={styles.title}>Mes demandes</Text>
 
-      <View style={styles.onglets}>
-        <Pressable onPress={() => setOnglet("demandes")} style={[styles.onglet, onglet === "demandes" && styles.ongletActif]}>
-          <Text style={[styles.ongletLabel, onglet === "demandes" && styles.ongletLabelActif]}>Déplacement</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setOnglet("reservations")}
-          style={[styles.onglet, onglet === "reservations" && styles.ongletActif]}
-        >
-          <Text style={[styles.ongletLabel, onglet === "reservations" && styles.ongletLabelActif]}>Réservations</Text>
-        </Pressable>
-      </View>
-
-      {onglet === "demandes" ? (
-        <FlatList
-          data={demandes}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={async () => {
-                setRefreshing(true);
-                await charger();
-                setRefreshing(false);
-              }}
-            />
-          }
-          contentContainerStyle={{ gap: 10, paddingTop: 16, paddingBottom: 40 }}
-          ListEmptyComponent={<Text style={styles.vide}>Aucune demande pour l'instant.</Text>}
-          renderItem={({ item }) => <CarteDemande demande={item} onAvisEnvoye={marquerAvisEnvoye} />}
-        />
-      ) : (
-        <FlatList
-          data={reservations}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ gap: 10, paddingTop: 16, paddingBottom: 40 }}
-          ListEmptyComponent={<Text style={styles.vide}>Aucune réservation pour l'instant.</Text>}
-          renderItem={({ item }) => {
-            const statut = statutReservationLabels[item.statut];
-            return (
-              <Pressable style={styles.card} onPress={() => router.push(`/(client)/reservation/${item.id}`)}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardMetier}>{item.profession.nom}</Text>
-                  <Text style={[styles.statut, { color: statut.color }]}>{statut.label}</Text>
-                </View>
-                <Text style={styles.pro}>
-                  {item.professionnel.prenom} {item.professionnel.nom}
-                </Text>
-                <Text style={styles.description} numberOfLines={2}>
-                  {item.description}
-                </Text>
-                {item.montant && <Text style={styles.prix}>{item.montant} FCFA</Text>}
-              </Pressable>
-            );
-          }}
-        />
-      )}
+      <FlatList
+        data={demandes}
+        keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              await charger();
+              setRefreshing(false);
+            }}
+          />
+        }
+        contentContainerStyle={{ gap: 10, paddingTop: 16, paddingBottom: 40 }}
+        ListEmptyComponent={<Text style={styles.vide}>Aucune demande pour l'instant.</Text>}
+        renderItem={({ item }) => <CarteDemande demande={item} onAvisEnvoye={marquerAvisEnvoye} />}
+      />
     </View>
   );
 }
@@ -261,11 +196,6 @@ export default function MesDemandes() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60 },
   title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
-  onglets: { flexDirection: "row", gap: 6, backgroundColor: colors.white, borderRadius: 999, padding: 4, marginTop: 14, borderWidth: 1, borderColor: colors.ink100 },
-  onglet: { flex: 1, paddingVertical: 8, borderRadius: 999, alignItems: "center" },
-  ongletActif: { backgroundColor: colors.brand900 },
-  ongletLabel: { fontSize: 13, fontWeight: "700", color: colors.ink700 },
-  ongletLabelActif: { color: colors.accent400 },
   vide: { marginTop: 40, textAlign: "center", color: colors.ink500 },
   card: {
     backgroundColor: colors.white,

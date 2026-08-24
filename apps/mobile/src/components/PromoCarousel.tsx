@@ -15,8 +15,8 @@ const SLIDES = [
     accent: colors.accent400,
   },
   {
-    titre: "À domicile ou chez le pro",
-    texte: "Déplacement rapide ou réservation dans un salon, à vous de choisir.",
+    titre: "Un pro se déplace chez vous",
+    texte: "Décrivez votre besoin, un professionnel vérifié arrive à votre domicile.",
     icone: Sparkles,
     fond: colors.bleuClair,
     accent: colors.brand900,
