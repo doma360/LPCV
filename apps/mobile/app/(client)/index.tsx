@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import { Bell, CalendarClock, ChevronRight, Search } from "lucide-react-native";
+import { CalendarClock, ChevronRight, Search } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalisation } from "@/hooks/useLocalisation";
@@ -11,7 +11,7 @@ import PromoCarousel from "@/components/PromoCarousel";
 import MiniCartePosition from "@/components/MiniCartePosition";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
-import LpcvLogo from "@/components/LpcvLogo";
+import EnTeteMarque from "@/components/EnTeteMarque";
 
 interface Profession {
   id: string;
@@ -65,16 +65,7 @@ export default function Accueil() {
 
   return (
     <View style={styles.flex}>
-      <View style={styles.bandeau}>
-        <LpcvLogo size={36} />
-        <View style={{ flex: 1, marginLeft: 10 }}>
-          <Text style={styles.wordmark}>LPCV</Text>
-          <Text style={styles.tagline}>Les Professionnels Chez Vous</Text>
-        </View>
-        <Pressable style={styles.cloche} onPress={() => router.push("/(client)/notifications")} hitSlop={10}>
-          <Bell size={22} color={colors.brand900} />
-        </Pressable>
-      </View>
+      <EnTeteMarque onBellPress={() => router.push("/(client)/notifications")} />
 
       <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
         <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
@@ -168,17 +159,6 @@ export default function Accueil() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.cream100 },
-  bandeau: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.accent400,
-    paddingTop: 56,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-  },
-  wordmark: { fontSize: 20, fontWeight: "900", color: colors.brand900, letterSpacing: 0.5 },
-  tagline: { fontSize: 10, fontWeight: "700", color: colors.brand700, marginTop: 1, letterSpacing: 0.3 },
-  cloche: { padding: 4 },
   container: { padding: 20, paddingBottom: 40 },
   salutation: { fontSize: 18, fontWeight: "800", color: colors.ink900 },
   sousSalutation: { fontSize: 12, color: colors.ink500, marginTop: 2 },

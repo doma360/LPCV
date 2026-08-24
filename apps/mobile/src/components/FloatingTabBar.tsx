@@ -15,6 +15,7 @@ const ROUTES_MASQUEES = new Set([
   "portefeuille",
   "reservations",
   "reservation/[id]",
+  "notifications",
 ]);
 
 const LARGEUR_INDICATEUR = 28;

@@ -2,12 +2,26 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { Camera, Image as ImageIcon, MessageSquareOff, Pencil, Settings, Star, X } from "lucide-react-native";
+import {
+  Briefcase,
+  Camera,
+  ChevronRight,
+  Image as ImageIcon,
+  MapPin,
+  MessageSquareOff,
+  Pencil,
+  Settings,
+  ShieldCheck,
+  Star,
+  ThumbsUp,
+  X,
+} from "lucide-react-native";
 import { useAuth } from "@/hooks/useAuth";
 import { apiFetch, ApiError, WEBSITE_URL } from "@/lib/api";
 import { uploadPhoto } from "@/lib/upload";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
+import EnTeteMarque from "@/components/EnTeteMarque";
 import CarteMembreVisual from "@/components/CarteMembreVisual";
 
 const PORTFOLIO_MAX = 12;
@@ -52,13 +66,14 @@ function joursRestants(iso: string) {
 }
 
 export default function Profil() {
-  const { session, logout } = useAuth();
+  const { session, logout, updateUser } = useAuth();
   const router = useRouter();
   const [detail, setDetail] = useState<ProfilDetail | null>(null);
   const [abonnement, setAbonnement] = useState<Abonnement | null>(null);
   const [avis, setAvis] = useState<Avis[]>([]);
   const [interventions, setInterventions] = useState(0);
   const [envoiPhoto, setEnvoiPhoto] = useState(false);
+  const [envoiPhotoProfil, setEnvoiPhotoProfil] = useState(false);
   const [erreurPortfolio, setErreurPortfolio] = useState<string | null>(null);
 
   useEffect(() => {
@@ -74,6 +89,30 @@ export default function Profil() {
   const verifie = detail?.statutVerification === "VERIFIE";
   const abonnementActif = abonnement?.statut === "ACTIF";
   const localisation = detail?.zones.map((z) => z.zone.nom).slice(0, 2).join(", ");
+  const avisPositifs = avis.filter((a) => a.note >= 4).length;
+  const tauxSatisfaction = avis.length > 0 ? Math.round((avisPositifs / avis.length) * 100) : null;
+
+  async function changerPhotoProfil() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) return;
+    const resultat = await ImagePicker.launchImageLibraryAsync({ quality: 0.5 });
+    if (resultat.canceled) return;
+
+    setEnvoiPhotoProfil(true);
+    try {
+      const url = await uploadPhoto(resultat.assets[0].uri);
+      const res = await apiFetch<{ photoUrl: string }>("/api/v1/users/me", {
+        method: "PATCH",
+        body: JSON.stringify({ photoUrl: url }),
+      });
+      updateUser({ photoUrl: res.data.photoUrl });
+      setDetail((prev) => (prev ? { ...prev, photoUrl: res.data.photoUrl } : prev));
+    } catch {
+      // erreur silencieuse ici, non bloquante pour le reste de l'ecran
+    } finally {
+      setEnvoiPhotoProfil(false);
+    }
+  }
 
   async function ajouterPhotoPortfolio(depuisCamera: boolean) {
     if (!detail || detail.portfolioUrls.length >= PORTFOLIO_MAX) return;
@@ -120,124 +159,209 @@ export default function Profil() {
     }
   }
 
+  const tuiles = [
+    { valeur: interventions, label: "Missions réalisées", icone: Briefcase, couleur: colors.accent500 },
+    { valeur: tauxSatisfaction !== null ? `${tauxSatisfaction}%` : "—", label: "Satisfaction", icone: ThumbsUp, couleur: colors.success500 },
+    { valeur: detail?.nombreAvis ?? 0, label: "Avis reçus", icone: Star, couleur: colors.bleuClair },
+    { valeur: detail?.zones.length ?? 0, label: "Zones desservies", icone: MapPin, couleur: colors.orange500 },
+  ];
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.actionsHaut}>
-        <Pressable style={styles.actionIcone} onPress={() => router.push("/(professionnel)/modifier-profil")}>
-          <Pencil size={18} color={colors.ink500} />
-        </Pressable>
-        <Pressable style={styles.actionIcone} onPress={() => router.push("/(professionnel)/parametres")}>
-          <Settings size={20} color={colors.ink500} />
-        </Pressable>
-      </View>
+    <View style={styles.flex}>
+      <EnTeteMarque onBellPress={() => router.push("/(professionnel)/notifications")} />
 
-      <View style={styles.zoneCarteMembre}>
-        <CarteMembreVisual
-          nom={session?.user.nom ?? ""}
-          prenom={session?.user.prenom ?? ""}
-          metier={detail?.profession.nom ?? "—"}
-          telephone={session?.user.telephone}
-          localisation={localisation}
-          photoUrl={detail?.photoUrl}
-          verifie={verifie}
-          membreDepuis={detail ? formaterDate(detail.createdAt) : "—"}
-          interventions={interventions}
-          noteMoyenne={detail?.noteMoyenne}
-          abonnement={{
-            actif: abonnementActif,
-            palier: abonnement?.palier,
-            dateDebut: abonnement ? formaterDate(abonnement.dateDebut) : undefined,
-            dateFin: abonnement ? formaterDate(abonnement.dateFin) : undefined,
-            joursRestants: abonnement ? joursRestants(abonnement.dateFin) : undefined,
-          }}
-          qrValue={abonnementActif && session ? `${WEBSITE_URL}/verification/${session.user.id}` : null}
-        />
-      </View>
-
-      {detail && detail.nombreAvis > 0 && (
-        <View style={styles.statutsRow}>
-          <View style={styles.noteBadge}>
-            <Star size={13} color={colors.accent700} fill={colors.accent500} />
-            <Text style={styles.noteBadgeTexte}>{detail.nombreAvis} avis reçus</Text>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.identiteRow}>
+          <View style={styles.photoWrap}>
+            {detail?.photoUrl ? (
+              <Image source={{ uri: detail.photoUrl }} style={styles.photo} />
+            ) : (
+              <View style={styles.photoPlaceholder}>
+                <Text style={styles.photoInitiales}>
+                  {session?.user.prenom[0]}
+                  {session?.user.nom[0]}
+                </Text>
+              </View>
+            )}
+            <Pressable style={styles.editPastille} onPress={changerPhotoProfil} disabled={envoiPhotoProfil}>
+              {envoiPhotoProfil ? <ActivityIndicator size="small" color={colors.brand900} /> : <Pencil size={13} color={colors.brand900} />}
+            </Pressable>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.nom}>
+              {session?.user.prenom} {session?.user.nom}
+            </Text>
+            <View style={styles.roleRow}>
+              <Text style={styles.role}>{detail?.profession.nom ?? "—"} Professionnel</Text>
+              {verifie && <ShieldCheck size={13} color={colors.success500} />}
+            </View>
           </View>
         </View>
-      )}
 
-      <View style={styles.avisSection}>
-        <Text style={styles.avisTitle}>Portfolio de réalisations</Text>
-        {erreurPortfolio && <Text style={styles.erreur}>{erreurPortfolio}</Text>}
-        <View style={styles.photosRow}>
-          {detail?.portfolioUrls.map((url) => (
-            <View key={url} style={styles.thumbWrap}>
-              <Image source={{ uri: url }} style={styles.thumb} />
-              <Pressable style={styles.thumbRemove} onPress={() => retirerPhotoPortfolio(url)}>
-                <X size={12} color={colors.white} />
-              </Pressable>
+        <View style={styles.zoneCarteMembre}>
+          <CarteMembreVisual
+            nom={session?.user.nom ?? ""}
+            prenom={session?.user.prenom ?? ""}
+            metier={detail?.profession.nom ?? "—"}
+            telephone={session?.user.telephone}
+            localisation={localisation}
+            photoUrl={detail?.photoUrl}
+            verifie={verifie}
+            membreDepuis={detail ? formaterDate(detail.createdAt) : "—"}
+            interventions={interventions}
+            noteMoyenne={detail?.noteMoyenne}
+            abonnement={{
+              actif: abonnementActif,
+              palier: abonnement?.palier,
+              dateDebut: abonnement ? formaterDate(abonnement.dateDebut) : undefined,
+              dateFin: abonnement ? formaterDate(abonnement.dateFin) : undefined,
+              joursRestants: abonnement ? joursRestants(abonnement.dateFin) : undefined,
+            }}
+            qrValue={abonnementActif && session ? `${WEBSITE_URL}/verification/${session.user.id}` : null}
+          />
+        </View>
+
+        <Text style={styles.sectionTitre}>Mon activité</Text>
+        <View style={styles.tuilesGrille}>
+          {tuiles.map((t) => (
+            <View key={t.label} style={styles.tuile}>
+              <View style={[styles.tuileIcone, { backgroundColor: t.couleur + "26" }]}>
+                <t.icone size={16} color={t.couleur} />
+              </View>
+              <Text style={styles.tuileValeur}>{t.valeur}</Text>
+              <Text style={styles.tuileLabel}>{t.label}</Text>
             </View>
           ))}
-          {(detail?.portfolioUrls.length ?? 0) < PORTFOLIO_MAX && !envoiPhoto && (
-            <>
-              <Pressable style={styles.photoBtn} onPress={() => ajouterPhotoPortfolio(true)}>
-                <Camera size={18} color={colors.ink500} />
-              </Pressable>
-              <Pressable style={styles.photoBtn} onPress={() => ajouterPhotoPortfolio(false)}>
-                <ImageIcon size={18} color={colors.ink500} />
-              </Pressable>
-            </>
-          )}
-          {envoiPhoto && <ActivityIndicator color={colors.brand700} />}
         </View>
-      </View>
 
-      <View style={styles.avisSection}>
-        <Text style={styles.avisTitle}>Avis reçus</Text>
-        {avis.length === 0 && (
-          <View style={styles.videCard}>
-            <View style={styles.videIcone}>
-              <MessageSquareOff size={22} color={colors.ink400} />
-            </View>
-            <Text style={styles.vide}>Aucun avis pour l'instant.</Text>
-          </View>
-        )}
-        {avis.map((item) => (
-          <View key={item.id} style={styles.avisCard}>
-            <View style={styles.avisHeader}>
-              <Text style={styles.avisNom}>
-                {item.client.prenom} {item.client.nom}
-              </Text>
-              <View style={styles.avisNote}>
-                <Star size={12} color={colors.accent700} fill={colors.accent500} />
-                <Text style={styles.avisNoteText}>{item.note}</Text>
+        <Pressable style={styles.lienRow} onPress={() => router.push("/(professionnel)/modifier-profil")}>
+          <Pencil size={16} color={colors.ink700} />
+          <Text style={styles.lienTexte}>Modifier mes services</Text>
+          <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
+        </Pressable>
+        <Pressable style={styles.lienRow} onPress={() => router.push("/(professionnel)/parametres")}>
+          <Settings size={16} color={colors.ink700} />
+          <Text style={styles.lienTexte}>Paramètres et sécurité</Text>
+          <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
+        </Pressable>
+
+        <View style={styles.avisSection}>
+          <Text style={styles.avisTitle}>Portfolio de réalisations</Text>
+          {erreurPortfolio && <Text style={styles.erreur}>{erreurPortfolio}</Text>}
+          <View style={styles.photosRow}>
+            {detail?.portfolioUrls.map((url) => (
+              <View key={url} style={styles.thumbWrap}>
+                <Image source={{ uri: url }} style={styles.thumb} />
+                <Pressable style={styles.thumbRemove} onPress={() => retirerPhotoPortfolio(url)}>
+                  <X size={12} color={colors.white} />
+                </Pressable>
               </View>
-            </View>
-            {item.commentaire && <Text style={styles.avisCommentaire}>{item.commentaire}</Text>}
+            ))}
+            {(detail?.portfolioUrls.length ?? 0) < PORTFOLIO_MAX && !envoiPhoto && (
+              <>
+                <Pressable style={styles.photoBtn} onPress={() => ajouterPhotoPortfolio(true)}>
+                  <Camera size={18} color={colors.ink500} />
+                </Pressable>
+                <Pressable style={styles.photoBtn} onPress={() => ajouterPhotoPortfolio(false)}>
+                  <ImageIcon size={18} color={colors.ink500} />
+                </Pressable>
+              </>
+            )}
+            {envoiPhoto && <ActivityIndicator color={colors.brand700} />}
           </View>
-        ))}
-      </View>
+        </View>
 
-      <View style={styles.logout}>
-        <Button label="Déconnexion" variant="outline" onPress={logout} />
-      </View>
-    </ScrollView>
+        <View style={styles.avisSection}>
+          <Text style={styles.avisTitle}>Avis reçus</Text>
+          {avis.length === 0 && (
+            <View style={styles.videCard}>
+              <View style={styles.videIcone}>
+                <MessageSquareOff size={22} color={colors.ink400} />
+              </View>
+              <Text style={styles.vide}>Aucun avis pour l'instant.</Text>
+            </View>
+          )}
+          {avis.map((item) => (
+            <View key={item.id} style={styles.avisCard}>
+              <View style={styles.avisHeader}>
+                <Text style={styles.avisNom}>
+                  {item.client.prenom} {item.client.nom}
+                </Text>
+                <View style={styles.avisNote}>
+                  <Star size={12} color={colors.accent700} fill={colors.accent500} />
+                  <Text style={styles.avisNoteText}>{item.note}</Text>
+                </View>
+              </View>
+              {item.commentaire && <Text style={styles.avisCommentaire}>{item.commentaire}</Text>}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.logout}>
+          <Button label="Déconnexion" variant="outline" onPress={logout} />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, backgroundColor: colors.cream100, padding: 20, paddingTop: 60, alignItems: "center" },
-  actionsHaut: { position: "absolute", top: 56, right: 20, zIndex: 1, flexDirection: "row", gap: 8 },
-  actionIcone: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: colors.white,
+  flex: { flex: 1, backgroundColor: colors.cream100 },
+  container: { padding: 20, paddingBottom: 40 },
+  identiteRow: { flexDirection: "row", alignItems: "center", gap: 14, marginTop: 4 },
+  photoWrap: { width: 84, height: 84 },
+  photo: { width: 84, height: 84, borderRadius: 42 },
+  photoPlaceholder: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: colors.brand900,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
+  photoInitiales: { color: colors.accent400, fontSize: 24, fontWeight: "800" },
+  editPastille: {
+    position: "absolute",
+    bottom: -2,
+    right: -2,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: colors.accent400,
+    borderWidth: 2,
+    borderColor: colors.cream100,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  nom: { fontSize: 19, fontWeight: "800", color: colors.ink900 },
+  roleRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 1 },
+  role: { fontSize: 12, fontWeight: "700", color: colors.brand700 },
+  zoneCarteMembre: { width: "100%", marginTop: 14 },
+  sectionTitre: { fontSize: 15, fontWeight: "800", color: colors.ink900, marginTop: 22, marginBottom: 12 },
+  tuilesGrille: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  tuile: {
+    width: "47%",
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+  },
+  tuileIcone: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 8 },
+  tuileValeur: { fontSize: 20, fontWeight: "800", color: colors.ink900 },
+  tuileLabel: { fontSize: 11, color: colors.ink500, marginTop: 2 },
+  lienRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+  },
+  lienTexte: { fontSize: 13, fontWeight: "600", color: colors.ink900 },
   photosRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   thumbWrap: { width: 56, height: 56 },
   thumb: { width: 56, height: 56, borderRadius: 10 },
@@ -263,20 +387,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   erreur: { color: colors.danger500, fontSize: 13 },
-  zoneCarteMembre: { width: "100%", marginTop: 12 },
-  statutsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14, width: "100%" },
-  noteBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: colors.white,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: colors.ink100,
-  },
-  noteBadgeTexte: { fontSize: 12, fontWeight: "700", color: colors.ink700 },
   avisSection: { width: "100%", marginTop: 24, gap: 10 },
   avisTitle: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
   videCard: {
@@ -315,5 +425,5 @@ const styles = StyleSheet.create({
   avisNote: { flexDirection: "row", alignItems: "center", gap: 3 },
   avisNoteText: { fontSize: 12, fontWeight: "700", color: colors.accent700 },
   avisCommentaire: { fontSize: 13, color: colors.ink700 },
-  logout: { marginTop: 28, width: "100%" },
+  logout: { marginTop: 24, width: "100%" },
 });
