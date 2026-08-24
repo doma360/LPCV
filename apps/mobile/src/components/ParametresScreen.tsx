@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as LocalAuthentication from "expo-local-authentication";
+import { ArrowLeft, Bell, Fingerprint, KeyRound, TriangleAlert, UserRound } from "lucide-react-native";
 import { useAuth, type Utilisateur } from "@/hooks/useAuth";
 import { apiFetch, ApiError } from "@/lib/api";
 import { getItem, setItem, deleteItem } from "@/lib/storage";
@@ -141,10 +142,18 @@ export default function ParametresScreen() {
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Paramètres</Text>
+        <View style={styles.header}>
+          <Pressable style={styles.retour} onPress={() => router.back()}>
+            <ArrowLeft size={20} color={colors.ink700} />
+          </Pressable>
+          <Text style={styles.title}>Paramètres</Text>
+        </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Informations du compte</Text>
+          <View style={styles.sectionTitleRow}>
+            <UserRound size={15} color={colors.brand700} />
+            <Text style={styles.sectionTitle}>Informations du compte</Text>
+          </View>
           <TextField label="Nom" value={nom} onChangeText={setNom} />
           <TextField label="Prénom" value={prenom} onChangeText={setPrenom} />
           <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
@@ -155,7 +164,10 @@ export default function ParametresScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sécurité</Text>
+          <View style={styles.sectionTitleRow}>
+            <KeyRound size={15} color={colors.brand700} />
+            <Text style={styles.sectionTitle}>Sécurité</Text>
+          </View>
           <TextField label="Mot de passe actuel" value={motDePasseActuel} onChangeText={setMotDePasseActuel} secureTextEntry />
           <TextField label="Nouveau mot de passe" value={nouveauMotDePasse} onChangeText={setNouveauMotDePasse} secureTextEntry />
           {mdpErreur && <Text style={styles.erreur}>{mdpErreur}</Text>}
@@ -170,7 +182,10 @@ export default function ParametresScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Préférences</Text>
+          <View style={styles.sectionTitleRow}>
+            <Bell size={15} color={colors.brand700} />
+            <Text style={styles.sectionTitle}>Préférences</Text>
+          </View>
           <View style={styles.ligne}>
             <Text style={styles.ligneLabel}>Notifications</Text>
             <Switch
@@ -181,20 +196,22 @@ export default function ParametresScreen() {
           </View>
           {verrouillageDisponible && (
             <View style={styles.ligne}>
-              <Text style={styles.ligneLabel}>Déverrouillage rapide (biométrie/PIN)</Text>
+              <View style={styles.ligneLabelRow}>
+                <Fingerprint size={14} color={colors.ink500} />
+                <Text style={styles.ligneLabel}>Déverrouillage rapide (biométrie/PIN)</Text>
+              </View>
               <Switch value={verrouillageActif} onValueChange={toggleVerrouillage} trackColor={{ true: colors.accent400 }} />
             </View>
           )}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Zone de danger</Text>
+        <View style={[styles.section, styles.sectionDanger]}>
+          <View style={styles.sectionTitleRow}>
+            <TriangleAlert size={15} color={colors.danger500} />
+            <Text style={[styles.sectionTitle, { color: colors.danger500 }]}>Zone de danger</Text>
+          </View>
           <Button label="Désactiver mon compte" variant="outline" onPress={confirmerDesactivation} />
         </View>
-
-        <Text style={styles.retour} onPress={() => router.back()}>
-          Retour
-        </Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -202,20 +219,36 @@ export default function ParametresScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.cream100 },
-  container: { padding: 20, paddingTop: 60, gap: 24 },
-  title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
+  container: { padding: 20, paddingTop: 60, gap: 20, paddingBottom: 40 },
+  header: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 4 },
+  retour: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  title: { fontSize: 22, fontWeight: "800", color: colors.ink900 },
   section: {
     backgroundColor: colors.white,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.ink100,
     padding: 16,
     gap: 12,
   },
+  sectionDanger: { borderColor: "#FBD5D5" },
+  sectionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   sectionTitle: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
   ligne: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  ligneLabelRow: { flexDirection: "row", alignItems: "center", gap: 6, flex: 1, marginRight: 12 },
   ligneLabel: { fontSize: 14, color: colors.ink700, flex: 1, marginRight: 12 },
   erreur: { color: colors.danger500, fontSize: 13 },
   succes: { color: colors.success500, fontSize: 13 },
-  retour: { textAlign: "center", color: colors.brand700, fontWeight: "600", marginTop: 4, marginBottom: 20 },
 });
