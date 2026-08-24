@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Text from "@/components/Texte";
 import { router } from "expo-router";
 import {
@@ -53,13 +54,34 @@ const PROFILS = [
 ];
 
 export default function ChoisirRole() {
+  const flotte1 = useRef(new Animated.Value(0)).current;
+  const flotte2 = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    function boucle(valeur: Animated.Value, delai: number) {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(delai),
+          Animated.timing(valeur, { toValue: 1, duration: 1600, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(valeur, { toValue: 0, duration: 1600, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ]),
+      );
+    }
+    const a1 = boucle(flotte1, 0);
+    const a2 = boucle(flotte2, 350);
+    a1.start();
+    a2.start();
+    return () => {
+      a1.stop();
+      a2.stop();
+    };
+  }, [flotte1, flotte2]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Pressable style={styles.retour} onPress={() => router.back()}>
-          <ArrowLeft size={20} color={colors.white} />
-        </Pressable>
-      </View>
+      <Pressable style={styles.retour} onPress={() => router.back()}>
+        <ArrowLeft size={20} color={colors.ink700} />
+      </Pressable>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.hero}>
@@ -69,7 +91,7 @@ export default function ChoisirRole() {
             <View style={[styles.dot, styles.dot3]} />
             <View style={styles.glowInner}>
               <View style={styles.logoBadge}>
-                <LpcvLogo size={36} />
+                <LpcvLogo size={34} />
               </View>
             </View>
           </View>
@@ -81,37 +103,47 @@ export default function ChoisirRole() {
         </View>
 
         <View style={styles.cards}>
-          {PROFILS.map((profil) => (
-            <Pressable
+          {PROFILS.map((profil, i) => (
+            <Animated.View
               key={profil.role}
-              style={[styles.card, profil.variante === "pro" ? styles.cardPro : styles.cardClient]}
-              onPress={() => router.push({ pathname: "/(auth)/authentification", params: { role: profil.role } })}
+              style={{
+                transform: [
+                  {
+                    translateY: (i === 0 ? flotte1 : flotte2).interpolate({ inputRange: [0, 1], outputRange: [-4, 4] }),
+                  },
+                ],
+              }}
             >
-              <View style={styles.cardTop}>
-                <View style={[styles.iconTile, { backgroundColor: profil.teinteFond }]}>
-                  <profil.icone size={24} color={profil.teinteIcone} />
-                </View>
-                <View style={styles.cardTexte}>
-                  <Text style={styles.cardTitre}>{profil.titre}</Text>
-                  <Text style={[styles.cardAccroche, { color: profil.teinteTexte }]}>{profil.accroche}</Text>
-                  <Text style={styles.cardDescription}>{profil.description}</Text>
-                </View>
-                <View style={styles.chevron}>
-                  <ChevronRight size={18} color={colors.ink500} />
-                </View>
-              </View>
-
-              <View style={styles.separateur} />
-
-              <View style={styles.beneficesRow}>
-                {profil.benefices.map((b) => (
-                  <View style={styles.beneficeItem} key={b.label}>
-                    <b.icone size={13} color={profil.teinteFond === colors.brand900 ? colors.brand900 : colors.accent700} />
-                    <Text style={styles.beneficeLabel}>{b.label}</Text>
+              <Pressable
+                style={[styles.card, profil.variante === "pro" ? styles.cardPro : styles.cardClient]}
+                onPress={() => router.push({ pathname: "/(auth)/authentification", params: { role: profil.role } })}
+              >
+                <View style={styles.cardTop}>
+                  <View style={[styles.iconTile, { backgroundColor: profil.teinteFond }]}>
+                    <profil.icone size={24} color={profil.teinteIcone} />
                   </View>
-                ))}
-              </View>
-            </Pressable>
+                  <View style={styles.cardTexte}>
+                    <Text style={styles.cardTitre}>{profil.titre}</Text>
+                    <Text style={[styles.cardAccroche, { color: profil.teinteTexte }]}>{profil.accroche}</Text>
+                    <Text style={styles.cardDescription}>{profil.description}</Text>
+                  </View>
+                  <View style={styles.chevron}>
+                    <ChevronRight size={18} color={colors.ink500} />
+                  </View>
+                </View>
+
+                <View style={styles.separateur} />
+
+                <View style={styles.beneficesRow}>
+                  {profil.benefices.map((b) => (
+                    <View style={styles.beneficeItem} key={b.label}>
+                      <b.icone size={13} color={profil.teinteFond === colors.brand900 ? colors.brand900 : colors.accent700} />
+                      <Text style={styles.beneficeLabel}>{b.label}</Text>
+                    </View>
+                  ))}
+                </View>
+              </Pressable>
+            </Animated.View>
           ))}
         </View>
 
@@ -130,29 +162,25 @@ export default function ChoisirRole() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream100 },
-  header: {
-    backgroundColor: colors.brand900,
-    paddingTop: 56,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    borderBottomWidth: 3,
-    borderBottomColor: colors.accent400,
-  },
   retour: {
+    position: "absolute",
+    top: 56,
+    left: 24,
+    zIndex: 1,
     width: 40,
     height: 40,
     borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.14)",
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  scroll: { padding: 24, paddingBottom: 40 },
-  hero: { alignItems: "center", marginTop: 8, marginBottom: 32 },
+  scroll: { padding: 24, paddingTop: 112, paddingBottom: 40 },
+  hero: { alignItems: "center", marginBottom: 28 },
   glowOuter: {
     width: 130,
     height: 130,
@@ -196,10 +224,10 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     padding: 18,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
   },
   cardPro: { backgroundColor: colors.accent300 + "55", borderWidth: 1.5, borderColor: colors.accent400 },
   cardClient: { backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.ink900 },
