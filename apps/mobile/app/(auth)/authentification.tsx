@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Text from "@/components/Texte";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { ArrowLeft, Lock, Mail, Phone, User } from "lucide-react-native";
 import { useAuth, type Role } from "@/hooks/useAuth";
 import { apiFetch } from "@/lib/api";
@@ -17,6 +18,14 @@ interface Profession {
 
 type Onglet = "connexion" | "inscription";
 
+// Structure reprise d'une reference envoyee par l'utilisateur (fond mur +
+// lampe eclairant le logo, panneau formulaire en dessous) mais dans le
+// theme clair deja etabli sur le reste de l'app, pas le fond sombre de la
+// reference ("le theme ne change pas") : le halo lumineux au-dessus du logo
+// reprend la meme technique degrade radial que l'ecran Bienvenue plutot
+// qu'un mur de briques litteral. Cases "Se souvenir de moi" et "J'accepte
+// les conditions" de la reference non reprises : aucune des deux
+// fonctionnalites n'existe cote backend (voir docs/decisions.md).
 export default function Authentification() {
   const { login, registerClient, registerProfessionnel } = useAuth();
   const { role: roleParam, onglet: ongletParam } = useLocalSearchParams<{ role?: string; onglet?: string }>();
@@ -93,16 +102,23 @@ export default function Authentification() {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Pressable style={styles.retour} onPress={() => router.back()}>
-          <ArrowLeft size={20} color={colors.ink700} />
-        </Pressable>
+      <Pressable style={styles.retour} onPress={() => router.back()}>
+        <ArrowLeft size={20} color={colors.ink700} />
+      </Pressable>
 
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>L</Text>
-          </View>
-          <Text style={styles.title}>Bienvenue</Text>
+          <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+            <Defs>
+              <RadialGradient id="loginRayon" cx="50%" cy="0%" r="80%">
+                <Stop offset="0" stopColor={colors.accent400} stopOpacity="0.9" />
+                <Stop offset="0.5" stopColor={colors.accent300} stopOpacity="0.3" />
+                <Stop offset="1" stopColor={colors.cream100} stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect x="0" y="0" width="100%" height="100%" fill="url(#loginRayon)" />
+          </Svg>
+          <Image source={require("../../assets/logo-complet.png")} style={styles.logo} resizeMode="contain" />
           <View style={[styles.roleBadge, { backgroundColor: role === "client" ? colors.brand900 : colors.accent400 }]}>
             <Text style={[styles.roleBadgeText, { color: role === "client" ? colors.accent400 : colors.brand900 }]}>
               {role === "client" ? "Espace Client" : "Espace Professionnel"}
@@ -110,122 +126,151 @@ export default function Authentification() {
           </View>
         </View>
 
-        <View style={styles.segmented}>
-          <Pressable
-            onPress={() => setOnglet("connexion")}
-            style={[styles.segment, onglet === "connexion" && styles.segmentActive]}
-          >
-            <Text style={[styles.segmentLabel, onglet === "connexion" && styles.segmentLabelActive]}>Connexion</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setOnglet("inscription")}
-            style={[styles.segment, onglet === "inscription" && styles.segmentActive]}
-          >
-            <Text style={[styles.segmentLabel, onglet === "inscription" && styles.segmentLabelActive]}>Inscription</Text>
-          </Pressable>
-        </View>
-
-        {onglet === "connexion" ? (
-          <View style={styles.form}>
-            <TextField
-              label="Email ou téléphone"
-              value={identifiant}
-              onChangeText={setIdentifiant}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              icon={Mail}
-            />
-            <TextField
-              label="Mot de passe"
-              value={motDePasseConnexion}
-              onChangeText={setMotDePasseConnexion}
-              secureTextEntry
-              icon={Lock}
-            />
-
-            {erreurConnexion && <Text style={styles.erreur}>{erreurConnexion}</Text>}
-
-            <Link href="/(auth)/mot-de-passe-oublie" style={styles.lienMdp}>
-              Mot de passe oublié ?
-            </Link>
-
-            <Button
-              label={loadingConnexion ? "Connexion..." : "Se connecter"}
-              showArrow
-              onPress={handleConnexion}
-              loading={loadingConnexion}
-            />
+        <View style={styles.panneau}>
+          <View style={styles.segmented}>
+            <Pressable
+              onPress={() => setOnglet("connexion")}
+              style={[styles.segment, onglet === "connexion" && styles.segmentActive]}
+            >
+              <Text style={[styles.segmentLabel, onglet === "connexion" && styles.segmentLabelActive]}>Connexion</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setOnglet("inscription")}
+              style={[styles.segment, onglet === "inscription" && styles.segmentActive]}
+            >
+              <Text style={[styles.segmentLabel, onglet === "inscription" && styles.segmentLabelActive]}>Inscription</Text>
+            </Pressable>
           </View>
-        ) : (
-          <View style={styles.form}>
-            <View style={styles.row}>
-              <View style={styles.flex}>
-                <TextField label="Prénom" value={prenom} onChangeText={setPrenom} icon={User} />
-              </View>
-              <View style={styles.flex}>
-                <TextField label="Nom" value={nom} onChangeText={setNom} icon={User} />
-              </View>
+
+          <Text style={styles.panneauTitre}>{onglet === "connexion" ? "Connexion" : "Créer un compte"}</Text>
+          <Text style={styles.panneauSousTitre}>
+            {onglet === "connexion"
+              ? "Bienvenue ! Connectez-vous pour continuer"
+              : "Rejoignez LPCV et trouvez les meilleurs professionnels"}
+          </Text>
+
+          {onglet === "connexion" ? (
+            <View style={styles.form}>
+              <TextField
+                label="Email ou téléphone"
+                value={identifiant}
+                onChangeText={setIdentifiant}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                icon={Mail}
+              />
+              <TextField
+                label="Mot de passe"
+                value={motDePasseConnexion}
+                onChangeText={setMotDePasseConnexion}
+                secureTextEntry
+                icon={Lock}
+              />
+
+              {erreurConnexion && <Text style={styles.erreur}>{erreurConnexion}</Text>}
+
+              <Pressable onPress={() => router.push("/(auth)/mot-de-passe-oublie")}>
+                <Text style={styles.lienMdp}>Mot de passe oublié ?</Text>
+              </Pressable>
+
+              <Button
+                label={loadingConnexion ? "Connexion..." : "Se connecter"}
+                showArrow
+                floating
+                onPress={handleConnexion}
+                loading={loadingConnexion}
+              />
+
+              <Text style={styles.bascule}>
+                Vous n'avez pas de compte ?{" "}
+                <Text style={styles.basculeLien} onPress={() => setOnglet("inscription")}>
+                  Créer un compte
+                </Text>
+              </Text>
             </View>
-            <TextField
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              icon={Mail}
-            />
-            <TextField label="Téléphone" value={telephone} onChangeText={setTelephone} keyboardType="phone-pad" icon={Phone} />
-            <TextField label="Mot de passe" value={motDePasse} onChangeText={setMotDePasse} secureTextEntry icon={Lock} />
-
-            {role === "professionnel" && (
-              <View style={styles.form}>
-                <Text style={styles.label}>Métier</Text>
-                {professionsStatut === "chargement" && <ActivityIndicator color={colors.brand700} />}
-                {professionsStatut === "erreur" && (
-                  <View style={styles.metierErreur}>
-                    <Text style={styles.erreur}>Impossible de charger la liste des métiers. Vérifiez votre connexion.</Text>
-                    <Pressable onPress={chargerProfessions}>
-                      <Text style={styles.reessayer}>Réessayer</Text>
-                    </Pressable>
-                  </View>
-                )}
-                {professionsStatut === "ok" && (
-                  <View style={styles.chips}>
-                    {professions.map((profession) => (
-                      <Pressable
-                        key={profession.id}
-                        onPress={() => setProfessionId(profession.id)}
-                        style={[styles.chip, professionId === profession.id && styles.chipActive]}
-                      >
-                        <Text style={[styles.chipLabel, professionId === profession.id && styles.chipLabelActive]}>
-                          {profession.nom}
-                        </Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                )}
+          ) : (
+            <View style={styles.form}>
+              <View style={styles.row}>
+                <View style={styles.colonne}>
+                  <TextField label="Prénom" value={prenom} onChangeText={setPrenom} icon={User} />
+                </View>
+                <View style={styles.colonne}>
+                  <TextField label="Nom" value={nom} onChangeText={setNom} icon={User} />
+                </View>
               </View>
-            )}
+              <TextField
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                icon={Mail}
+              />
+              <TextField label="Téléphone" value={telephone} onChangeText={setTelephone} keyboardType="phone-pad" icon={Phone} />
+              <TextField label="Mot de passe" value={motDePasse} onChangeText={setMotDePasse} secureTextEntry icon={Lock} />
 
-            {erreurInscription && <Text style={styles.erreur}>{erreurInscription}</Text>}
+              {role === "professionnel" && (
+                <View style={styles.form}>
+                  <Text style={styles.label}>Métier</Text>
+                  {professionsStatut === "chargement" && <ActivityIndicator color={colors.brand700} />}
+                  {professionsStatut === "erreur" && (
+                    <View style={styles.metierErreur}>
+                      <Text style={styles.erreur}>Impossible de charger la liste des métiers. Vérifiez votre connexion.</Text>
+                      <Pressable onPress={chargerProfessions}>
+                        <Text style={styles.reessayer}>Réessayer</Text>
+                      </Pressable>
+                    </View>
+                  )}
+                  {professionsStatut === "ok" && (
+                    <View style={styles.chips}>
+                      {professions.map((profession) => (
+                        <Pressable
+                          key={profession.id}
+                          onPress={() => setProfessionId(profession.id)}
+                          style={[styles.chip, professionId === profession.id && styles.chipActive]}
+                        >
+                          <Text style={[styles.chipLabel, professionId === profession.id && styles.chipLabelActive]}>
+                            {profession.nom}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
 
-            <Button
-              label={loadingInscription ? "Création..." : "Créer mon compte"}
-              showArrow
-              onPress={handleInscription}
-              loading={loadingInscription}
-            />
-          </View>
-        )}
+              {erreurInscription && <Text style={styles.erreur}>{erreurInscription}</Text>}
+
+              <Button
+                label={loadingInscription ? "Création..." : "Créer mon compte"}
+                showArrow
+                floating
+                onPress={handleInscription}
+                loading={loadingInscription}
+              />
+
+              <Text style={styles.bascule}>
+                Vous avez déjà un compte ?{" "}
+                <Text style={styles.basculeLien} onPress={() => setOnglet("connexion")}>
+                  Se connecter
+                </Text>
+              </Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  container: { flexGrow: 1, backgroundColor: colors.cream100, padding: 24, paddingTop: 60, gap: 20 },
+  flex: { flex: 1, backgroundColor: colors.cream100 },
+  container: { flexGrow: 1, paddingBottom: 40 },
   retour: {
+    position: "absolute",
+    top: 56,
+    left: 24,
+    zIndex: 1,
     width: 40,
     height: 40,
     borderRadius: 14,
@@ -238,19 +283,24 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
-  hero: { alignItems: "center", gap: 10 },
-  badge: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: colors.brand900,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  badgeText: { fontSize: 20, fontWeight: "800", color: colors.accent400 },
-  title: { fontFamily: polices.titre, fontSize: 24, fontWeight: "800", color: colors.ink900 },
-  roleBadge: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 },
+  hero: { alignItems: "center", paddingTop: 100, paddingBottom: 24, overflow: "hidden" },
+  logo: { width: 150, height: 152 },
+  roleBadge: { borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7, marginTop: 8 },
   roleBadgeText: { fontSize: 13, fontWeight: "700" },
+  panneau: {
+    backgroundColor: colors.white,
+    borderRadius: 28,
+    marginHorizontal: 20,
+    padding: 22,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
   segmented: {
     flexDirection: "row",
     backgroundColor: colors.ink100,
@@ -269,8 +319,11 @@ const styles = StyleSheet.create({
   },
   segmentLabel: { fontSize: 14, fontWeight: "700", color: colors.ink500 },
   segmentLabelActive: { color: colors.brand900 },
-  form: { gap: 14 },
+  panneauTitre: { fontFamily: polices.titre, fontSize: 24, color: colors.ink900, marginTop: 4 },
+  panneauSousTitre: { fontSize: 13, color: colors.ink500, marginTop: -8 },
+  form: { gap: 14, marginTop: 4 },
   row: { flexDirection: "row", gap: 12 },
+  colonne: { flex: 1 },
   label: { fontSize: 13, fontWeight: "600", color: colors.ink700 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: colors.ink200 },
@@ -281,4 +334,6 @@ const styles = StyleSheet.create({
   lienMdp: { textAlign: "right", color: colors.ink500, fontSize: 13, fontWeight: "600" },
   metierErreur: { gap: 8 },
   reessayer: { color: colors.brand700, fontSize: 13, fontWeight: "700" },
+  bascule: { textAlign: "center", fontSize: 13, color: colors.ink500, marginTop: 4 },
+  basculeLien: { color: colors.accent700, fontWeight: "700" },
 });
