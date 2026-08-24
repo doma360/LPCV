@@ -1,6 +1,6 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import { Check, Phone } from "lucide-react-native";
+import { Calendar, Check, MapPin, Phone, ShieldCheck, Star, Wrench } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 import LpcvLogo from "@/components/LpcvLogo";
 
@@ -17,28 +17,34 @@ interface CarteMembreVisualProps {
   prenom: string;
   metier: string;
   telephone?: string;
+  localisation?: string;
   photoUrl?: string | null;
   verifie?: boolean;
-  numeroMembre: string;
   membreDepuis: string;
+  interventions: number;
+  noteMoyenne?: string;
   abonnement: AbonnementInfo;
   qrValue?: string | null;
 }
 
-// Modele "tableau de bord" demande par l'utilisateur (image de reference,
-// app concurrente) : photo de profil ronde classique (pas une zone dediee
-// qui mange l'espace des infos), puces metier/telephone, espace QR au
-// centre, abonnement en bas de la carte. Palette LPCV conservee (pas le
-// degrade orange/vert de la reference).
+// Reproduit d'assez pres une maquette "carte pro" fournie par l'utilisateur
+// (deja aux couleurs LPCV) : logo+wordmark, pastille "membre professionnel",
+// grande photo ronde + badge verifie, puces localisation/telephone/date,
+// liste certification/interventions/note, QR avec logo LPCV au centre,
+// abonnement en bas. Colonnes desktop de la reference repliees en liste
+// verticale (largeur mobile ~380px) ; "Specialites"/"Experience en annees"
+// non repris faute de donnees en base (voir docs/decisions.md).
 export default function CarteMembreVisual({
   nom,
   prenom,
   metier,
   telephone,
+  localisation,
   photoUrl,
   verifie,
-  numeroMembre,
   membreDepuis,
+  interventions,
+  noteMoyenne,
   abonnement,
   qrValue,
 }: CarteMembreVisualProps) {
@@ -47,7 +53,23 @@ export default function CarteMembreVisual({
       <View style={styles.accent1} />
       <View style={styles.accent2} />
 
-      <View style={styles.enTete}>
+      <View style={styles.headerRow}>
+        <View style={styles.marqueBloc}>
+          <LpcvLogo size={26} />
+          <View>
+            <Text style={styles.wordmark}>
+              LPC<Text style={{ color: colors.accent400 }}>V</Text>
+            </Text>
+            <Text style={styles.tagline}>Les Professionnels Chez Vous</Text>
+          </View>
+        </View>
+        <View style={styles.memberPill}>
+          <ShieldCheck size={11} color={colors.brand900} />
+          <Text style={styles.memberPillTexte}>MEMBRE PRO</Text>
+        </View>
+      </View>
+
+      <View style={styles.identiteRow}>
         <View style={styles.photoWrap}>
           {photoUrl ? (
             <Image source={{ uri: photoUrl }} style={styles.photo} />
@@ -61,50 +83,87 @@ export default function CarteMembreVisual({
           )}
           {verifie && (
             <View style={styles.verifiePastille}>
-              <Check size={11} color={colors.white} strokeWidth={3} />
+              <Check size={12} color={colors.white} strokeWidth={3} />
             </View>
           )}
         </View>
 
         <View style={{ flex: 1 }}>
-          <View style={styles.marqueRow}>
-            <LpcvLogo size={14} />
-            <Text style={styles.marque}>LPCV</Text>
-          </View>
           <Text style={styles.nom} numberOfLines={1}>
             {prenom} {nom}
           </Text>
+          <View style={styles.metierRow}>
+            <Text style={styles.metier} numberOfLines={1}>
+              {metier}
+            </Text>
+            {verifie && <ShieldCheck size={13} color={colors.accent400} />}
+          </View>
+
           <View style={styles.chipsRow}>
-            <View style={styles.chip}>
-              <Text style={styles.chipTexte} numberOfLines={1}>
-                {metier}
-              </Text>
-            </View>
+            {localisation && (
+              <View style={styles.chip}>
+                <MapPin size={10} color={colors.accent400} />
+                <Text style={styles.chipTexte} numberOfLines={1}>
+                  {localisation}
+                </Text>
+              </View>
+            )}
             {telephone && (
               <View style={styles.chip}>
-                <Phone size={10} color={colors.white} />
+                <Phone size={10} color={colors.accent400} />
                 <Text style={styles.chipTexte} numberOfLines={1}>
                   {telephone}
                 </Text>
               </View>
             )}
           </View>
+          <View style={styles.chip}>
+            <Calendar size={10} color={colors.accent400} />
+            <Text style={styles.chipTexte}>Membre depuis {membreDepuis}</Text>
+          </View>
         </View>
       </View>
 
-      <Text style={styles.numeroLigne}>
-        N° {numeroMembre} · Membre depuis {membreDepuis}
-      </Text>
-
       <View style={styles.separateur} />
 
-      <View style={styles.qrZone}>
-        <View style={styles.qrFond}>
-          {qrValue ? <QRCode value={qrValue} size={92} /> : <Text style={styles.qrVideTexte}>QR inactif</Text>}
+      <View style={styles.infoQrRow}>
+        <View style={styles.infoListe}>
+          <View style={styles.infoLigne}>
+            <ShieldCheck size={14} color={colors.accent400} />
+            <View>
+              <Text style={styles.infoLabel}>CERTIFICATION</Text>
+              <Text style={styles.infoValeur}>{verifie ? "Certifié LPCV" : "En attente de vérification"}</Text>
+            </View>
+          </View>
+          <View style={styles.infoLigne}>
+            <Wrench size={14} color={colors.accent400} />
+            <View>
+              <Text style={styles.infoLabel}>INTERVENTIONS</Text>
+              <Text style={styles.infoValeur}>{interventions} mission{interventions > 1 ? "s" : ""} réalisée{interventions > 1 ? "s" : ""}</Text>
+            </View>
+          </View>
+          {noteMoyenne && (
+            <View style={styles.infoLigne}>
+              <Star size={14} color={colors.accent400} fill={colors.accent400} />
+              <View>
+                <Text style={styles.infoLabel}>NOTE MOYENNE</Text>
+                <Text style={styles.infoValeur}>{noteMoyenne}/5</Text>
+              </View>
+            </View>
+          )}
         </View>
-        <Text style={styles.qrLegende}>
-          {qrValue ? "Scannez pour vérifier ce professionnel" : "S'active avec un abonnement LPCV actif"}
-        </Text>
+
+        <View style={styles.qrBloc}>
+          <View style={styles.qrFond}>
+            {qrValue ? (
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              <QRCode value={qrValue} size={84} logo={require("../../assets/icon.png")} logoSize={20} logoBorderRadius={6} logoBackgroundColor={colors.white} />
+            ) : (
+              <Text style={styles.qrVideTexte}>QR inactif</Text>
+            )}
+          </View>
+          <Text style={styles.qrLegende}>Scannez pour voir mon profil</Text>
+        </View>
       </View>
 
       <View style={styles.separateur} />
@@ -134,91 +193,110 @@ export default function CarteMembreVisual({
 const styles = StyleSheet.create({
   carte: {
     width: "100%",
-    borderRadius: 20,
+    borderRadius: 22,
     backgroundColor: colors.brand900,
-    padding: 18,
+    padding: 16,
     overflow: "hidden",
     shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
   },
   accent1: {
     position: "absolute",
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
     backgroundColor: colors.brand700,
-    right: -60,
-    top: -90,
-    opacity: 0.6,
+    right: -90,
+    top: -120,
+    opacity: 0.55,
   },
   accent2: {
     position: "absolute",
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
     backgroundColor: colors.accent400,
-    right: -30,
-    top: -20,
-    opacity: 0.7,
+    right: -50,
+    top: -40,
+    opacity: 0.35,
   },
-  enTete: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  photoWrap: { width: 56, height: 56 },
-  photo: { width: 56, height: 56, borderRadius: 28, borderWidth: 2, borderColor: colors.white },
+  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  marqueBloc: { flexDirection: "row", alignItems: "center", gap: 8 },
+  wordmark: { color: colors.white, fontSize: 16, fontWeight: "900", letterSpacing: 0.5 },
+  tagline: { color: colors.brand100, fontSize: 8, fontWeight: "700", letterSpacing: 0.3 },
+  memberPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.accent400,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  memberPillTexte: { color: colors.brand900, fontSize: 9, fontWeight: "800", letterSpacing: 0.3 },
+  identiteRow: { flexDirection: "row", alignItems: "flex-start", gap: 12, marginTop: 16 },
+  photoWrap: { width: 68, height: 68 },
+  photo: { width: 68, height: 68, borderRadius: 34, borderWidth: 2, borderColor: "rgba(255,255,255,0.5)" },
   photoPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     borderWidth: 2,
-    borderColor: colors.white,
+    borderColor: "rgba(255,255,255,0.5)",
     backgroundColor: colors.brand700,
     alignItems: "center",
     justifyContent: "center",
   },
-  photoInitiales: { color: colors.accent400, fontSize: 18, fontWeight: "800" },
+  photoInitiales: { color: colors.accent400, fontSize: 20, fontWeight: "800" },
   verifiePastille: {
     position: "absolute",
     bottom: -2,
     right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: colors.success500,
     borderWidth: 2,
     borderColor: colors.brand900,
     alignItems: "center",
     justifyContent: "center",
   },
-  marqueRow: { flexDirection: "row", alignItems: "center", gap: 5 },
-  marque: { color: colors.brand100, fontSize: 10, fontWeight: "800", letterSpacing: 1 },
-  nom: { color: colors.white, fontSize: 16, fontWeight: "800", marginTop: 2 },
-  chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 6 },
+  nom: { color: colors.white, fontSize: 17, fontWeight: "800" },
+  metierRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 1 },
+  metier: { color: colors.accent400, fontSize: 12, fontWeight: "700" },
+  chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
   chip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(255,255,255,0.14)",
-    paddingHorizontal: 9,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    maxWidth: 150,
+    marginTop: 6,
+    alignSelf: "flex-start",
   },
-  chipTexte: { color: colors.white, fontSize: 11, fontWeight: "600" },
-  numeroLigne: { color: colors.brand100, fontSize: 11, fontWeight: "600", marginTop: 14 },
+  chipTexte: { color: colors.white, fontSize: 10, fontWeight: "600" },
   separateur: { height: 1, backgroundColor: colors.brand700, marginVertical: 14 },
-  qrZone: { alignItems: "center", gap: 8 },
+  infoQrRow: { flexDirection: "row", gap: 14 },
+  infoListe: { flex: 1, gap: 10 },
+  infoLigne: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  infoLabel: { color: colors.brand100, fontSize: 9, fontWeight: "700", letterSpacing: 0.5 },
+  infoValeur: { color: colors.white, fontSize: 12, fontWeight: "700", marginTop: 1 },
+  qrBloc: { alignItems: "center", gap: 6, width: 100 },
   qrFond: {
-    width: 108,
-    height: 108,
+    width: 100,
+    height: 100,
     borderRadius: 12,
     backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
   },
-  qrVideTexte: { fontSize: 10, color: colors.ink400, textAlign: "center" },
-  qrLegende: { color: colors.brand100, fontSize: 11, fontWeight: "600", textAlign: "center" },
+  qrVideTexte: { fontSize: 9, color: colors.ink400, textAlign: "center" },
+  qrLegende: { color: colors.brand100, fontSize: 9, fontWeight: "600", textAlign: "center" },
   abonnementRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   statutPastille: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
   statutPastilleActif: { backgroundColor: colors.white },

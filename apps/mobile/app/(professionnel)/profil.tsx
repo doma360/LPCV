@@ -20,6 +20,7 @@ interface ProfilDetail {
   createdAt: string;
   profession: { nom: string };
   portfolioUrls: string[];
+  zones: { zone: { nom: string } }[];
 }
 
 interface Abonnement {
@@ -37,6 +38,11 @@ interface Avis {
   client: { nom: string; prenom: string };
 }
 
+interface Demande {
+  id: string;
+  statut: string;
+}
+
 function formaterDate(iso: string) {
   return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
@@ -51,6 +57,7 @@ export default function Profil() {
   const [detail, setDetail] = useState<ProfilDetail | null>(null);
   const [abonnement, setAbonnement] = useState<Abonnement | null>(null);
   const [avis, setAvis] = useState<Avis[]>([]);
+  const [interventions, setInterventions] = useState(0);
   const [envoiPhoto, setEnvoiPhoto] = useState(false);
   const [erreurPortfolio, setErreurPortfolio] = useState<string | null>(null);
 
@@ -59,11 +66,14 @@ export default function Profil() {
     apiFetch<ProfilDetail>(`/api/v1/professionnels/${session.user.id}`).then((res) => setDetail(res.data));
     apiFetch<Avis[]>(`/api/v1/avis/professionnel/${session.user.id}`).then((res) => setAvis(res.data));
     apiFetch<Abonnement | null>("/api/v1/abonnements/moi").then((res) => setAbonnement(res.data));
+    apiFetch<Demande[]>("/api/v1/demandes").then((res) =>
+      setInterventions(res.data.filter((d) => d.statut === "TERMINEE").length),
+    );
   }, [session]);
 
   const verifie = detail?.statutVerification === "VERIFIE";
   const abonnementActif = abonnement?.statut === "ACTIF";
-  const numeroMembre = session ? session.user.id.slice(0, 8).toUpperCase() : "—";
+  const localisation = detail?.zones.map((z) => z.zone.nom).slice(0, 2).join(", ");
 
   async function ajouterPhotoPortfolio(depuisCamera: boolean) {
     if (!detail || detail.portfolioUrls.length >= PORTFOLIO_MAX) return;
@@ -127,10 +137,12 @@ export default function Profil() {
           prenom={session?.user.prenom ?? ""}
           metier={detail?.profession.nom ?? "—"}
           telephone={session?.user.telephone}
+          localisation={localisation}
           photoUrl={detail?.photoUrl}
           verifie={verifie}
-          numeroMembre={numeroMembre}
           membreDepuis={detail ? formaterDate(detail.createdAt) : "—"}
+          interventions={interventions}
+          noteMoyenne={detail?.noteMoyenne}
           abonnement={{
             actif: abonnementActif,
             palier: abonnement?.palier,
@@ -142,13 +154,11 @@ export default function Profil() {
         />
       </View>
 
-      {detail && (
+      {detail && detail.nombreAvis > 0 && (
         <View style={styles.statutsRow}>
           <View style={styles.noteBadge}>
             <Star size={13} color={colors.accent700} fill={colors.accent500} />
-            <Text style={styles.noteBadgeTexte}>
-              {detail.noteMoyenne}/5 · {detail.nombreAvis} avis
-            </Text>
+            <Text style={styles.noteBadgeTexte}>{detail.nombreAvis} avis reçus</Text>
           </View>
         </View>
       )}
