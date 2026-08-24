@@ -70,7 +70,7 @@ export default function Bienvenue() {
       </View>
 
       <View style={styles.actions}>
-        <Button label="Commencer" showArrow onPress={() => router.push("/(auth)/choisir-role")} />
+        <Button label="Commencer" showArrow floating onPress={() => router.push("/(auth)/choisir-role")} />
       </View>
     </View>
   );
