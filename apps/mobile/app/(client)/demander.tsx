@@ -93,8 +93,21 @@ export default function Demander() {
         </Pressable>
 
         <Text style={styles.title}>Demander une intervention</Text>
-        <Text style={styles.subtitle}>À domicile, avec {nomPro}</Text>
-        {prixEstime && <Text style={styles.prix}>Estimation : {prixEstime} FCFA</Text>}
+
+        <View style={styles.recapCard}>
+          <View style={styles.recapAvatar}>
+            <Text style={styles.recapAvatarText}>{nomPro?.[0] ?? "?"}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.recapNom}>{nomPro}</Text>
+            <Text style={styles.recapSousTitre}>À domicile</Text>
+          </View>
+          {prixEstime && (
+            <View style={styles.prixPill}>
+              <Text style={styles.prixPillLabel}>{prixEstime} FCFA</Text>
+            </View>
+          )}
+        </View>
 
         <View style={styles.form}>
           <TextField
@@ -155,8 +168,29 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   title: { fontSize: 22, fontWeight: "700", color: colors.ink900 },
-  subtitle: { fontSize: 13, color: colors.ink500, marginTop: -6 },
-  prix: { fontSize: 14, fontWeight: "700", color: colors.brand700 },
+  recapCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.ink100,
+  },
+  recapAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.brand900,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  recapAvatarText: { color: colors.accent400, fontWeight: "800", fontSize: 14 },
+  recapNom: { fontSize: 14, fontWeight: "700", color: colors.ink900 },
+  recapSousTitre: { fontSize: 12, color: colors.ink500, marginTop: 1 },
+  prixPill: { backgroundColor: colors.accent400, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999 },
+  prixPillLabel: { fontSize: 12, fontWeight: "800", color: colors.brand900 },
   form: { gap: 14, marginTop: 8 },
   label: { fontSize: 13, fontWeight: "600", color: colors.ink700, marginBottom: 6 },
   photosRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
