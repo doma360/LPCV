@@ -59,9 +59,6 @@ export default function ChoisirRole() {
         <Pressable style={styles.retour} onPress={() => router.back()}>
           <ArrowLeft size={20} color={colors.white} />
         </Pressable>
-        <Text style={styles.headerTitre}>
-          Choisir <Text style={{ color: colors.accent400 }}>un rôle</Text>
-        </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -154,7 +151,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerTitre: { fontFamily: polices.titre, fontSize: 20, color: colors.white },
   scroll: { padding: 24, paddingBottom: 40 },
   hero: { alignItems: "center", marginTop: 8, marginBottom: 32 },
   glowOuter: {
