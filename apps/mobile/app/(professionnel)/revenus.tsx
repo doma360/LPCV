@@ -6,6 +6,7 @@ import { TrendingUp, Wallet } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import DegradeFond from "@/components/DegradeFond";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 interface PaiementRecent {
@@ -34,7 +35,7 @@ export default function RevenusScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Revenus</Text>
 
-      <View style={styles.totalCard}>
+      <Apparition style={styles.totalCard}>
         <DegradeFond id="revenusDegrade" de={colors.brand900} vers={colors.brand700} />
         <View style={styles.accentRevenus} />
         <View style={styles.totalIcone}>
@@ -43,7 +44,7 @@ export default function RevenusScreen() {
         <Text style={styles.totalLabel}>Total gagné</Text>
         <Text style={styles.totalValue}>{revenus?.totalGagne ?? 0} FCFA</Text>
         <Text style={styles.totalSous}>{revenus?.nombrePaiements ?? 0} paiement(s) confirmé(s)</Text>
-      </View>
+      </Apparition>
 
       <Text style={styles.sectionTitle}>Paiements récents</Text>
       <FlatList
@@ -58,8 +59,8 @@ export default function RevenusScreen() {
             <Text style={styles.videTexte}>Aucun paiement pour l'instant.</Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
+        renderItem={({ item, index }) => (
+          <Apparition delai={Math.min(index, 6) * 60} style={styles.card}>
             <View style={styles.cardIcone}>
               <TrendingUp size={16} color={colors.success500} />
             </View>
@@ -68,7 +69,7 @@ export default function RevenusScreen() {
               <Text style={styles.cardDate}>{new Date(item.dateConfirmation).toLocaleDateString("fr-FR")}</Text>
             </View>
             <Text style={styles.cardMontant}>+{item.montantNet} F</Text>
-          </View>
+          </Apparition>
         )}
       />
     </View>

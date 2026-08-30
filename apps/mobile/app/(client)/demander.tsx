@@ -10,6 +10,7 @@ import { useLocalisation } from "@/hooks/useLocalisation";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 export default function Demander() {
@@ -96,22 +97,24 @@ export default function Demander() {
 
         <Text style={styles.title}>Demander une intervention</Text>
 
-        <View style={styles.recapCard}>
-          <View style={styles.recapAvatar}>
-            <Text style={styles.recapAvatarText}>{nomPro?.[0] ?? "?"}</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.recapNom}>{nomPro}</Text>
-            <Text style={styles.recapSousTitre}>À domicile</Text>
-          </View>
-          {prixEstime && (
-            <View style={styles.prixPill}>
-              <Text style={styles.prixPillLabel}>{prixEstime} FCFA</Text>
+        <Apparition>
+          <View style={styles.recapCard}>
+            <View style={styles.recapAvatar}>
+              <Text style={styles.recapAvatarText}>{nomPro?.[0] ?? "?"}</Text>
             </View>
-          )}
-        </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.recapNom}>{nomPro}</Text>
+              <Text style={styles.recapSousTitre}>À domicile</Text>
+            </View>
+            {prixEstime && (
+              <View style={styles.prixPill}>
+                <Text style={styles.prixPillLabel}>{prixEstime} FCFA</Text>
+              </View>
+            )}
+          </View>
+        </Apparition>
 
-        <View style={styles.form}>
+        <Apparition delai={80} style={styles.form}>
           <TextField
             label="Décrivez votre besoin"
             value={description}
@@ -146,8 +149,8 @@ export default function Demander() {
           </View>
 
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
-          <Button label={envoi ? "Envoi..." : "Confirmer la demande"} onPress={confirmer} loading={envoi} />
-        </View>
+          <Button label={envoi ? "Envoi..." : "Confirmer la demande"} showArrow floating onPress={confirmer} loading={envoi} />
+        </Apparition>
       </ScrollView>
     </KeyboardAvoidingView>
   );

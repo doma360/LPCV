@@ -13,6 +13,7 @@ import MiniCartePosition from "@/components/MiniCartePosition";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
 import EnTeteMarque from "@/components/EnTeteMarque";
+import Apparition from "@/components/Apparition";
 
 interface Profession {
   id: string;
@@ -69,14 +70,16 @@ export default function Accueil() {
       <EnTeteMarque onBellPress={() => router.push("/(client)/notifications")} />
 
       <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
-        <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
-        <Text style={styles.sousSalutation}>Trouvez un professionnel de confiance près de chez vous.</Text>
+        <Apparition>
+          <Text style={styles.salutation}>Bonjour{session ? `, ${session.user.prenom}` : ""} 👋</Text>
+          <Text style={styles.sousSalutation}>Trouvez un professionnel de confiance près de chez vous.</Text>
+        </Apparition>
 
-        <View style={styles.section}>
+        <Apparition delai={60} style={styles.section}>
           <PromoCarousel />
-        </View>
+        </Apparition>
 
-      <View style={styles.section}>
+      <Apparition delai={120} style={styles.section}>
         <MiniCartePosition label={position?.label ?? null} chargement={chargement} onRecentrer={demanderPosition} />
         {!position && (
           <View style={styles.localisation}>
@@ -95,9 +98,9 @@ export default function Accueil() {
             )}
           </View>
         )}
-      </View>
+      </Apparition>
 
-      <View style={styles.section}>
+      <Apparition delai={180} style={styles.section}>
         <Pressable style={styles.champPosition} onPress={demanderPosition}>
           <View style={{ flex: 1 }}>
             <Text style={styles.champLabel}>Ma position</Text>
@@ -131,24 +134,26 @@ export default function Accueil() {
         </View>
 
         <View style={{ marginTop: 14 }}>
-          <Button label="Rechercher" showArrow onPress={lancerRecherche} disabled={!metierChoisi || !position} />
+          <Button label="Rechercher" showArrow floating onPress={lancerRecherche} disabled={!metierChoisi || !position} />
         </View>
-      </View>
+      </Apparition>
 
       {enCours.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitre}>Vos demandes en cours</Text>
           <View style={{ gap: 10 }}>
-            {enCours.map((item) => (
-              <Pressable key={item.id} style={styles.carteEnCours} onPress={() => router.push("/(client)/demandes")}>
-                <View style={styles.carteEnCoursIcone}>
-                  <CalendarClock size={16} color={colors.brand700} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.carteEnCoursTitre}>{item.profession.nom}</Text>
-                  <Text style={styles.carteEnCoursSousTitre}>Déplacement</Text>
-                </View>
-              </Pressable>
+            {enCours.map((item, i) => (
+              <Apparition key={item.id} delai={240 + i * 60}>
+                <Pressable style={styles.carteEnCours} onPress={() => router.push("/(client)/demandes")}>
+                  <View style={styles.carteEnCoursIcone}>
+                    <CalendarClock size={16} color={colors.brand700} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.carteEnCoursTitre}>{item.profession.nom}</Text>
+                    <Text style={styles.carteEnCoursSousTitre}>Déplacement</Text>
+                  </View>
+                </Pressable>
+              </Apparition>
             ))}
           </View>
         </View>

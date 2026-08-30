@@ -9,6 +9,7 @@ import { colors } from "@/theme/colors";
 import { useAuth } from "@/hooks/useAuth";
 import ProSidebar from "@/components/ProSidebar";
 import DegradeFond from "@/components/DegradeFond";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 interface ProfilResume {
@@ -128,7 +129,7 @@ export default function DemandesRecues() {
         <Text style={styles.title}>Demandes reçues</Text>
       </View>
 
-      <View style={styles.stats}>
+      <Apparition style={styles.stats}>
         <DegradeFond id="statsDegrade" de={colors.brand900} vers={colors.brand700} />
         <View style={styles.statItem}>
           <Text style={styles.statValeur}>{demandesActives}</Text>
@@ -147,7 +148,7 @@ export default function DemandesRecues() {
           </View>
           <Text style={styles.statLabel}>Note</Text>
         </View>
-      </View>
+      </Apparition>
 
       <ProSidebar visible={sidebarOuvert} onClose={() => setSidebarOuvert(false)} />
 
@@ -174,13 +175,13 @@ export default function DemandesRecues() {
             <Text style={styles.videTexte}>Les nouvelles demandes de clients apparaîtront ici.</Text>
           </View>
         }
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const statut = statutLabels[item.statut] ?? { label: item.statut, color: colors.ink500, fond: colors.cream100 };
           const etape = prochaineEtape[item.statut];
           const chargement = enCours === item.id;
 
           return (
-            <View style={styles.card}>
+            <Apparition delai={Math.min(index, 6) * 60} style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardMetier}>{item.profession.nom}</Text>
                 <View style={[styles.statutPill, { backgroundColor: statut.fond }]}>
@@ -238,7 +239,7 @@ export default function DemandesRecues() {
                   )}
                 </View>
               )}
-            </View>
+            </Apparition>
           );
         }}
       />

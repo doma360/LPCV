@@ -10,6 +10,7 @@ import { getItem, setItem, deleteItem } from "@/lib/storage";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 const CLE_VERROUILLAGE = "lpcv_verrouillage_actif";
@@ -151,7 +152,7 @@ export default function ParametresScreen() {
           <Text style={styles.title}>Paramètres</Text>
         </View>
 
-        <View style={styles.section}>
+        <Apparition style={styles.section}>
           <View style={styles.sectionTitleRow}>
             <UserRound size={15} color={colors.brand700} />
             <Text style={styles.sectionTitle}>Informations du compte</Text>
@@ -162,10 +163,10 @@ export default function ParametresScreen() {
           <TextField label="Téléphone" value={telephone} onChangeText={setTelephone} keyboardType="phone-pad" />
           {infoErreur && <Text style={styles.erreur}>{infoErreur}</Text>}
           {infoSucces && <Text style={styles.succes}>Informations mises à jour.</Text>}
-          <Button label={infoLoading ? "Enregistrement..." : "Enregistrer"} onPress={enregistrerInfos} loading={infoLoading} />
-        </View>
+          <Button label={infoLoading ? "Enregistrement..." : "Enregistrer"} showArrow floating onPress={enregistrerInfos} loading={infoLoading} />
+        </Apparition>
 
-        <View style={styles.section}>
+        <Apparition delai={80} style={styles.section}>
           <View style={styles.sectionTitleRow}>
             <KeyRound size={15} color={colors.brand700} />
             <Text style={styles.sectionTitle}>Sécurité</Text>
@@ -181,9 +182,9 @@ export default function ParametresScreen() {
             loading={mdpLoading}
             disabled={!motDePasseActuel || !nouveauMotDePasse}
           />
-        </View>
+        </Apparition>
 
-        <View style={styles.section}>
+        <Apparition delai={160} style={styles.section}>
           <View style={styles.sectionTitleRow}>
             <Bell size={15} color={colors.brand700} />
             <Text style={styles.sectionTitle}>Préférences</Text>
@@ -205,15 +206,15 @@ export default function ParametresScreen() {
               <Switch value={verrouillageActif} onValueChange={toggleVerrouillage} trackColor={{ true: colors.accent400 }} />
             </View>
           )}
-        </View>
+        </Apparition>
 
-        <View style={[styles.section, styles.sectionDanger]}>
+        <Apparition delai={240} style={[styles.section, styles.sectionDanger]}>
           <View style={styles.sectionTitleRow}>
             <TriangleAlert size={15} color={colors.danger500} />
             <Text style={[styles.sectionTitle, { color: colors.danger500 }]}>Zone de danger</Text>
           </View>
           <Button label="Désactiver mon compte" variant="outline" onPress={confirmerDesactivation} />
-        </View>
+        </Apparition>
       </ScrollView>
     </KeyboardAvoidingView>
   );

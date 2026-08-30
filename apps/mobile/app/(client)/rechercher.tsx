@@ -8,6 +8,7 @@ import { useLocalisation } from "@/hooks/useLocalisation";
 import { zones } from "@/data/zones";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 interface Profession {
@@ -139,37 +140,39 @@ export default function Rechercher() {
             </View>
           ) : null
         }
-        renderItem={({ item }) => (
-          <Pressable style={styles.card} onPress={() => ouvrirFiche(item)}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {item.prenom[0]}
-                {item.nom[0]}
-              </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.cardNom}>
-                {item.prenom} {item.nom}
-              </Text>
-              <View style={styles.badgesRow}>
-                <View style={styles.badge}>
-                  <MapPin size={11} color={colors.brand700} />
-                  <Text style={styles.badgeLabel}>{item.distanceKm.toFixed(1)} km</Text>
-                </View>
-                <View style={styles.badge}>
-                  <Star size={11} color={colors.accent700} fill={colors.accent500} />
-                  <Text style={styles.badgeLabel}>{item.noteMoyenne}</Text>
-                </View>
-                <View style={styles.badge}>
-                  <ShieldCheck size={11} color={colors.success500} />
-                  <Text style={styles.badgeLabel}>Vérifié</Text>
+        renderItem={({ item, index }) => (
+          <Apparition delai={Math.min(index, 6) * 60}>
+            <Pressable style={styles.card} onPress={() => ouvrirFiche(item)}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {item.prenom[0]}
+                  {item.nom[0]}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.cardNom}>
+                  {item.prenom} {item.nom}
+                </Text>
+                <View style={styles.badgesRow}>
+                  <View style={styles.badge}>
+                    <MapPin size={11} color={colors.brand700} />
+                    <Text style={styles.badgeLabel}>{item.distanceKm.toFixed(1)} km</Text>
+                  </View>
+                  <View style={styles.badge}>
+                    <Star size={11} color={colors.accent700} fill={colors.accent500} />
+                    <Text style={styles.badgeLabel}>{item.noteMoyenne}</Text>
+                  </View>
+                  <View style={styles.badge}>
+                    <ShieldCheck size={11} color={colors.success500} />
+                    <Text style={styles.badgeLabel}>Vérifié</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-            <View style={styles.prixPill}>
-              <Text style={styles.cardPrix}>{item.prixEstime} F</Text>
-            </View>
-          </Pressable>
+              <View style={styles.prixPill}>
+                <Text style={styles.cardPrix}>{item.prixEstime} F</Text>
+              </View>
+            </Pressable>
+          </Apparition>
         )}
       />
     </View>

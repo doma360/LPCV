@@ -8,6 +8,7 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 interface Zone {
@@ -91,7 +92,7 @@ export default function ModifierProfil() {
           Ces informations déterminent si vous apparaissez dans les recherches des clients.
         </Text>
 
-        <View style={styles.form}>
+        <Apparition style={styles.form}>
           <TextField
             label="Présentation"
             value={presentation}
@@ -131,8 +132,8 @@ export default function ModifierProfil() {
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
           {succes && <Text style={styles.succesTexte}>Profil mis à jour.</Text>}
 
-          <Button label={envoi ? "Enregistrement..." : "Enregistrer"} onPress={enregistrer} loading={envoi || chargement} />
-        </View>
+          <Button label={envoi ? "Enregistrement..." : "Enregistrer"} showArrow floating onPress={enregistrer} loading={envoi || chargement} />
+        </Apparition>
       </ScrollView>
     </KeyboardAvoidingView>
   );

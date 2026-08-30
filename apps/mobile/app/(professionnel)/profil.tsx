@@ -24,6 +24,7 @@ import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import EnTeteMarque from "@/components/EnTeteMarque";
 import CarteMembreVisual from "@/components/CarteMembreVisual";
+import Apparition from "@/components/Apparition";
 
 const PORTFOLIO_MAX = 12;
 
@@ -172,7 +173,7 @@ export default function Profil() {
       <EnTeteMarque onBellPress={() => router.push("/(professionnel)/notifications")} />
 
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.identiteRow}>
+        <Apparition style={styles.identiteRow}>
           <View style={styles.photoWrap}>
             {detail?.photoUrl ? (
               <Image source={{ uri: detail.photoUrl }} style={styles.photo} />
@@ -197,9 +198,9 @@ export default function Profil() {
               {verifie && <ShieldCheck size={13} color={colors.success500} />}
             </View>
           </View>
-        </View>
+        </Apparition>
 
-        <View style={styles.zoneCarteMembre}>
+        <Apparition delai={80} style={styles.zoneCarteMembre}>
           <CarteMembreVisual
             nom={session?.user.nom ?? ""}
             prenom={session?.user.prenom ?? ""}
@@ -220,33 +221,37 @@ export default function Profil() {
             }}
             qrValue={abonnementActif && session ? `${WEBSITE_URL}/verification/${session.user.id}` : null}
           />
-        </View>
+        </Apparition>
 
-        <Text style={styles.sectionTitre}>Mon activité</Text>
-        <View style={styles.tuilesGrille}>
-          {tuiles.map((t) => (
-            <View key={t.label} style={styles.tuile}>
-              <View style={[styles.tuileIcone, { backgroundColor: t.couleur + "26" }]}>
-                <t.icone size={16} color={t.couleur} />
+        <Apparition delai={140}>
+          <Text style={styles.sectionTitre}>Mon activité</Text>
+          <View style={styles.tuilesGrille}>
+            {tuiles.map((t) => (
+              <View key={t.label} style={styles.tuile}>
+                <View style={[styles.tuileIcone, { backgroundColor: t.couleur + "26" }]}>
+                  <t.icone size={16} color={t.couleur} />
+                </View>
+                <Text style={styles.tuileValeur}>{t.valeur}</Text>
+                <Text style={styles.tuileLabel}>{t.label}</Text>
               </View>
-              <Text style={styles.tuileValeur}>{t.valeur}</Text>
-              <Text style={styles.tuileLabel}>{t.label}</Text>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        </Apparition>
 
-        <Pressable style={styles.lienRow} onPress={() => router.push("/(professionnel)/modifier-profil")}>
-          <Pencil size={16} color={colors.ink700} />
-          <Text style={styles.lienTexte}>Modifier mes services</Text>
-          <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
-        </Pressable>
-        <Pressable style={styles.lienRow} onPress={() => router.push("/(professionnel)/parametres")}>
-          <Settings size={16} color={colors.ink700} />
-          <Text style={styles.lienTexte}>Paramètres et sécurité</Text>
-          <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
-        </Pressable>
+        <Apparition delai={200}>
+          <Pressable style={styles.lienRow} onPress={() => router.push("/(professionnel)/modifier-profil")}>
+            <Pencil size={16} color={colors.ink700} />
+            <Text style={styles.lienTexte}>Modifier mes services</Text>
+            <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
+          </Pressable>
+          <Pressable style={styles.lienRow} onPress={() => router.push("/(professionnel)/parametres")}>
+            <Settings size={16} color={colors.ink700} />
+            <Text style={styles.lienTexte}>Paramètres et sécurité</Text>
+            <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
+          </Pressable>
+        </Apparition>
 
-        <View style={styles.avisSection}>
+        <Apparition delai={260} style={styles.avisSection}>
           <Text style={styles.avisTitle}>Portfolio de réalisations</Text>
           {erreurPortfolio && <Text style={styles.erreur}>{erreurPortfolio}</Text>}
           <View style={styles.photosRow}>
@@ -270,9 +275,9 @@ export default function Profil() {
             )}
             {envoiPhoto && <ActivityIndicator color={colors.brand700} />}
           </View>
-        </View>
+        </Apparition>
 
-        <View style={styles.avisSection}>
+        <Apparition delai={320} style={styles.avisSection}>
           <Text style={styles.avisTitle}>Avis reçus</Text>
           {avis.length === 0 && (
             <View style={styles.videCard}>
@@ -296,7 +301,7 @@ export default function Profil() {
               {item.commentaire && <Text style={styles.avisCommentaire}>{item.commentaire}</Text>}
             </View>
           ))}
-        </View>
+        </Apparition>
 
         <View style={styles.logout}>
           <Button label="Déconnexion" variant="outline" onPress={logout} />

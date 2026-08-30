@@ -6,6 +6,7 @@ import { ArrowLeft, MapPin, ShieldCheck, Star } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
+import Apparition from "@/components/Apparition";
 
 interface Disponibilite {
   jour: string;
@@ -74,62 +75,64 @@ export default function FicheProfessionnel() {
         <ArrowLeft size={20} color={colors.ink700} />
       </Pressable>
 
-      <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {pro.prenom[0]}
-            {pro.nom[0]}
-          </Text>
-        </View>
-        <Text style={styles.nom}>{nomPro}</Text>
-        <Text style={styles.metier}>{pro.profession.nom}</Text>
-
-        <View style={styles.badgesRow}>
-          {verifie && (
-            <View style={styles.badge}>
-              <ShieldCheck size={13} color={colors.success500} />
-              <Text style={styles.badgeLabel}>Vérifié</Text>
-            </View>
-          )}
-          <View style={styles.badge}>
-            <Star size={13} color={colors.accent700} fill={colors.accent500} />
-            <Text style={styles.badgeLabel}>
-              {pro.noteMoyenne} ({pro.nombreAvis})
+      <Apparition>
+        <View style={styles.header}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {pro.prenom[0]}
+              {pro.nom[0]}
             </Text>
           </View>
-          {distanceKm && (
-            <View style={styles.badge}>
-              <MapPin size={13} color={colors.brand700} />
-              <Text style={styles.badgeLabel}>{Number(distanceKm).toFixed(1)} km</Text>
-            </View>
-          )}
-        </View>
-      </View>
+          <Text style={styles.nom}>{nomPro}</Text>
+          <Text style={styles.metier}>{pro.profession.nom}</Text>
 
-      {pro.presentation && <Text style={styles.presentation}>{pro.presentation}</Text>}
+          <View style={styles.badgesRow}>
+            {verifie && (
+              <View style={styles.badge}>
+                <ShieldCheck size={13} color={colors.success500} />
+                <Text style={styles.badgeLabel}>Vérifié</Text>
+              </View>
+            )}
+            <View style={styles.badge}>
+              <Star size={13} color={colors.accent700} fill={colors.accent500} />
+              <Text style={styles.badgeLabel}>
+                {pro.noteMoyenne} ({pro.nombreAvis})
+              </Text>
+            </View>
+            {distanceKm && (
+              <View style={styles.badge}>
+                <MapPin size={13} color={colors.brand700} />
+                <Text style={styles.badgeLabel}>{Number(distanceKm).toFixed(1)} km</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {pro.presentation && <Text style={styles.presentation}>{pro.presentation}</Text>}
+      </Apparition>
 
       {(pro.tarifIndicatifMin || pro.tarifIndicatifMax) && (
-        <View style={styles.section}>
+        <Apparition delai={80} style={styles.section}>
           <Text style={styles.sectionTitle}>Tarif indicatif</Text>
           <Text style={styles.tarif}>
             {pro.tarifIndicatifMin ?? "—"} – {pro.tarifIndicatifMax ?? "—"} FCFA
           </Text>
-        </View>
+        </Apparition>
       )}
 
       {pro.portfolioUrls.length > 0 && (
-        <View style={styles.section}>
+        <Apparition delai={140} style={styles.section}>
           <Text style={styles.sectionTitle}>Réalisations</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {pro.portfolioUrls.map((url) => (
               <Image key={url} source={{ uri: url }} style={styles.portfolioImg} />
             ))}
           </ScrollView>
-        </View>
+        </Apparition>
       )}
 
       {pro.disponibilites.length > 0 && (
-        <View style={styles.section}>
+        <Apparition delai={200} style={styles.section}>
           <Text style={styles.sectionTitle}>Disponibilités habituelles</Text>
           <View style={styles.dispoChips}>
             {pro.disponibilites.map((d, i) => (
@@ -140,11 +143,11 @@ export default function FicheProfessionnel() {
               </View>
             ))}
           </View>
-        </View>
+        </Apparition>
       )}
 
       {avis.length > 0 && (
-        <View style={styles.section}>
+        <Apparition delai={260} style={styles.section}>
           <Text style={styles.sectionTitle}>Avis</Text>
           {avis.slice(0, 5).map((item) => (
             <View key={item.id} style={styles.avisCard}>
@@ -160,13 +163,14 @@ export default function FicheProfessionnel() {
               {item.commentaire && <Text style={styles.avisCommentaire}>{item.commentaire}</Text>}
             </View>
           ))}
-        </View>
+        </Apparition>
       )}
 
       <View style={styles.actions}>
         <Button
           label="À domicile"
           showArrow
+          floating
           onPress={() =>
             router.push({
               pathname: "/(client)/demander",

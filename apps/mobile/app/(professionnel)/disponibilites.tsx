@@ -7,6 +7,7 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 interface Disponibilite {
@@ -72,7 +73,7 @@ export default function Disponibilites() {
       <Text style={styles.title}>Disponibilités</Text>
       <Text style={styles.subtitle}>Utilisées pour vous proposer aux clients au bon moment.</Text>
 
-      <View style={styles.form}>
+      <Apparition style={styles.form}>
         <View style={styles.chips}>
           {jours.map((j) => (
             <Pressable key={j} onPress={() => setJour(j)} style={[styles.chip, jour === j && styles.chipActive]}>
@@ -89,8 +90,8 @@ export default function Disponibilites() {
           </View>
         </View>
         {erreur && <Text style={styles.erreur}>{erreur}</Text>}
-        <Button label={ajout ? "Ajout..." : "Ajouter le créneau"} onPress={ajouterCreneau} loading={ajout} />
-      </View>
+        <Button label={ajout ? "Ajout..." : "Ajouter le créneau"} showArrow floating onPress={ajouterCreneau} loading={ajout} />
+      </Apparition>
 
       <FlatList
         data={dispos}
@@ -104,8 +105,8 @@ export default function Disponibilites() {
             <Text style={styles.videTexte}>Aucun créneau enregistré.</Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <View style={styles.creneauCard}>
+        renderItem={({ item, index }) => (
+          <Apparition delai={Math.min(index, 6) * 60} style={styles.creneauCard}>
             <View style={styles.creneauIcone}>
               <Clock size={16} color={colors.brand700} />
             </View>
@@ -118,7 +119,7 @@ export default function Disponibilites() {
             <Pressable style={styles.supprimer} onPress={() => supprimerCreneau(item.id)} hitSlop={8}>
               <Trash2 size={16} color={colors.danger500} />
             </Pressable>
-          </View>
+          </Apparition>
         )}
       />
     </View>

@@ -22,6 +22,7 @@ import { uploadPhoto } from "@/lib/upload";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import EnTeteMarque from "@/components/EnTeteMarque";
+import Apparition from "@/components/Apparition";
 
 interface Avis {
   id: string;
@@ -102,7 +103,7 @@ export default function Profil() {
       <EnTeteMarque onBellPress={() => router.push("/(client)/notifications")} />
 
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.identiteRow}>
+        <Apparition style={styles.identiteRow}>
           <View style={styles.photoWrap}>
             {session?.user.photoUrl ? (
               <Image source={{ uri: session.user.photoUrl }} style={styles.photo} />
@@ -138,59 +139,65 @@ export default function Profil() {
               </View>
             </View>
           </View>
-        </View>
+        </Apparition>
         {erreurPhoto && <Text style={styles.erreur}>{erreurPhoto}</Text>}
 
-        <Pressable style={styles.infoCard} onPress={() => router.push("/(client)/parametres")}>
-          <View style={styles.infoCardHeader}>
-            <User size={15} color={colors.brand700} />
-            <Text style={styles.infoCardTitre}>Informations personnelles</Text>
-            <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
-          </View>
-          <View style={styles.grilleInfo}>
-            <View style={styles.champInfo}>
-              <Text style={styles.champLabel}>Nom complet</Text>
-              <Text style={styles.champValeur}>
-                {session?.user.prenom} {session?.user.nom}
-              </Text>
+        <Apparition delai={80}>
+          <Pressable style={styles.infoCard} onPress={() => router.push("/(client)/parametres")}>
+            <View style={styles.infoCardHeader}>
+              <User size={15} color={colors.brand700} />
+              <Text style={styles.infoCardTitre}>Informations personnelles</Text>
+              <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
             </View>
-            <View style={styles.champInfo}>
-              <Text style={styles.champLabel}>Date d'inscription</Text>
-              <Text style={styles.champValeur}>{compte ? formaterDate(compte.createdAt) : "—"}</Text>
-            </View>
-            <View style={styles.champInfo}>
-              <Text style={styles.champLabel}>Email</Text>
-              <Text style={styles.champValeur} numberOfLines={1}>
-                {session?.user.email}
-              </Text>
-            </View>
-            <View style={styles.champInfo}>
-              <Text style={styles.champLabel}>Téléphone</Text>
-              <Text style={styles.champValeur}>{session?.user.telephone}</Text>
-            </View>
-          </View>
-        </Pressable>
-
-        <Text style={styles.sectionTitre}>Mes activités</Text>
-        <View style={styles.tuilesGrille}>
-          {tuiles.map((t) => (
-            <View key={t.label} style={styles.tuile}>
-              <View style={[styles.tuileIcone, { backgroundColor: t.couleur + "26" }]}>
-                <t.icone size={16} color={t.couleur} />
+            <View style={styles.grilleInfo}>
+              <View style={styles.champInfo}>
+                <Text style={styles.champLabel}>Nom complet</Text>
+                <Text style={styles.champValeur}>
+                  {session?.user.prenom} {session?.user.nom}
+                </Text>
               </View>
-              <Text style={styles.tuileValeur}>{t.valeur}</Text>
-              <Text style={styles.tuileLabel}>{t.label}</Text>
+              <View style={styles.champInfo}>
+                <Text style={styles.champLabel}>Date d'inscription</Text>
+                <Text style={styles.champValeur}>{compte ? formaterDate(compte.createdAt) : "—"}</Text>
+              </View>
+              <View style={styles.champInfo}>
+                <Text style={styles.champLabel}>Email</Text>
+                <Text style={styles.champValeur} numberOfLines={1}>
+                  {session?.user.email}
+                </Text>
+              </View>
+              <View style={styles.champInfo}>
+                <Text style={styles.champLabel}>Téléphone</Text>
+                <Text style={styles.champValeur}>{session?.user.telephone}</Text>
+              </View>
             </View>
-          ))}
-        </View>
+          </Pressable>
+        </Apparition>
 
-        <Pressable style={styles.lienRow} onPress={() => router.push("/(client)/parametres")}>
-          <Settings size={16} color={colors.ink700} />
-          <Text style={styles.lienTexte}>Paramètres et sécurité</Text>
-          <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
-        </Pressable>
+        <Apparition delai={140}>
+          <Text style={styles.sectionTitre}>Mes activités</Text>
+          <View style={styles.tuilesGrille}>
+            {tuiles.map((t) => (
+              <View key={t.label} style={styles.tuile}>
+                <View style={[styles.tuileIcone, { backgroundColor: t.couleur + "26" }]}>
+                  <t.icone size={16} color={t.couleur} />
+                </View>
+                <Text style={styles.tuileValeur}>{t.valeur}</Text>
+                <Text style={styles.tuileLabel}>{t.label}</Text>
+              </View>
+            ))}
+          </View>
+        </Apparition>
 
-        <View style={styles.avisSection}>
+        <Apparition delai={200}>
+          <Pressable style={styles.lienRow} onPress={() => router.push("/(client)/parametres")}>
+            <Settings size={16} color={colors.ink700} />
+            <Text style={styles.lienTexte}>Paramètres et sécurité</Text>
+            <ChevronRight size={16} color={colors.ink400} style={{ marginLeft: "auto" }} />
+          </Pressable>
+        </Apparition>
+
+        <Apparition delai={260} style={styles.avisSection}>
           <Text style={styles.avisTitle}>Mes avis laissés</Text>
           {avis.length === 0 && (
             <View style={styles.videCard}>
@@ -214,7 +221,7 @@ export default function Profil() {
               {item.commentaire && <Text style={styles.avisCommentaire}>{item.commentaire}</Text>}
             </View>
           ))}
-        </View>
+        </Apparition>
 
         <View style={styles.logout}>
           <Button label="Déconnexion" variant="outline" onPress={logout} />

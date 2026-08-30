@@ -8,6 +8,7 @@ import { distanceKm } from "@/lib/distance";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 interface Demande {
@@ -216,7 +217,11 @@ export default function MesDemandes() {
             <Text style={styles.videTexte}>Vos demandes de déplacement apparaîtront ici une fois envoyées.</Text>
           </View>
         }
-        renderItem={({ item }) => <CarteDemande demande={item} onAvisEnvoye={marquerAvisEnvoye} />}
+        renderItem={({ item, index }) => (
+          <Apparition delai={Math.min(index, 6) * 60}>
+            <CarteDemande demande={item} onAvisEnvoye={marquerAvisEnvoye} />
+          </Apparition>
+        )}
       />
     </View>
   );
