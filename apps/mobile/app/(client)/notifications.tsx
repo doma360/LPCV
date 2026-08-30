@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { ArrowLeft, BellOff } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 import { polices } from "@/theme/typography";
+import Apparition from "@/components/Apparition";
 
 // Ecran reel mais volontairement vide : pas encore de systeme de
 // notifications construit cote backend (voir docs/decisions.md) - mieux
@@ -16,7 +17,7 @@ export default function Notifications() {
       </Pressable>
       <Text style={styles.title}>Notifications</Text>
 
-      <View style={styles.vide}>
+      <Apparition style={styles.vide}>
         <View style={styles.glowOuter}>
           <View style={styles.glowInner}>
             <BellOff size={34} color={colors.ink400} />
@@ -24,7 +25,7 @@ export default function Notifications() {
         </View>
         <Text style={styles.videTitre}>Aucune notification pour l'instant</Text>
         <Text style={styles.videTexte}>Vous serez averti ici dès qu'il y a du nouveau.</Text>
-      </View>
+      </Apparition>
     </View>
   );
 }
