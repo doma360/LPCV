@@ -16,8 +16,13 @@ export default function Notifications() {
       <Text style={styles.title}>Notifications</Text>
 
       <View style={styles.vide}>
-        <BellOff size={32} color={colors.ink400} />
-        <Text style={styles.videTexte}>Aucune notification pour l'instant.</Text>
+        <View style={styles.glowOuter}>
+          <View style={styles.glowInner}>
+            <BellOff size={34} color={colors.ink400} />
+          </View>
+        </View>
+        <Text style={styles.videTitre}>Aucune notification pour l'instant</Text>
+        <Text style={styles.videTexte}>Vous serez averti ici dès qu'il y a du nouveau.</Text>
       </View>
     </View>
   );
@@ -33,8 +38,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "700", color: colors.ink900 },
-  vide: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10, marginTop: -40 },
-  videTexte: { fontSize: 14, color: colors.ink500 },
+  title: { fontFamily: polices.titre, fontSize: 22, color: colors.ink900 },
+  vide: { flex: 1, alignItems: "center", justifyContent: "center", gap: 6, marginTop: -40, paddingHorizontal: 32 },
+  glowOuter: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: colors.accent300,
+    opacity: 0.5,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  glowInner: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+  videTitre: { fontFamily: polices.titre, fontSize: 17, color: colors.ink900, textAlign: "center" },
+  videTexte: { fontSize: 13, color: colors.ink500, textAlign: "center" },
 });
