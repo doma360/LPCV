@@ -1,7 +1,8 @@
-import type { ComponentType } from "react";
-import { StyleSheet, View, type TextInputProps } from "react-native";
+import { useState, type ComponentType } from "react";
+import { Pressable, StyleSheet, View, type TextInputProps } from "react-native";
 import Text from "@/components/Texte";
 import TextInput from "@/components/Saisie";
+import { Eye, EyeOff } from "lucide-react-native";
 import type { LucideProps } from "lucide-react-native";
 import { colors } from "@/theme/colors";
 
@@ -10,7 +11,15 @@ interface TextFieldProps extends TextInputProps {
   icon?: ComponentType<LucideProps>;
 }
 
-export default function TextField({ label, icon: Icon, style, ...props }: TextFieldProps) {
+// secureTextEntry gere ici plutot que par chaque appelant : autoCapitalize
+// desactive par defaut (un mot de passe ne devrait jamais etre capitalise
+// par le clavier - manquant sur le champ Connexion, source confirmee d'un
+// vrai souci de connexion en usage reel le 2026-09-01) + bascule
+// afficher/masquer, pour qu'on puisse verifier ce qu'on a tape.
+export default function TextField({ label, icon: Icon, style, secureTextEntry, autoCapitalize, ...props }: TextFieldProps) {
+  const [visible, setVisible] = useState(false);
+  const masque = secureTextEntry && !visible;
+
   return (
     <View style={styles.wrapper}>
       <Text style={styles.label}>{label}</Text>
@@ -22,9 +31,22 @@ export default function TextField({ label, icon: Icon, style, ...props }: TextFi
         )}
         <TextInput
           placeholderTextColor={colors.ink500}
-          style={[styles.input, Icon ? styles.inputAvecIcone : undefined, style]}
+          style={[
+            styles.input,
+            Icon ? styles.inputAvecIcone : undefined,
+            secureTextEntry ? styles.inputAvecOeil : undefined,
+            style,
+          ]}
+          secureTextEntry={masque}
+          autoCapitalize={autoCapitalize ?? (secureTextEntry ? "none" : undefined)}
+          autoCorrect={secureTextEntry ? false : undefined}
           {...props}
         />
+        {secureTextEntry && (
+          <Pressable style={styles.oeilBtn} onPress={() => setVisible((v) => !v)} hitSlop={8}>
+            {visible ? <EyeOff size={18} color={colors.ink500} /> : <Eye size={18} color={colors.ink500} />}
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -66,5 +88,16 @@ const styles = StyleSheet.create({
   },
   inputAvecIcone: {
     paddingLeft: 50,
+  },
+  inputAvecOeil: {
+    paddingRight: 46,
+  },
+  oeilBtn: {
+    position: "absolute",
+    right: 8,
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
