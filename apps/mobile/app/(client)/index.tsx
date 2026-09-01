@@ -80,7 +80,13 @@ export default function Accueil() {
         </Apparition>
 
       <Apparition delai={120} style={styles.section}>
-        <MiniCartePosition label={position?.label ?? null} chargement={chargement} onRecentrer={demanderPosition} />
+        <MiniCartePosition
+          label={position?.label ?? null}
+          lat={position?.lat}
+          lng={position?.lng}
+          chargement={chargement}
+          onRecentrer={demanderPosition}
+        />
         {!position && (
           <View style={styles.localisation}>
             <Button label="Utiliser ma position" onPress={demanderPosition} loading={chargement} />
