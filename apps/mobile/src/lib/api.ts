@@ -93,7 +93,13 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}, retry
     },
   });
 
-  if (res.status === 401 && retry) {
+  // Le rafraichissement automatique ne concerne que les requetes deja
+  // authentifiees (un jeton d'acces expire au fil de la navigation) :
+  // sans accessToken (ex. un essai de connexion), un 401 signifie
+  // "identifiants invalides", pas une session a rafraichir - sinon un
+  // simple mauvais mot de passe se deguisait en "Session expiree"
+  // trompeur, confirme en usage reel (2026-09-01).
+  if (res.status === 401 && retry && accessToken) {
     const newToken = await refreshAccessToken();
     if (newToken) return apiFetch<T>(path, options, false);
     await clearTokens();
