@@ -2,11 +2,13 @@ import { useCallback, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import Text from "@/components/Texte";
 import { router, useFocusEffect } from "expo-router";
-import { ArrowDownCircle, ArrowLeft, ArrowUpCircle } from "lucide-react-native";
+import { ArrowDownCircle, ArrowLeft, ArrowUpCircle, Wallet } from "lucide-react-native";
 import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import DegradeFond from "@/components/DegradeFond";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 interface Mouvement {
@@ -62,12 +64,17 @@ export default function PortefeuilleScreen() {
       </Pressable>
       <Text style={styles.title}>Portefeuille</Text>
 
-      <View style={styles.soldeCard}>
+      <Apparition style={styles.soldeCard}>
+        <DegradeFond id="portefeuilleDegrade" de={colors.brand900} vers={colors.brand700} />
+        <View style={styles.accentSolde} />
+        <View style={styles.soldeIcone}>
+          <Wallet size={18} color={colors.accent400} />
+        </View>
         <Text style={styles.soldeLabel}>Solde disponible</Text>
         <Text style={styles.soldeValeur}>{portefeuille?.solde ?? "0"} FCFA</Text>
-      </View>
+      </Apparition>
 
-      <View style={styles.retraitForm}>
+      <Apparition delai={80} style={styles.retraitForm}>
         <View style={styles.flex}>
           <TextField
             label="Montant à retirer"
@@ -80,7 +87,7 @@ export default function PortefeuilleScreen() {
         <Pressable style={styles.retirerBtn} onPress={retirer} disabled={envoi}>
           <Text style={styles.retirerLabel}>Retirer</Text>
         </Pressable>
-      </View>
+      </Apparition>
       {erreur && <Text style={styles.erreur}>{erreur}</Text>}
       {succes && <Text style={styles.succes}>{succes}</Text>}
       <Text style={styles.aide}>Vers Mobile Money — fonctionnalité simulée en attendant l'intégration réelle.</Text>
@@ -91,8 +98,8 @@ export default function PortefeuilleScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ gap: 8, paddingBottom: 40 }}
         ListEmptyComponent={<Text style={styles.vide}>Aucun mouvement pour l'instant.</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.mouvementCard}>
+        renderItem={({ item, index }) => (
+          <Apparition delai={140 + Math.min(index, 6) * 60} style={styles.mouvementCard}>
             <View style={styles.mouvementGauche}>
               {item.type === "CREDIT_RESERVATION" ? (
                 <ArrowDownCircle size={18} color={colors.success500} />
@@ -110,7 +117,7 @@ export default function PortefeuilleScreen() {
               {item.type === "CREDIT_RESERVATION" ? "+" : "-"}
               {item.montant} F
             </Text>
-          </View>
+          </Apparition>
         )}
       />
     </View>
@@ -130,7 +137,26 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: { fontFamily: polices.titre, fontSize: 22, fontWeight: "700", color: colors.ink900, marginBottom: 16 },
-  soldeCard: { backgroundColor: colors.brand900, borderRadius: 16, padding: 20 },
+  soldeCard: { borderRadius: 20, padding: 20, overflow: "hidden" },
+  accentSolde: {
+    position: "absolute",
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: colors.accent400,
+    right: -50,
+    top: -60,
+    opacity: 0.4,
+  },
+  soldeIcone: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: colors.brand700,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
   soldeLabel: { fontSize: 12, color: colors.brand100, fontWeight: "600" },
   soldeValeur: { fontSize: 28, color: colors.white, fontWeight: "800", marginTop: 4 },
   retraitForm: { flexDirection: "row", gap: 8, alignItems: "flex-end", marginTop: 16 },

@@ -7,6 +7,7 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import TextField from "@/components/TextField";
 import Button from "@/components/Button";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 export default function Reserver() {
@@ -54,13 +55,15 @@ export default function Reserver() {
           <ArrowLeft size={20} color={colors.ink700} />
         </Pressable>
 
-        <Text style={styles.title}>Demander une réservation</Text>
-        <Text style={styles.subtitle}>
-          Avec {nomPro}
-          {adresseLocal ? ` · ${adresseLocal}` : ""}
-        </Text>
+        <Apparition>
+          <Text style={styles.title}>Demander une réservation</Text>
+          <Text style={styles.subtitle}>
+            Avec {nomPro}
+            {adresseLocal ? ` · ${adresseLocal}` : ""}
+          </Text>
+        </Apparition>
 
-        <View style={styles.form}>
+        <Apparition delai={80} style={styles.form}>
           <TextField
             label="Décrivez votre besoin"
             value={description}
@@ -81,8 +84,8 @@ export default function Reserver() {
           </Text>
 
           {erreur && <Text style={styles.erreur}>{erreur}</Text>}
-          <Button label={envoi ? "Envoi..." : "Envoyer la demande"} onPress={envoyer} loading={envoi} />
-        </View>
+          <Button label={envoi ? "Envoi..." : "Envoyer la demande"} showArrow floating onPress={envoyer} loading={envoi} />
+        </Apparition>
       </ScrollView>
     </KeyboardAvoidingView>
   );

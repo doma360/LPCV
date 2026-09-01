@@ -8,6 +8,7 @@ import { apiFetch, ApiError } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
 import TextField from "@/components/TextField";
+import Apparition from "@/components/Apparition";
 import { polices } from "@/theme/typography";
 
 type Statut = "EN_ATTENTE" | "CONFIRMEE" | "PAYEE" | "TERMINEE" | "ANNULEE" | "REFUSEE";
@@ -32,13 +33,13 @@ interface Message {
   createdAt: string;
 }
 
-const STATUT_LABEL: Record<Statut, { label: string; color: string }> = {
-  EN_ATTENTE: { label: "En attente de réponse du professionnel", color: colors.accent700 },
-  CONFIRMEE: { label: "Confirmée — en attente de paiement", color: colors.brand700 },
-  PAYEE: { label: "Payée — réservation active", color: colors.success500 },
-  TERMINEE: { label: "Terminée", color: colors.success500 },
-  ANNULEE: { label: "Annulée", color: colors.danger500 },
-  REFUSEE: { label: "Refusée par le professionnel", color: colors.danger500 },
+const STATUT_LABEL: Record<Statut, { label: string; color: string; fond: string }> = {
+  EN_ATTENTE: { label: "En attente de réponse du professionnel", color: colors.accent700, fond: colors.accent300 },
+  CONFIRMEE: { label: "Confirmée — en attente de paiement", color: colors.brand700, fond: colors.brand50 },
+  PAYEE: { label: "Payée — réservation active", color: colors.success500, fond: "#E7F7EE" },
+  TERMINEE: { label: "Terminée", color: colors.success500, fond: "#E7F7EE" },
+  ANNULEE: { label: "Annulée", color: colors.danger500, fond: "#FDECEC" },
+  REFUSEE: { label: "Refusée par le professionnel", color: colors.danger500, fond: "#FDECEC" },
 };
 
 const DISCUSSION_OUVERTE: Statut[] = ["EN_ATTENTE", "CONFIRMEE"];
@@ -170,47 +171,53 @@ export default function ReservationDetailScreen({ id }: { id: string }) {
         <ArrowLeft size={20} color={colors.ink700} />
       </Pressable>
 
-      <Text style={styles.title}>{reservation.profession.nom}</Text>
-      <Text style={styles.avec}>
-        Avec {autrePersonne.prenom} {autrePersonne.nom}
-      </Text>
-      <Text style={[styles.statut, { color: statutInfo.color }]}>{statutInfo.label}</Text>
-
-      <Text style={styles.description}>{reservation.description}</Text>
-
-      {reservation.montant && (
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Honoraires</Text>
-          <Text style={styles.infoValeur}>{reservation.montant} FCFA</Text>
+      <Apparition>
+        <Text style={styles.title}>{reservation.profession.nom}</Text>
+        <Text style={styles.avec}>
+          Avec {autrePersonne.prenom} {autrePersonne.nom}
+        </Text>
+        <View style={[styles.statutPill, { backgroundColor: statutInfo.fond }]}>
+          <Text style={[styles.statutLabel, { color: statutInfo.color }]}>{statutInfo.label}</Text>
         </View>
-      )}
-      {reservation.dateConfirmee && (
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Rendez-vous</Text>
-          <Text style={styles.infoValeur}>{new Date(reservation.dateConfirmee).toLocaleString("fr-FR")}</Text>
-        </View>
-      )}
+
+        <Text style={styles.description}>{reservation.description}</Text>
+
+        {reservation.montant && (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Honoraires</Text>
+            <Text style={styles.infoValeur}>{reservation.montant} FCFA</Text>
+          </View>
+        )}
+        {reservation.dateConfirmee && (
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Rendez-vous</Text>
+            <Text style={styles.infoValeur}>{new Date(reservation.dateConfirmee).toLocaleString("fr-FR")}</Text>
+          </View>
+        )}
+      </Apparition>
 
       {erreur && <Text style={styles.erreur}>{erreur}</Text>}
 
       {role === "professionnel" && reservation.statut === "EN_ATTENTE" && (
-        <View style={styles.formConfirmation}>
+        <Apparition delai={80} style={styles.formConfirmation}>
           <Text style={styles.label}>Fixer un horaire et vos honoraires</Text>
           <TextField label="Date et heure" value={dateConfirmee} onChangeText={setDateConfirmee} placeholder="2026-09-01T15:00" />
           <TextField label="Honoraires (FCFA)" value={montant} onChangeText={setMontant} keyboardType="number-pad" />
           <View style={styles.actionsLigne}>
             <View style={styles.flex}>
-              <Button label="Confirmer" onPress={confirmer} loading={envoi} />
+              <Button label="Confirmer" showArrow floating onPress={confirmer} loading={envoi} />
             </View>
             <Pressable style={styles.boutonRefuser} onPress={refuser} disabled={envoi}>
               <Text style={styles.boutonRefuserLabel}>Refuser</Text>
             </Pressable>
           </View>
-        </View>
+        </Apparition>
       )}
 
       {role === "client" && reservation.statut === "CONFIRMEE" && (
-        <Button label={envoi ? "Paiement..." : "Payer et confirmer"} onPress={payer} loading={envoi} />
+        <Apparition delai={80}>
+          <Button label={envoi ? "Paiement..." : "Payer et confirmer"} showArrow floating onPress={payer} loading={envoi} />
+        </Apparition>
       )}
 
       {role === "client" && ["EN_ATTENTE", "CONFIRMEE"].includes(reservation.statut) && (
@@ -220,11 +227,13 @@ export default function ReservationDetailScreen({ id }: { id: string }) {
       )}
 
       {role === "professionnel" && reservation.statut === "PAYEE" && (
-        <Button label="Marquer terminée" onPress={terminer} loading={envoi} />
+        <Apparition delai={80}>
+          <Button label="Marquer terminée" showArrow floating onPress={terminer} loading={envoi} />
+        </Apparition>
       )}
 
       {DISCUSSION_OUVERTE.includes(reservation.statut) && (
-        <View style={styles.discussion}>
+        <Apparition delai={140} style={styles.discussion}>
           <View style={styles.discussionHeader}>
             <Text style={styles.label}>Discussion</Text>
             <Pressable style={styles.boutonAppel} onPress={lancerAppel}>
@@ -256,7 +265,7 @@ export default function ReservationDetailScreen({ id }: { id: string }) {
               <Send size={18} color={colors.brand900} />
             </Pressable>
           </View>
-        </View>
+        </Apparition>
       )}
     </View>
   );
@@ -277,7 +286,8 @@ const styles = StyleSheet.create({
   },
   title: { fontFamily: polices.titre, fontSize: 20, fontWeight: "700", color: colors.ink900 },
   avec: { fontSize: 13, color: colors.ink500 },
-  statut: { fontSize: 13, fontWeight: "700", marginTop: 4 },
+  statutPill: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, marginTop: 6 },
+  statutLabel: { fontSize: 12, fontWeight: "700" },
   description: { fontSize: 14, color: colors.ink700, marginTop: 8 },
   infoRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 4 },
   infoLabel: { fontSize: 13, color: colors.ink500 },
