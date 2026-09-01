@@ -149,18 +149,23 @@ export default function MesDemandes() {
   const statutsConnus = useRef<Record<string, string>>({});
 
   const charger = useCallback(async () => {
-    const res = await apiFetch<Demande[]>("/api/v1/demandes");
+    try {
+      const res = await apiFetch<Demande[]>("/api/v1/demandes");
 
-    for (const demande of res.data) {
-      const precedent = statutsConnus.current[demande.id];
-      if (precedent === "EN_ATTENTE" && demande.statut === "REFUSEE") {
-        router.push({ pathname: "/(client)/rechercher", params: { metier: demande.profession.slug, relance: "1" } });
-        break;
+      for (const demande of res.data) {
+        const precedent = statutsConnus.current[demande.id];
+        if (precedent === "EN_ATTENTE" && demande.statut === "REFUSEE") {
+          router.push({ pathname: "/(client)/rechercher", params: { metier: demande.profession.slug, relance: "1" } });
+          break;
+        }
       }
-    }
-    statutsConnus.current = Object.fromEntries(res.data.map((d) => [d.id, d.statut]));
+      statutsConnus.current = Object.fromEntries(res.data.map((d) => [d.id, d.statut]));
 
-    setDemandes(res.data);
+      setDemandes(res.data);
+    } catch {
+      // echec silencieux (reseau/serveur) : la liste garde son dernier etat
+      // connu plutot que de planter ou de bloquer le pull-to-refresh
+    }
   }, []);
 
   useFocusEffect(

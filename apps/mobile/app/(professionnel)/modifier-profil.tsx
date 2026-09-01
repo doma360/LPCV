@@ -50,6 +50,7 @@ export default function ModifierProfil() {
         setTarifMax(detailRes.data.tarifIndicatifMax ?? "");
         setZonesChoisies(detailRes.data.zones.map((z) => z.zone.id));
       })
+      .catch(() => setErreur("Impossible de charger votre profil. Vérifiez votre connexion."))
       .finally(() => setChargement(false));
   }, [session]);
 

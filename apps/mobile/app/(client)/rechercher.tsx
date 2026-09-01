@@ -32,6 +32,7 @@ export default function Rechercher() {
   const [profession, setProfession] = useState<Profession | null>(null);
   const [candidats, setCandidats] = useState<Candidat[] | null>(null);
   const [recherche, setRecherche] = useState(false);
+  const [erreurRecherche, setErreurRecherche] = useState(false);
 
   // Metier deja choisi sur l'accueil (champ + suggestions) ; on ne recupere
   // ici que sa fiche complete (id) pour lancer le matching. "relance=1" :
@@ -39,10 +40,12 @@ export default function Rechercher() {
   // un message plutot que de repartir d'un ecran silencieux.
   useEffect(() => {
     if (!metierParam) return;
-    apiFetch<Profession[]>("/api/v1/vitrine/metiers").then((res) => {
-      const correspondance = res.data.find((p) => p.slug === metierParam);
-      if (correspondance) setProfession(correspondance);
-    });
+    apiFetch<Profession[]>("/api/v1/vitrine/metiers")
+      .then((res) => {
+        const correspondance = res.data.find((p) => p.slug === metierParam);
+        if (correspondance) setProfession(correspondance);
+      })
+      .catch(() => {});
   }, [metierParam]);
 
   const succes = relance === "1" ? "Ce professionnel a refusé votre demande — voici d'autres profils disponibles." : null;
@@ -50,11 +53,16 @@ export default function Rechercher() {
   useEffect(() => {
     if (!profession || !position) return;
     setRecherche(true);
+    setErreurRecherche(false);
     setCandidats(null);
     apiFetch<{ candidats: Candidat[] }>(
       `/api/v1/professionnels/matching?metier=${profession.slug}&lat=${position.lat}&lng=${position.lng}`,
     )
       .then((res) => setCandidats(res.data.candidats))
+      .catch(() => {
+        setCandidats([]);
+        setErreurRecherche(true);
+      })
       .finally(() => setRecherche(false));
   }, [profession, position]);
 
@@ -133,9 +141,13 @@ export default function Rechercher() {
               <View style={styles.videIcone}>
                 <ShieldCheck size={26} color={colors.ink400} />
               </View>
-              <Text style={styles.videTitre}>Aucun professionnel disponible</Text>
+              <Text style={styles.videTitre}>
+                {erreurRecherche ? "Recherche impossible" : "Aucun professionnel disponible"}
+              </Text>
               <Text style={styles.videTexte}>
-                Personne n'est disponible pour "{profession?.nom ?? "ce métier"}" près de chez vous pour l'instant.
+                {erreurRecherche
+                  ? "Vérifiez votre connexion et réessayez."
+                  : `Personne n'est disponible pour "${profession?.nom ?? "ce métier"}" près de chez vous pour l'instant.`}
               </Text>
             </View>
           ) : null

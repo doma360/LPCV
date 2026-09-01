@@ -30,7 +30,7 @@ export default function ReservationsPro() {
 
   useFocusEffect(
     useCallback(() => {
-      apiFetch<Reservation[]>("/api/v1/reservations").then((res) => setReservations(res.data));
+      apiFetch<Reservation[]>("/api/v1/reservations").then((res) => setReservations(res.data)).catch(() => {});
     }, []),
   );
 

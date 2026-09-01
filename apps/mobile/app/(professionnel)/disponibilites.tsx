@@ -37,8 +37,12 @@ export default function Disponibilites() {
   const [ajout, setAjout] = useState(false);
 
   const charger = useCallback(async () => {
-    const res = await apiFetch<Disponibilite[]>("/api/v1/professionnels/disponibilites");
-    setDispos(res.data);
+    try {
+      const res = await apiFetch<Disponibilite[]>("/api/v1/professionnels/disponibilites");
+      setDispos(res.data);
+    } catch {
+      // echec silencieux : la liste garde son dernier etat connu
+    }
   }, []);
 
   useFocusEffect(

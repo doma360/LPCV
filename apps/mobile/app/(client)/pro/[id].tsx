@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import Text from "@/components/Texte";
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, MapPin, ShieldCheck, Star } from "lucide-react-native";
+import { AlertTriangle, ArrowLeft, MapPin, ShieldCheck, Star } from "lucide-react-native";
 import { apiFetch } from "@/lib/api";
 import { colors } from "@/theme/colors";
 import Button from "@/components/Button";
@@ -51,14 +51,39 @@ export default function FicheProfessionnel() {
   }>();
   const [pro, setPro] = useState<ProfessionnelDetail | null>(null);
   const [avis, setAvis] = useState<Avis[]>([]);
+  const [erreur, setErreur] = useState(false);
+  const [chargement, setChargement] = useState(true);
 
-  useEffect(() => {
+  const charger = useCallback(() => {
     if (!id) return;
-    apiFetch<ProfessionnelDetail>(`/api/v1/professionnels/${id}`).then((res) => setPro(res.data));
-    apiFetch<Avis[]>(`/api/v1/avis/professionnel/${id}`).then((res) => setAvis(res.data));
+    setErreur(false);
+    setChargement(true);
+    apiFetch<ProfessionnelDetail>(`/api/v1/professionnels/${id}`)
+      .then((res) => setPro(res.data))
+      .catch(() => setErreur(true))
+      .finally(() => setChargement(false));
+    apiFetch<Avis[]>(`/api/v1/avis/professionnel/${id}`)
+      .then((res) => setAvis(res.data))
+      .catch(() => {});
   }, [id]);
 
-  if (!pro) {
+  useEffect(() => {
+    charger();
+  }, [charger]);
+
+  if (erreur) {
+    return (
+      <View style={styles.chargement}>
+        <AlertTriangle size={26} color={colors.ink400} />
+        <Text style={styles.erreurTexte}>Impossible de charger ce profil. Vérifiez votre connexion.</Text>
+        <Pressable onPress={charger}>
+          <Text style={styles.reessayer}>Réessayer</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (!pro || chargement) {
     return (
       <View style={styles.chargement}>
         <ActivityIndicator color={colors.brand700} />
@@ -187,7 +212,9 @@ export default function FicheProfessionnel() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.cream100 },
-  chargement: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.cream100 },
+  chargement: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.cream100, gap: 10, paddingHorizontal: 32 },
+  erreurTexte: { fontSize: 13, color: colors.ink500, textAlign: "center" },
+  reessayer: { fontSize: 13, fontWeight: "700", color: colors.brand700 },
   container: { padding: 20, paddingTop: 60, paddingBottom: 60, gap: 16 },
   retour: {
     width: 40,

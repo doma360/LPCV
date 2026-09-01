@@ -27,7 +27,7 @@ export default function RevenusScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      apiFetch<Revenus>("/api/v1/professionnels/revenus").then((res) => setRevenus(res.data));
+      apiFetch<Revenus>("/api/v1/professionnels/revenus").then((res) => setRevenus(res.data)).catch(() => {});
     }, []),
   );
 

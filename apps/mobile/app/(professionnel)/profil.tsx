@@ -80,12 +80,12 @@ export default function Profil() {
 
   useEffect(() => {
     if (!session) return;
-    apiFetch<ProfilDetail>(`/api/v1/professionnels/${session.user.id}`).then((res) => setDetail(res.data));
-    apiFetch<Avis[]>(`/api/v1/avis/professionnel/${session.user.id}`).then((res) => setAvis(res.data));
-    apiFetch<Abonnement | null>("/api/v1/abonnements/moi").then((res) => setAbonnement(res.data));
-    apiFetch<Demande[]>("/api/v1/demandes").then((res) =>
-      setInterventions(res.data.filter((d) => d.statut === "TERMINEE").length),
-    );
+    apiFetch<ProfilDetail>(`/api/v1/professionnels/${session.user.id}`).then((res) => setDetail(res.data)).catch(() => {});
+    apiFetch<Avis[]>(`/api/v1/avis/professionnel/${session.user.id}`).then((res) => setAvis(res.data)).catch(() => {});
+    apiFetch<Abonnement | null>("/api/v1/abonnements/moi").then((res) => setAbonnement(res.data)).catch(() => {});
+    apiFetch<Demande[]>("/api/v1/demandes")
+      .then((res) => setInterventions(res.data.filter((d) => d.statut === "TERMINEE").length))
+      .catch(() => {});
   }, [session]);
 
   const verifie = detail?.statutVerification === "VERIFIE";

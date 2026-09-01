@@ -29,7 +29,7 @@ export default function PortefeuilleScreen() {
   const [succes, setSucces] = useState<string | null>(null);
 
   const charger = useCallback(() => {
-    apiFetch<Portefeuille>("/api/v1/portefeuille/moi").then((res) => setPortefeuille(res.data));
+    apiFetch<Portefeuille>("/api/v1/portefeuille/moi").then((res) => setPortefeuille(res.data)).catch(() => {});
   }, []);
 
   useFocusEffect(charger);

@@ -58,9 +58,9 @@ export default function Profil() {
   const [erreurPhoto, setErreurPhoto] = useState<string | null>(null);
 
   useEffect(() => {
-    apiFetch<Avis[]>("/api/v1/avis/mes-avis").then((res) => setAvis(res.data));
-    apiFetch<Demande[]>("/api/v1/demandes").then((res) => setDemandes(res.data));
-    apiFetch<CompteDetail>("/api/v1/users/me").then((res) => setCompte(res.data));
+    apiFetch<Avis[]>("/api/v1/avis/mes-avis").then((res) => setAvis(res.data)).catch(() => {});
+    apiFetch<Demande[]>("/api/v1/demandes").then((res) => setDemandes(res.data)).catch(() => {});
+    apiFetch<CompteDetail>("/api/v1/users/me").then((res) => setCompte(res.data)).catch(() => {});
   }, []);
 
   async function changerPhoto() {

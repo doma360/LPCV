@@ -59,17 +59,25 @@ export default function DemandesRecues() {
   const [totalGagne, setTotalGagne] = useState<string | null>(null);
 
   const charger = useCallback(async () => {
-    const res = await apiFetch<Demande[]>("/api/v1/demandes");
-    setDemandes(res.data);
+    try {
+      const res = await apiFetch<Demande[]>("/api/v1/demandes");
+      setDemandes(res.data);
+    } catch {
+      // echec silencieux : la liste garde son dernier etat connu
+    }
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       charger();
       if (session) {
-        apiFetch<ProfilResume>(`/api/v1/professionnels/${session.user.id}`).then((res) => setNote(res.data.noteMoyenne));
+        apiFetch<ProfilResume>(`/api/v1/professionnels/${session.user.id}`)
+          .then((res) => setNote(res.data.noteMoyenne))
+          .catch(() => {});
       }
-      apiFetch<Revenus>("/api/v1/professionnels/revenus").then((res) => setTotalGagne(res.data.totalGagne));
+      apiFetch<Revenus>("/api/v1/professionnels/revenus")
+        .then((res) => setTotalGagne(res.data.totalGagne))
+        .catch(() => {});
     }, [charger, session]),
   );
 

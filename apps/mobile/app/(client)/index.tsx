@@ -39,12 +39,16 @@ export default function Accueil() {
   const [metierChoisi, setMetierChoisi] = useState<Profession | null>(null);
 
   useEffect(() => {
-    apiFetch<Profession[]>("/api/v1/vitrine/metiers").then((res) => setProfessions(res.data));
+    apiFetch<Profession[]>("/api/v1/vitrine/metiers")
+      .then((res) => setProfessions(res.data))
+      .catch(() => {});
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      apiFetch<Demande[]>("/api/v1/demandes").then((res) => setDemandes(res.data));
+      apiFetch<Demande[]>("/api/v1/demandes")
+        .then((res) => setDemandes(res.data))
+        .catch(() => {});
     }, []),
   );
 

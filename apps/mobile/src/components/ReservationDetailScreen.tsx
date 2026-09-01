@@ -55,8 +55,8 @@ export default function ReservationDetailScreen({ id }: { id: string }) {
   const [erreur, setErreur] = useState<string | null>(null);
 
   const charger = useCallback(() => {
-    apiFetch<Reservation>(`/api/v1/reservations/${id}`).then((res) => setReservation(res.data));
-    apiFetch<Message[]>(`/api/v1/reservations/${id}/messages`).then((res) => setMessages(res.data));
+    apiFetch<Reservation>(`/api/v1/reservations/${id}`).then((res) => setReservation(res.data)).catch(() => {});
+    apiFetch<Message[]>(`/api/v1/reservations/${id}/messages`).then((res) => setMessages(res.data)).catch(() => {});
   }, [id]);
 
   useFocusEffect(
