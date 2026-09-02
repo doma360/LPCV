@@ -3,8 +3,7 @@ import Container from "@/components/ui/Container";
 import Section from "@/components/ui/Section";
 import Heading from "@/components/ui/Heading";
 import Button from "@/components/ui/Button";
-import Float from "@/components/ui/Float";
-import DeviceFrame from "@/components/ui/DeviceFrame";
+import AppJourneyShowcase from "@/components/sections/AppJourneyShowcase";
 
 export default function AppTeaser() {
   return (
@@ -40,18 +39,8 @@ export default function AppTeaser() {
             </Button>
           </div>
         </div>
-        <div className="relative flex flex-col items-center justify-center gap-6 py-4 sm:flex-row sm:gap-0 sm:py-8">
-          <Float duration={6} distance={10} className="relative z-0 sm:mt-10">
-            <DeviceFrame platform="android" />
-          </Float>
-          <Float
-            duration={7.5}
-            delay={0.4}
-            distance={14}
-            className="relative z-10 sm:-ml-10"
-          >
-            <DeviceFrame platform="ios" />
-          </Float>
+        <div className="relative flex items-center justify-center py-4 sm:py-8">
+          <AppJourneyShowcase />
         </div>
       </Container>
     </Section>
