@@ -58,7 +58,7 @@ export default function ParametresScreen() {
     try {
       const res = await apiFetch<Utilisateur>("/api/v1/users/me", {
         method: "PATCH",
-        body: JSON.stringify({ nom, prenom, email, telephone }),
+        body: JSON.stringify({ nom: nom.trim(), prenom: prenom.trim(), email: email.trim(), telephone: telephone.trim() }),
       });
       updateUser(res.data);
       setInfoSucces(true);
@@ -76,7 +76,7 @@ export default function ParametresScreen() {
     try {
       await apiFetch("/api/v1/users/me/mot-de-passe", {
         method: "PATCH",
-        body: JSON.stringify({ motDePasseActuel, nouveauMotDePasse }),
+        body: JSON.stringify({ motDePasseActuel: motDePasseActuel.trim(), nouveauMotDePasse: nouveauMotDePasse.trim() }),
       });
       setMotDePasseActuel("");
       setNouveauMotDePasse("");

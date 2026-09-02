@@ -24,7 +24,7 @@ export default function MotDePasseOublie() {
     try {
       await apiFetch("/api/v1/auth/mot-de-passe-oublie", {
         method: "POST",
-        body: JSON.stringify({ identifiant }),
+        body: JSON.stringify({ identifiant: identifiant.trim() }),
       });
       setEnvoye(true);
     } catch (err) {

@@ -26,7 +26,7 @@ export default function ReinitialiserMotDePasse() {
     try {
       await apiFetch("/api/v1/auth/reinitialiser-mot-de-passe", {
         method: "POST",
-        body: JSON.stringify({ identifiant, code, nouveauMotDePasse }),
+        body: JSON.stringify({ identifiant: identifiant.trim(), code: code.trim(), nouveauMotDePasse: nouveauMotDePasse.trim() }),
       });
       router.replace({ pathname: "/(auth)/authentification", params: { onglet: "connexion" } });
     } catch (err) {

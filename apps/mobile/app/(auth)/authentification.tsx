@@ -69,7 +69,11 @@ export default function Authentification() {
     setErreurConnexion(null);
     setLoadingConnexion(true);
     try {
-      await login(identifiant, motDePasseConnexion);
+      // Un espace parasite en debut/fin (frequent avec la suggestion
+      // automatique des claviers mobiles) fait echouer une comparaison
+      // exacte - confirme en usage reel le 2026-09-02 (payload d'un
+      // octet trop long par rapport aux identifiants attendus).
+      await login(identifiant.trim(), motDePasseConnexion.trim());
     } catch (err) {
       setErreurConnexion(err instanceof Error ? err.message : "Connexion impossible");
     } finally {
@@ -87,7 +91,13 @@ export default function Authentification() {
 
     setLoadingInscription(true);
     try {
-      const input = { nom, prenom, email, telephone, motDePasse };
+      const input = {
+        nom: nom.trim(),
+        prenom: prenom.trim(),
+        email: email.trim(),
+        telephone: telephone.trim(),
+        motDePasse: motDePasse.trim(),
+      };
       if (role === "client") {
         await registerClient(input);
       } else {
